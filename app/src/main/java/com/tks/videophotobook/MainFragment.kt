@@ -5,7 +5,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.fragment.findNavController
 import com.tks.videophotobook.databinding.FragmentMainBinding
+import java.io.File
 
 class MainFragment : Fragment() {
     private lateinit var _binding: FragmentMainBinding
@@ -20,5 +22,12 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        /* marker_video_map.json(=マーカー/動画紐付け情報)の存在チェック */
+        val file = File(requireContext().externalCacheDir, "marker_video_map.json")
+        if ( !file.exists()) {
+            /* 存在しない場合、SettingFragmentを表示(マーカー/動画紐付け情報を生成する)*/
+            findNavController().navigate(R.id.action_mainFragment_to_settingFragment_slide)
+        }
     }
 }

@@ -11,7 +11,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
@@ -104,7 +103,7 @@ class PermissionDialogFragment : DialogFragment() {
     companion object {
         fun show(activity: FragmentActivity) {
             val fragment = PermissionDialogFragment()
-            fragment.show(activity.supportFragmentManager, "PermissionDialog")
+            fragment.show(activity.supportFragmentManager, "Permission request")
         }
     }
 }

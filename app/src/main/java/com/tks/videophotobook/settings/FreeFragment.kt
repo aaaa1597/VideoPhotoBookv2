@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -25,7 +26,7 @@ import com.tks.videophotobook.Utils
 
 class FreeFragment : Fragment() {
     private lateinit var _binding: FragmentFreeBinding
-    private val _viewModel: SettingViewModel by viewModels()
+    private val _viewModel: SettingViewModel by activityViewModels()
     private lateinit var _markerVideoSetAdapter: MarkerVideoSetAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

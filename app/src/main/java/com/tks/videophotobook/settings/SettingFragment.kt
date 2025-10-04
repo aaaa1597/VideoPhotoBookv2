@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayoutMediator
@@ -14,11 +15,10 @@ import com.tks.videophotobook.databinding.FragmentSettingBinding
 
 class SettingFragment : Fragment() {
     private lateinit var _binding: FragmentSettingBinding
-    private val viewModel: SettingViewModel by viewModels()
+    private val viewModel: SettingViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.initMarkerVideoSetList()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View {
@@ -38,6 +38,8 @@ class SettingFragment : Fragment() {
                 else -> ""
             }
         }.attach()
+
+        viewModel.initMarkerVideoSetList()
     }
 }
 

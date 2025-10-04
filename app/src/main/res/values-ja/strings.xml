@@ -3,4 +3,7 @@
     <string name="req_permission">権限要求</string>
     <string name="wording_permission">\nアプリの実行には以下の権限が必要です。\n\n</string>
     <string name="wording_permission2">\n\n承認をお願いします。\n今回は終了します。</string>
+    <string name="under_construction">🚧 工事中 🚧</string>
+    <string name="free">無料枠</string>
+    <string name="paid">有料枠</string>
 </resources>

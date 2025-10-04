@@ -6,4 +6,7 @@
     <string name="under_construction">🚧 工事中 🚧</string>
     <string name="free">無料枠</string>
     <string name="paid">有料枠</string>
+    <string name="marker_video_link_settings">マーカー/動画 紐付け設定</string>
+    <string name="add_btn">追加ボタン</string>
+    <string name="please_choose">再生動画を選択してください</string>
 </resources>

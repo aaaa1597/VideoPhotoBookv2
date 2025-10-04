@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:layout_marginStart="4dp"
+    android:layout_marginEnd="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <FrameLayout
+            android:id="@+id/fly_targetinfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/imv_targetImage"
+                android:layout_width="80dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="30dp"
+                android:src="@drawable/m000_star4"/>
+            <TextView
+                android:id="@+id/txt_targetname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:layout_marginTop="2dp"
+                android:layout_marginStart="2dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:text="m000"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/fly_videoInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <com.tks.videophotobook.settings.VideoThumbnailPlayerView
+                android:id="@+id/pyv_video_thumbnail"
+                android:layout_width="80dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="50dp"/>
+            <ImageView
+                android:id="@+id/imv_video_thumbnail"
+                android:layout_width="80dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="50dp"
+                android:src="@drawable/videofilenotfound"/>
+            <TextView
+                android:id="@+id/txt_videoname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:layout_marginTop="2dp"
+                android:layout_marginStart="5dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:text="000_marker"/>
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/txt_comment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="5dp"
+            android:layout_gravity="center"
+            android:ellipsize="marquee"
+            android:text="aaaaa" />
+
+        <ImageButton
+            android:id="@+id/imv_delete"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:src="@android:drawable/ic_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

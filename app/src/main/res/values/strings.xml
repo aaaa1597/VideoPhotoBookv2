@@ -6,4 +6,7 @@
     <string name="under_construction">🚧 Under Construction 🚧</string>
     <string name="free">Free</string>
     <string name="paid">Paid</string>
+    <string name="marker_video_link_settings">Marker / Video Link Settings</string>
+    <string name="add_btn">Add Button</string>
+    <string name="please_choose">Please select content.</string>
 </resources>

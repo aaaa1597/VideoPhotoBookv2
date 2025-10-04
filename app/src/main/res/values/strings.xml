@@ -8,5 +8,6 @@
     <string name="paid">Paid</string>
     <string name="marker_video_link_settings">Marker / Video Link Settings</string>
     <string name="add_btn">Add Button</string>
+    <string name="video_none">none</string>
     <string name="please_choose">Please select content.</string>
 </resources>

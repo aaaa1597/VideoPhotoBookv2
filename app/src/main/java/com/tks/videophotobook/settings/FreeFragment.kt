@@ -103,7 +103,7 @@ class FreeFragment : Fragment() {
                     videothumbnailPyv.setVideoUri(item.videoUri)
                 }
                 else {
-                    videoName.text = "-- none --"
+                    videoName.text = context.getString(R.string.video_none)
                     videothumbnailPyv.visibility = View.GONE
                     videothumbnailImv.visibility = View.VISIBLE
                     videothumbnailImv.setImageResource(R.drawable.videofilenotfound)

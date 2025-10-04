@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QCARConfig>
+  <Tracking>
+    <ImageTarget name="009_marker" size="0.070000 0.039375" />
+    <ImageTarget name="008_marker" size="0.070000 0.039375" />
+    <ImageTarget name="007_marker" size="0.070000 0.039375" />
+    <ImageTarget name="006_marker" size="0.070000 0.039375" />
+    <ImageTarget name="005_marker" size="0.070000 0.039375" />
+    <ImageTarget name="004_marker" size="0.070000 0.039375" />
+    <ImageTarget name="003_marker" size="0.070000 0.039375" />
+    <ImageTarget name="002_marker" size="0.070000 0.039375" />
+    <ImageTarget name="001_marker" size="0.070000 0.039375" />
+    <ImageTarget name="000_marker" size="0.070000 0.039375" />
+  </Tracking>
+</QCARConfig>

@@ -1,6 +1,7 @@
 package com.tks.videophotobook.settings
 
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +25,7 @@ import com.tks.videophotobook.R
 import com.tks.videophotobook.Utils
 import kotlinx.coroutines.launch
 import kotlin.getValue
+import androidx.core.net.toUri
 
 class FreeFragment : Fragment() {
     private lateinit var _binding: FragmentFreeBinding
@@ -101,8 +103,10 @@ class FreeFragment : Fragment() {
                 /* ARマーカー画像 */
                 if(Utils.isUriValid(context, item.targetImageUri))
                     targetImageImv.setImageURI(item.targetImageUri)
-                else
+                else {
+                    item.targetImageUri = "".toUri()
                     targetImageImv.setImageResource(item.targetImageTemplateResId)
+                }
                 /* 動画名/動画ファイル */
                 if(Utils.isUriValid(context, item.videoUri)) {
                     videoName.text = Utils.getFileNameFromUri(context, item.videoUri)
@@ -111,6 +115,7 @@ class FreeFragment : Fragment() {
                     videothumbnailPyv.setVideoUri(item.videoUri)
                 }
                 else {
+                    item.videoUri = "".toUri()
                     videoName.text = context.getString(R.string.video_none)
                     videothumbnailPyv.visibility = View.GONE
                     videothumbnailImv.visibility = View.VISIBLE

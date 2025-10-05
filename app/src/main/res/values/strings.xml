@@ -16,4 +16,5 @@
     <string name="video_settings">Video Settings</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+    <string name="no_setting_configured">No setting configured.</string>
 </resources>

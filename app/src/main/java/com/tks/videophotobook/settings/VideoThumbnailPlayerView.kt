@@ -3,11 +3,13 @@ package com.tks.videophotobook.settings
 import android.content.Context
 import android.net.Uri
 import android.util.AttributeSet
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 
 class VideoThumbnailPlayerView @JvmOverloads constructor(
     context: Context,
@@ -18,6 +20,7 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
     private var player: ExoPlayer? = null
     private var isPrepared = false
 
+    @OptIn(UnstableApi::class)
     fun setVideoUri(uri: Uri) {
         player = ExoPlayer.Builder(context).build().also { exoPlayer ->
             this.player = exoPlayer

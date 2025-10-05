@@ -37,19 +37,33 @@ class FreeFragment : Fragment() {
     private lateinit var _binding: FragmentFreeBinding
     private val _viewModel: SettingViewModel by activityViewModels()
     private lateinit var _markerVideoSetAdapter: MarkerVideoSetAdapter
+    /* どの item でファイル選択したかを一時保持 */
+    private var pendingTargetName: String? = null
 
     /* ファイル選択ランチャー */
     private val _pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         /* ファイルリストの戻り */
         result ->
+            val targetName = pendingTargetName
+            pendingTargetName = null
             if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
             if (result.data==null) return@registerForActivityResult
             if (result.data!!.data == null) return@registerForActivityResult
 
             /* 単一のファイルが選択された */
-            val uri = result.data!!.data ?: return@registerForActivityResult
+            val uri = result.data!!.data!!
             Log.d("aaaaa", "file URI: $uri")
-            /*  ここで選択されたファイルURIを使って何かする */
+            /* ViewModelのリスト更新 */
+            targetName?.let { targetName ->
+                val currentList = _viewModel.markerVideoSetList.value.toMutableList()
+                val index = currentList.indexOfFirst { it.targetName == targetName }
+                if (index == -1) return@let
+
+                /* targetImageUri を更新 */
+                val updatedItem = currentList[index].copy(targetImageUri = uri)
+                currentList[index] = updatedItem
+                _viewModel.updateMarkerVideoSetList(currentList) // ← ViewModel側に更新メソッドを用意
+            }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
@@ -104,32 +118,31 @@ class FreeFragment : Fragment() {
 
         dialogView.findViewById<TextView>(R.id.etv_comment).text = item.comment
 
-        val getFileUri: (String) -> Unit = {
-                mimeType ->
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                addCategory(Intent.CATEGORY_OPENABLE)
-                /* 単一ファイル選択なのでコメント化 */
-                //              putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-                /* 選択可能なMIMEタイプを指定 */
-                type = mimeType
-                /* EXTRA_INITIAL_URIを設定して、初期表示ディレクトリを指定 */
-                putExtra(DocumentsContract.EXTRA_INITIAL_URI, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-            }
-            /* 生成Intentで起動 */
-            _pickFileLauncher.launch(intent)
+        val getFileUri: (String, MarkerVideoSet) -> Unit = {
+                mimeType, item ->
+                    pendingTargetName = item.targetName
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = mimeType
+                        /* 初期表示ディレクトリ指定 */
+                        putExtra(DocumentsContract.EXTRA_INITIAL_URI, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    }
+                    /* 生成Intentで起動 */
+                    _pickFileLauncher.launch(intent)
         }
 
         /* マーカー画像設定 */
         dialogView.findViewById<ImageView>(R.id.igv_markerpreview).setOnClickListener {
-            getFileUri("image/*")
+            getFileUri("image/*", item)
+            TODO("マーカーtemplateと取得画像の合成処理 → 保存 → URI取得")
         }
 
         /* 再生動画設定 */
         dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).setOnClickListener {
-            getFileUri("video/*")
+            getFileUri("video/*", item)
         }
         dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).setOnClickListener {
-            getFileUri("video/*")
+            getFileUri("video/*", item)
         }
         /* キャンセル */
         dialogView.findViewById<Button>(R.id.btnCancel).setOnClickListener {

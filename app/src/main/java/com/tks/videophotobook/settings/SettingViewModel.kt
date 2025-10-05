@@ -36,4 +36,8 @@ class SettingViewModel(application: Application) : AndroidViewModel(application)
         }
         _markerVideoSetList.value = list
     }
+
+    fun updateMarkerVideoSetList(newList: List<MarkerVideoSet>) {
+        _markerVideoSetList.value = newList
+    }
 }

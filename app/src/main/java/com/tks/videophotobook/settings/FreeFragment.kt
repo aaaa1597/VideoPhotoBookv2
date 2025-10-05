@@ -9,6 +9,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.cardview.widget.CardView
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -84,6 +85,7 @@ class FreeFragment : Fragment() {
         }
 
         class MarkerVideoSetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            private val topCdv: CardView = itemView.findViewById(R.id.cdv_top)
             private val targetInfoFly: FrameLayout = itemView.findViewById(R.id.fly_targetinfo)
             private val targetNameTxt: TextView = itemView.findViewById(R.id.txt_targetname)
             private val targetImageImv: ImageView = itemView.findViewById(R.id.imv_targetImage)
@@ -118,10 +120,7 @@ class FreeFragment : Fragment() {
                 commentTxt.text = item.comment
 
                 /* クリックリスナーの設定 */
-                targetInfoFly.setOnClickListener {
-                    onItemClicked(item)
-                }
-                videoInfoFly.setOnClickListener {
+                topCdv.setOnClickListener {
                     onItemClicked(item)
                 }
             }

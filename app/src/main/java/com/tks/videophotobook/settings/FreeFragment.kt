@@ -2,15 +2,15 @@ package com.tks.videophotobook.settings
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -19,10 +19,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tks.videophotobook.databinding.FragmentFreeBinding
-import kotlinx.coroutines.launch
-import kotlin.getValue
 import com.tks.videophotobook.R
 import com.tks.videophotobook.Utils
+import kotlinx.coroutines.launch
+import kotlin.getValue
 
 class FreeFragment : Fragment() {
     private lateinit var _binding: FragmentFreeBinding
@@ -40,9 +40,21 @@ class FreeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        _markerVideoSetAdapter = MarkerVideoSetAdapter(context!!) { targetName ->
-            TODO("あとで実装する")
+        val onItemClickedItemProperties: (MarkerVideoSet) -> Unit = {
+            markerVideoSet ->
+            val dialogView = layoutInflater.inflate(R.layout.dialog_marker_video, null)
+            val dialog = AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .create()
+
+            dialog.show()
+
+            dialog.window?.setLayout(
+                (resources.displayMetrics.widthPixels * 0.8).toInt(),
+                (resources.displayMetrics.heightPixels * 0.8).toInt()
+            )
         }
+        _markerVideoSetAdapter = MarkerVideoSetAdapter(requireContext(), onItemClickedItemProperties)
         _binding.recyclerViewMarkerVideo.adapter = _markerVideoSetAdapter
         _binding.recyclerViewMarkerVideo.layoutManager = LinearLayoutManager(context)
 
@@ -63,7 +75,7 @@ class FreeFragment : Fragment() {
         }
     }
 
-    class MarkerVideoSetAdapter(private val context: Context, private val onItemClicked: (String) -> Unit) :
+    class MarkerVideoSetAdapter(private val context: Context, private val onItemClicked: (MarkerVideoSet) -> Unit) :
         ListAdapter<MarkerVideoSet, MarkerVideoSetAdapter.MarkerVideoSetViewHolder>(MarkerVideoSetDiffCallback()) {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarkerVideoSetViewHolder {
@@ -87,7 +99,7 @@ class FreeFragment : Fragment() {
             private val videothumbnailImv: ImageView = itemView.findViewById(R.id.imv_video_thumbnail)
             private val commentTxt: TextView = itemView.findViewById(R.id.txt_comment)
 
-            fun bind(context: Context, item: MarkerVideoSet, onItemClicked: (String) -> Unit) {
+            fun bind(context: Context, item: MarkerVideoSet, onItemClicked: (MarkerVideoSet) -> Unit) {
                 /* ARマーカーID */
                 targetNameTxt.text = item.targetName
                 /* ARマーカー画像 */
@@ -113,10 +125,10 @@ class FreeFragment : Fragment() {
 
                 /* クリックリスナーの設定 */
                 targetInfoFly.setOnClickListener {
-                    onItemClicked(item.targetName)
+                    onItemClicked(item)
                 }
                 videoInfoFly.setOnClickListener {
-                    onItemClicked(item.targetName)
+                    onItemClicked(item)
                 }
             }
         }

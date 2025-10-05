@@ -10,4 +10,10 @@
     <string name="add_btn">Add Button</string>
     <string name="video_none">none</string>
     <string name="please_choose">Please select content.</string>
+    <string name="marker_video_binding_settings">Marker–Video Binding Settings</string>
+    <string name="marker_settings">Marker Settings</string>
+    <string name="marker_preview">Marker preview</string>
+    <string name="video_settings">Video Settings</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
 </resources>

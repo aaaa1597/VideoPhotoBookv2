@@ -46,13 +46,7 @@ class FreeFragment : Fragment() {
             val dialog = AlertDialog.Builder(requireContext())
                 .setView(dialogView)
                 .create()
-
             dialog.show()
-
-            dialog.window?.setLayout(
-                (resources.displayMetrics.widthPixels * 0.8).toInt(),
-                (resources.displayMetrics.heightPixels * 0.8).toInt()
-            )
         }
         _markerVideoSetAdapter = MarkerVideoSetAdapter(requireContext(), onItemClickedItemProperties)
         _binding.recyclerViewMarkerVideo.adapter = _markerVideoSetAdapter

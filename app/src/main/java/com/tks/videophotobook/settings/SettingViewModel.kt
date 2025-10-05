@@ -1,7 +1,6 @@
 package com.tks.videophotobook.settings
 
 import android.app.Application
-import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
 import com.tks.videophotobook.R
@@ -15,7 +14,6 @@ val MARKER_VIDEO_MAP_JSON = "marker_video_map.json"
 class SettingViewModel(application: Application) : AndroidViewModel(application) {
     private val _markerVideoSetList = MutableStateFlow<List<MarkerVideoSet>>(emptyList())
     val markerVideoSetList: StateFlow<List<MarkerVideoSet>> = _markerVideoSetList
-
     fun initMarkerVideoSetList() {
         val file = File(getApplication<Application>().externalCacheDir, MARKER_VIDEO_MAP_JSON)
         var list = MarkerVideoSet.loadFromJsonFile(application, file)

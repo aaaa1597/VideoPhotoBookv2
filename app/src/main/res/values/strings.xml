@@ -17,4 +17,6 @@
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
     <string name="no_setting_configured">No setting configured.</string>
+    <string name="comment">Comment(Option)</string>
+    <string name="comment_freeinput">This is a free input field. It does not affect functionality.</string>
 </resources>

@@ -1,11 +1,12 @@
 package com.tks.videophotobook.settings
 
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
@@ -45,11 +46,12 @@ class FreeFragment : Fragment() {
 
         val onItemClickedItemProperties: (MarkerVideoSet) -> Unit = {
             markerVideoSet ->
-            val dialogView = layoutInflater.inflate(R.layout.dialog_marker_video, null)
-            val dialog = AlertDialog.Builder(requireContext())
-                .setView(dialogView)
-                .create()
-            dialog.show()
+                val dialogView = layoutInflater.inflate(R.layout.dialog_marker_video, null)
+                setInfoToDialogView(requireContext(), dialogView, markerVideoSet)
+                val dialog = AlertDialog.Builder(requireContext())
+                    .setView(dialogView)
+                    .create()
+                dialog.show()
         }
         _markerVideoSetAdapter = MarkerVideoSetAdapter(requireContext(), onItemClickedItemProperties)
         _binding.recyclerViewMarkerVideo.adapter = _markerVideoSetAdapter
@@ -57,6 +59,54 @@ class FreeFragment : Fragment() {
 
         /* Flow収集 */
         collectMarkerVideoSetListFlow()
+    }
+
+    private fun setInfoToDialogView(context: Context, dialogView: View, item: MarkerVideoSet) {
+        /* ARマーカーID */
+        dialogView.findViewById<TextView>(R.id.txt_targetname).text = item.targetName
+        /* ARマーカー画像 */
+        if(Utils.isUriValid(context, item.targetImageUri))
+            dialogView.findViewById<ImageView>(R.id.igv_markerpreview).setImageURI(item.targetImageUri)
+        else {
+            item.targetImageUri = "".toUri()
+            dialogView.findViewById<ImageView>(R.id.igv_markerpreview).setImageResource(item.targetImageTemplateResId)
+        }
+        /* 動画名/動画ファイル */
+        if(Utils.isUriValid(context, item.videoUri)) {
+            dialogView.findViewById<TextView>(R.id.txt_videoname).text = Utils.getFileNameFromUri(context, item.videoUri)
+            dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).visibility = View.INVISIBLE
+            dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).visibility = View.VISIBLE
+            dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).setVideoUri(item.videoUri)
+        }
+        else {
+            item.videoUri = "".toUri()
+            dialogView.findViewById<TextView>(R.id.txt_videoname).text = context.getString(R.string.video_none)
+            dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).visibility = View.INVISIBLE
+            dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).visibility = View.VISIBLE
+            dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).setImageResource(R.drawable.videofilenotfound)
+        }
+
+        dialogView.findViewById<TextView>(R.id.etv_comment).text = item.comment
+
+        /* マーカー画像設定 */
+        dialogView.findViewById<ImageView>(R.id.igv_markerpreview).setOnClickListener {
+            TODO("マーカー画像設定 処理")
+        }
+        /* 再生動画設定 */
+        dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).setOnClickListener {
+            TODO("再生動画設定 処理")
+        }
+        dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).setOnClickListener {
+
+        }
+        /* キャンセル */
+        dialogView.findViewById<Button>(R.id.btnCancel).setOnClickListener {
+            TODO("キャンセル押下")
+        }
+        /* 保存 */
+        dialogView.findViewById<Button>(R.id.btnSave).setOnClickListener {
+            TODO("保存押下")
+        }
     }
 
     private fun collectMarkerVideoSetListFlow() {
@@ -88,7 +138,6 @@ class FreeFragment : Fragment() {
 
         class MarkerVideoSetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             private val topCdv: CardView = itemView.findViewById(R.id.cdv_top)
-            private val targetInfoFly: FrameLayout = itemView.findViewById(R.id.fly_targetinfo)
             private val targetNameTxt: TextView = itemView.findViewById(R.id.txt_targetname)
             private val targetImageImv: ImageView = itemView.findViewById(R.id.imv_targetImage)
             private val videoInfoFly: FrameLayout = itemView.findViewById(R.id.fly_videoInfo)

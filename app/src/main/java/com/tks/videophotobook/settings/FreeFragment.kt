@@ -3,6 +3,9 @@ package com.tks.videophotobook.settings
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.MediaStore
@@ -17,6 +20,7 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
+import androidx.core.graphics.scale
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -32,6 +36,7 @@ import com.tks.videophotobook.Utils
 import kotlinx.coroutines.launch
 import kotlin.getValue
 import androidx.core.net.toUri
+import kotlinx.coroutines.CompletableDeferred
 
 class FreeFragment : Fragment() {
     private lateinit var _binding: FragmentFreeBinding
@@ -39,6 +44,7 @@ class FreeFragment : Fragment() {
     private lateinit var _markerVideoSetAdapter: MarkerVideoSetAdapter
     /* どの item でファイル選択したかを一時保持 */
     private var pendingTargetName: String? = null
+    private var onfileUrlPicked: ((Uri) -> Unit)? = null
 
     /* ファイル選択ランチャー */
     private val _pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -62,7 +68,10 @@ class FreeFragment : Fragment() {
                 /* targetImageUri を更新 */
                 val updatedItem = currentList[index].copy(targetImageUri = uri)
                 currentList[index] = updatedItem
-                _viewModel.updateMarkerVideoSetList(currentList) // ← ViewModel側に更新メソッドを用意
+                _viewModel.updateMarkerVideoSetList(currentList)
+                /* Uriを返却 */
+                onfileUrlPicked?.invoke(uri)
+                onfileUrlPicked = null
             }
     }
 
@@ -118,7 +127,7 @@ class FreeFragment : Fragment() {
 
         dialogView.findViewById<TextView>(R.id.etv_comment).text = item.comment
 
-        val getFileUri: (String, MarkerVideoSet) -> Unit = {
+        val launchFilePicker: (String, MarkerVideoSet) -> Unit = {
                 mimeType, item ->
                     pendingTargetName = item.targetName
                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -131,18 +140,41 @@ class FreeFragment : Fragment() {
                     _pickFileLauncher.launch(intent)
         }
 
+        suspend fun pickFileAndWaitForUri(mimeType: String, item: MarkerVideoSet): Uri {
+            val deferredUri = CompletableDeferred<Uri>()
+            /* コールバックでUriを受け取ったらComplete */
+            onfileUrlPicked = { uri ->
+                deferredUri.complete(uri)
+            }
+
+            /* ファイル選択画面を起動 */
+            launchFilePicker(mimeType, item)
+            /* Uriが設定されるまで待つ */
+            return deferredUri.await()
+        }
+
         /* マーカー画像設定 */
         dialogView.findViewById<ImageView>(R.id.igv_markerpreview).setOnClickListener {
-            getFileUri("image/*", item)
-            TODO("マーカーtemplateと取得画像の合成処理 → 保存 → URI取得")
+            lifecycleScope.launch {
+                val uri = pickFileAndWaitForUri("image/*", item)
+                /* 取得UriからBitmap生成 */
+                val originalBitmap = Utils.decodeBitmapFromUri(requireContext(), uri)
+                val resizedBitmap = Utils.resizeBitmapWithAspectRatio(originalBitmap!!, 1280, 720)
+                /* 画像合成 */
+                val resizedFrame = BitmapFactory.decodeResource(resources, item.targetImageTemplateResId)
+                                    .scale(resizedBitmap.width, resizedBitmap.height)
+                val canvas = Canvas(resizedBitmap)
+                canvas.drawBitmap(resizedFrame, 0f, 0f, null)
+                dialogView.findViewById<ImageView>(R.id.igv_markerpreview).setImageBitmap(resizedBitmap)
+            }
         }
 
         /* 再生動画設定 */
         dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).setOnClickListener {
-            getFileUri("video/*", item)
+//            getFileUri("video/*", item)
         }
         dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).setOnClickListener {
-            getFileUri("video/*", item)
+//            getFileUri("video/*", item)
         }
         /* キャンセル */
         dialogView.findViewById<Button>(R.id.btnCancel).setOnClickListener {

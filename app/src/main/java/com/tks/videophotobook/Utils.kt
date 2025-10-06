@@ -1,9 +1,14 @@
 package com.tks.videophotobook
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.icu.number.IntegerWidth
 import android.net.Uri
 import android.provider.OpenableColumns
 import java.io.File
+import androidx.core.graphics.scale
+import androidx.core.graphics.createBitmap
 
 class Utils {
     companion object {
@@ -42,5 +47,39 @@ class Utils {
             }
         }
 
+        /* UriからBitmap生成 */
+        fun decodeBitmapFromUri(context: Context, uri: Uri): Bitmap? {
+            return try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                inputStream?.use {
+                    BitmapFactory.decodeStream(it)
+                }
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+        /* Bitmapリサイズ生成 */
+        fun resizeBitmapWithAspectRatio(src: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap {
+            val scale = minOf(
+                targetWidth.toFloat() / src.width,
+                targetHeight.toFloat()/ src.height
+            )
+            val newWidth = (src.width * scale).toInt()
+            val newHeight= (src.height * scale).toInt()
+            /* リサイズしたbitmapを作成 */
+            val scaledBitmap = src.scale(newWidth, newHeight)
+            /* 最終的な指定サイズのBitmapを作成し中央に配置 */
+            val outputBitmap = createBitmap(targetWidth, targetHeight)
+            val canvas = android.graphics.Canvas(outputBitmap)
+            /* 背景を白で塗りつぶす */
+            canvas.drawColor(android.graphics.Color.WHITE)
+            /* 中央に配置 */
+            val left = (targetWidth - newWidth) / 2f
+            val top  = (targetHeight- newHeight)/ 2f
+            canvas.drawBitmap(scaledBitmap, left, top, null)
+            return outputBitmap
+        }
     }
 }

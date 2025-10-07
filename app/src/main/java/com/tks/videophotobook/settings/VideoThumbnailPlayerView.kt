@@ -31,7 +31,7 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
         player = ExoPlayer.Builder(context).build().also { exoPlayer ->
             setPlayer(exoPlayer)
             this.useController = false
-            this.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+            this.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
 
             val mediaItem = MediaItem.fromUri(uri)
 //          /* ExoPlayerがDocument URIに対応してないのに備えてInputStream経由で再生 */

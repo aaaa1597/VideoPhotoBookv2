@@ -51,7 +51,7 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
                 }
                 override fun onRenderedFirstFrame() {
                     exoPlayer.pause()
-                    exoPlayer.seekTo(0)
+                    exoPlayer.seekTo(1000)
                     exoPlayer.removeListener(this)
                     isPrepared = true
                 }

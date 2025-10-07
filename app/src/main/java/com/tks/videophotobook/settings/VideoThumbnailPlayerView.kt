@@ -26,6 +26,8 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
 
     @OptIn(UnstableApi::class)
     fun setVideoUri(uri: Uri) {
+        player?.release()
+        player = null
         player = ExoPlayer.Builder(context).build().also { exoPlayer ->
             setPlayer(exoPlayer)
             this.useController = false

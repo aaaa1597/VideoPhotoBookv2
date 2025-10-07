@@ -50,7 +50,6 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
                     Log.d("aaaaa", "playWhenReady=${playWhenReady} playbackState: $playbackState")
                 }
                 override fun onRenderedFirstFrame() {
-                    Log.d("aaaaa", "onRenderedFirstFrame() ...53")
                     exoPlayer.pause()
                     exoPlayer.seekTo(0)
                     exoPlayer.removeListener(this)

@@ -42,31 +42,39 @@ class FreeFragment : Fragment() {
     private lateinit var _binding: FragmentFreeBinding
     private val _viewModel: SettingViewModel by activityViewModels()
     private lateinit var _markerVideoSetAdapter: MarkerVideoSetAdapter
-    /* どの item でファイル選択したかを一時保持 */
-    private var pendingTargetName: String? = null
+    /* なんのTargetNameでどっち(image/video)のファイル選択したかを一時保持 */
+    private var pendingTargetNameAndMimeType: Pair<String, String>? = null
     private var onfileUrlPicked: ((Uri) -> Unit)? = null
 
     /* ファイル選択ランチャー */
     private val _pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         /* ファイルリストの戻り */
         result ->
-            val targetName = pendingTargetName
-            pendingTargetName = null
-            if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
-            if (result.data==null) return@registerForActivityResult
-            if (result.data!!.data == null) return@registerForActivityResult
+            val (targetName, mimeType) = pendingTargetNameAndMimeType ?: throw RuntimeException("No way!! pendingTargetNameAndMimeType is null")
+            pendingTargetNameAndMimeType = null
+            if (result.resultCode != Activity.RESULT_OK) throw RuntimeException("No way!! resultCode isn't Activity.RESULT_OK")
+            if (result.data==null)                       throw RuntimeException("No way!! result.data is null")
+            if (result.data!!.data == null)              throw RuntimeException("No way!! result.data!!.data is null")
 
             /* 単一のファイルが選択された */
             val uri = result.data!!.data!!
             Log.d("aaaaa", "file URI: $uri")
+            /* URIに対する永続権限を取得 */
+            try { requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (e: SecurityException) { throw RuntimeException("SecurityException!! ${e.printStackTrace()}") }
+
             /* ViewModelのリスト更新 */
-            targetName?.let { targetName ->
+            targetName.let { targetName ->
                 val currentList = _viewModel.markerVideoSetList.value.toMutableList()
                 val index = currentList.indexOfFirst { it.targetName == targetName }
                 if (index == -1) return@let
 
                 /* targetImageUri を更新 */
-                val updatedItem = currentList[index].copy(targetImageUri = uri)
+                val updatedItem = when {
+                    mimeType.startsWith("image") -> currentList[index].copy(targetImageUri = uri)
+                    mimeType.startsWith("video") -> currentList[index].copy(videoUri = uri)
+                    else -> throw RuntimeException("Unknown mimeType: $mimeType")
+                }
                 currentList[index] = updatedItem
                 _viewModel.updateMarkerVideoSetList(currentList)
                 /* Uriを返却 */
@@ -90,6 +98,10 @@ class FreeFragment : Fragment() {
                 val dialog = AlertDialog.Builder(requireContext())
                     .setView(dialogView)
                     .create()
+                dialog.setOnDismissListener {
+                    val playerView = dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2)
+                    playerView.releasePlayer()
+                }
                 dialog.show()
         }
         _markerVideoSetAdapter = MarkerVideoSetAdapter(requireContext(), onItemClickedItemProperties)
@@ -101,6 +113,7 @@ class FreeFragment : Fragment() {
     }
 
     private fun setInfoToDialogView(context: Context, dialogView: View, item: MarkerVideoSet) {
+        val playerView = dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2)
         /* ARマーカーID */
         dialogView.findViewById<TextView>(R.id.txt_targetname).text = item.targetName
         /* ARマーカー画像 */
@@ -114,13 +127,13 @@ class FreeFragment : Fragment() {
         if(Utils.isUriValid(context, item.videoUri)) {
             dialogView.findViewById<TextView>(R.id.txt_videoname).text = Utils.getFileNameFromUri(context, item.videoUri)
             dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).visibility = View.INVISIBLE
-            dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).visibility = View.VISIBLE
-            dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).setVideoUri(item.videoUri)
+            playerView.visibility = View.VISIBLE
+            playerView.setVideoUri(item.videoUri)
         }
         else {
             item.videoUri = "".toUri()
             dialogView.findViewById<TextView>(R.id.txt_videoname).text = context.getString(R.string.video_none)
-            dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).visibility = View.INVISIBLE
+            playerView.visibility = View.INVISIBLE
             dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).visibility = View.VISIBLE
             dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).setImageResource(R.drawable.videofilenotfound)
         }
@@ -129,12 +142,13 @@ class FreeFragment : Fragment() {
 
         val launchFilePicker: (String, MarkerVideoSet) -> Unit = {
                 mimeType, item ->
-                    pendingTargetName = item.targetName
+                    pendingTargetNameAndMimeType = item.targetName to mimeType
                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                         addCategory(Intent.CATEGORY_OPENABLE)
                         type = mimeType
                         /* 初期表示ディレクトリ指定 */
                         putExtra(DocumentsContract.EXTRA_INITIAL_URI, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
                     }
                     /* 生成Intentで起動 */
                     _pickFileLauncher.launch(intent)
@@ -146,7 +160,6 @@ class FreeFragment : Fragment() {
             onfileUrlPicked = { uri ->
                 deferredUri.complete(uri)
             }
-
             /* ファイル選択画面を起動 */
             launchFilePicker(mimeType, item)
             /* Uriが設定されるまで待つ */
@@ -170,11 +183,22 @@ class FreeFragment : Fragment() {
         }
 
         /* 再生動画設定 */
+        fun setVideo(set: MarkerVideoSet) {
+            lifecycleScope.launch {
+                val uri = pickFileAndWaitForUri("video/*", set)
+                val playerView = dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2)
+                playerView.visibility = View.VISIBLE
+                playerView.setVideoUri(uri)
+//              playerView.setOnClickListener { playerView.togglePlayPause() }
+                dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).visibility = View.INVISIBLE
+            }
+        }
+
         dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).setOnClickListener {
-//            getFileUri("video/*", item)
+            setVideo(item)
         }
         dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).setOnClickListener {
-//            getFileUri("video/*", item)
+            setVideo(item)
         }
         /* キャンセル */
         dialogView.findViewById<Button>(R.id.btnCancel).setOnClickListener {

@@ -12,6 +12,7 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.GestureDetector
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -70,14 +71,14 @@ class FreeFragment : Fragment() {
                 val index = currentList.indexOfFirst { it.targetName == targetName }
                 if (index == -1) return@let
 
-                /* targetImageUri を更新 */
-                val updatedItem = when {
-                    mimeType.startsWith("image") -> currentList[index].copy(targetImageUri = uri)
-                    mimeType.startsWith("video") -> currentList[index].copy(videoUri = uri)
-                    else -> throw RuntimeException("Unknown mimeType: $mimeType")
-                }
-                currentList[index] = updatedItem
-                _viewModel.updateMarkerVideoSetList(currentList)
+//                /* targetImageUri を更新 */ ← 保存押下ですればよくって、ここでは実行する必要がない。
+//                val updatedItem = when {
+//                    mimeType.startsWith("image") -> currentList[index].copy(targetImageUri = uri)
+//                    mimeType.startsWith("video") -> currentList[index].copy(videoUri = uri)
+//                    else -> throw RuntimeException("Unknown mimeType: $mimeType")
+//                }
+//                currentList[index] = updatedItem
+//                _viewModel.updateMarkerVideoSetList(currentList)
                 /* Uriを返却 */
                 onfileUrlPicked?.invoke(uri)
                 onfileUrlPicked = null
@@ -127,16 +128,11 @@ class FreeFragment : Fragment() {
         /* 動画名/動画ファイル */
         if(Utils.isUriValid(context, item.videoUri)) {
             dialogView.findViewById<TextView>(R.id.txt_videoname).text = Utils.getFileNameFromUri(context, item.videoUri)
-            dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).visibility = View.INVISIBLE
-            playerView.visibility = View.VISIBLE
             playerView.setVideoUri(item.videoUri)
         }
         else {
             item.videoUri = "".toUri()
             dialogView.findViewById<TextView>(R.id.txt_videoname).text = context.getString(R.string.video_none)
-            playerView.visibility = View.INVISIBLE
-            dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).visibility = View.VISIBLE
-            dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).setImageResource(R.drawable.videofilenotfound)
             playerView.setFileNotFoundMp4()
         }
 
@@ -189,10 +185,8 @@ class FreeFragment : Fragment() {
             lifecycleScope.launch {
                 val uri = pickFileAndWaitForUri("video/*", set)
                 val playerView = dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2)
-                playerView.visibility = View.VISIBLE
                 playerView.setVideoUri(uri)
 //              playerView.setOnClickListener { playerView.togglePlayPause() }
-                dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).visibility = View.INVISIBLE
             }
         }
 
@@ -202,12 +196,12 @@ class FreeFragment : Fragment() {
                 return true
             }
         })
-
-        dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).setOnClickListener {
-            setVideo(item)
-        }
-        dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).setOnClickListener {
-            setVideo(item)
+        dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).setOnTouchListener {
+            v, event ->
+                gestureDetector.onTouchEvent(event)
+                if (event.action == MotionEvent.ACTION_UP)
+                    v.performClick()
+                true
         }
         /* キャンセル */
         dialogView.findViewById<Button>(R.id.btnCancel).setOnClickListener {

@@ -19,4 +19,6 @@
     <string name="no_setting_configured">設定されていません</string>
     <string name="comment">コメント(任意入力)</string>
     <string name="comment_freeinput">自由入力欄です。特に動作に影響しません。</string>
+    <string name="no_data">データがありません。</string>
+    <string name="no_bind_data">Marker - 動画の紐付けデータがありません。\n作成してください。知り合いから受信することもできます。</string>
 </resources>

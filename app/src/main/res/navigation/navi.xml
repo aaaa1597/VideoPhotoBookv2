@@ -23,9 +23,9 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.tks.videophotobook.MainFragment"
+        android:name="com.tks.videophotobook.EntryFragment"
         android:label="fragment_main"
-        tools:layout="@layout/fragment_main">
+        tools:layout="@layout/fragment_entry">
 
         <action
             android:id="@+id/action_mainFragment_to_settingFragment_slide"

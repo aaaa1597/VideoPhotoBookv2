@@ -14,6 +14,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import com.tks.videophotobook.R
 
 class VideoThumbnailPlayerView @JvmOverloads constructor(
     context: Context,
@@ -54,6 +55,27 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
                     exoPlayer.seekTo(1000)
                     exoPlayer.removeListener(this)
                     isPrepared = true
+                }
+            })
+        }
+    }
+
+    @OptIn(UnstableApi::class)
+    fun setFileNotFoundMp4() {
+        player = ExoPlayer.Builder(context).build().also { exoPlayer ->
+            setPlayer(exoPlayer)
+            this.useController = false
+            this.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+            val uri = "android.resource://${context.packageName}/${R.raw.videofilenotfound}"
+            val mediaItem = MediaItem.fromUri(uri)
+            exoPlayer.setMediaItem(mediaItem)
+            exoPlayer.prepare()
+            exoPlayer.playWhenReady = true
+            exoPlayer.addListener(object : Player.Listener {
+                override fun onRenderedFirstFrame() {
+                    exoPlayer.pause()
+                    exoPlayer.seekTo(0)
+                    exoPlayer.removeListener(this)
                 }
             })
         }

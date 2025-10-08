@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.util.Log
+import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -136,6 +137,7 @@ class FreeFragment : Fragment() {
             playerView.visibility = View.INVISIBLE
             dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).visibility = View.VISIBLE
             dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).setImageResource(R.drawable.videofilenotfound)
+            playerView.setFileNotFoundMp4()
         }
 
         dialogView.findViewById<TextView>(R.id.etv_comment).text = item.comment
@@ -193,6 +195,13 @@ class FreeFragment : Fragment() {
                 dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).visibility = View.INVISIBLE
             }
         }
+
+        val gestureDetector = GestureDetector(requireContext(), object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDoubleTap(e: android.view.MotionEvent): Boolean {
+                setVideo(item)
+                return true
+            }
+        })
 
         dialogView.findViewById<ImageView>(R.id.imv_video_thumbnail2).setOnClickListener {
             setVideo(item)

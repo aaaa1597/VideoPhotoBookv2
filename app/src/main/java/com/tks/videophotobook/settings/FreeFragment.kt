@@ -38,6 +38,10 @@ import kotlinx.coroutines.launch
 import kotlin.getValue
 import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import com.tks.videophotobook.databinding.DialogMarkerVideoBinding
 import kotlinx.coroutines.CompletableDeferred
 
@@ -48,7 +52,7 @@ class FreeFragment : Fragment() {
     private lateinit var _markerVideoSetAdapter: MarkerVideoSetAdapter
     /* なんのTargetNameでどっち(image/video)のファイル選択したかを一時保持 */
     private var pendingTargetNameAndMimeType: Pair<String, String>? = null
-    private var onfileUrlPicked: ((Uri) -> Unit)? = null
+    private var onFileUrlPicked: ((Uri, Int) -> Unit)? = null
 
     /* ファイル選択ランチャー */
     private val _pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -67,24 +71,35 @@ class FreeFragment : Fragment() {
             try { requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
             } catch (e: SecurityException) { throw RuntimeException("SecurityException!! ${e.printStackTrace()}") }
 
-            /* ViewModelのリスト更新 */
-            targetName.let { targetName ->
-                val currentList = _settingViewModel.markerVideoSetList.value.toMutableList()
-                val index = currentList.indexOfFirst { it.targetName == targetName }
-                if (index == -1) return@let
+            /* Uri動画の再生チェック */
+            if (mimeType.startsWith("video"))
+                checkVideoCompatibilitybyPlayback(requireContext(), uri, onFileUrlPicked!!)
+            else
+                onFileUrlPicked!!(uri, 0)
+            onFileUrlPicked = null
+    }
 
-//                /* targetImageUri を更新 */ ← 保存押下ですればよくって、ここでは実行する必要がない。
-//                val updatedItem = when {
-//                    mimeType.startsWith("image") -> currentList[index].copy(targetImageUri = uri)
-//                    mimeType.startsWith("video") -> currentList[index].copy(videoUri = uri)
-//                    else -> throw RuntimeException("Unknown mimeType: $mimeType")
-//                }
-//                currentList[index] = updatedItem
-//                _viewModel.updateMarkerVideoSetList(currentList)
-                /* Uriを返却 */
-                onfileUrlPicked?.invoke(uri)
-                onfileUrlPicked = null
+    private fun checkVideoCompatibilitybyPlayback(context: Context, uri: Uri, onResult: (Uri, Int) -> Unit) {
+        /* ExoPlayerで再生できるか試す */
+        val player = ExoPlayer.Builder(context).build()
+        player.addListener(object : Player.Listener {
+            override fun onPlayerError(error: PlaybackException) {
+                Log.d("aaaaa", "Error occurred!! errCode=${error.errorCode} getErrorCodeName()= ${PlaybackException.getErrorCodeName(error.errorCode)}")
+                player.release()
+                onResult(uri, error.errorCode)
             }
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_READY) {
+                    /* 再生成功 -> DRMなし かつ サポート形式 */
+                    Log.d("aaaaa", "ok. video is available!!")
+                    player.release()
+                    onResult(uri, 0)
+                }
+            }
+        })
+        val mediaItem = MediaItem.fromUri(uri)
+        player.setMediaItem(mediaItem)
+        player.prepare()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
@@ -161,11 +176,11 @@ class FreeFragment : Fragment() {
                 _pickFileLauncher.launch(intent)
         }
 
-        suspend fun pickFileAndWaitForUri(mimeType: String, item: MarkerVideoSet): Uri {
-            val deferredUri = CompletableDeferred<Uri>()
+        suspend fun pickFileAndWaitForUri(mimeType: String, item: MarkerVideoSet): Pair<Uri, Int> {
+            val deferredUri = CompletableDeferred<Pair<Uri, Int>>()
             /* コールバックでUriを受け取ったらComplete */
-            onfileUrlPicked = { uri ->
-                deferredUri.complete(uri)
+            onFileUrlPicked = { uri, errCode ->
+                deferredUri.complete(uri to errCode)
             }
             /* ファイル選択画面を起動 */
             launchFilePicker(mimeType, item)
@@ -176,7 +191,8 @@ class FreeFragment : Fragment() {
         /* マーカー画像設定 */
        fun setMarker(set: MarkerVideoSet) {
             lifecycleScope.launch {
-                val uri = pickFileAndWaitForUri("image/*", set)
+                val (uri,_) = pickFileAndWaitForUri("image/*", set)
+                Log.d("aaaaa", "OK!!! Maker URI: $uri")
                 /* 取得UriからBitmap生成 */
                 val originalBitmap = Utils.decodeBitmapFromUri(requireContext(), uri)
                 val resizedBitmap = Utils.resizeBitmapWithAspectRatio(originalBitmap!!, 1280, 720)
@@ -206,9 +222,20 @@ class FreeFragment : Fragment() {
         /* 再生動画設定 */
         fun setVideo(set: MarkerVideoSet) {
             lifecycleScope.launch {
-                val uri = pickFileAndWaitForUri("video/*", set)
-                binding.pyvVideoThumbnail2.setVideoUri(uri)
-                _viewModel.mutableIsEnable.value = true
+                val (uri, errCode) = pickFileAndWaitForUri("video/*", set)
+                if(errCode != 0) {
+                    /* 再生不可 */
+                    AlertDialog.Builder(requireContext())
+                        .setTitle(R.string.could_not_played)
+                        .setMessage("${getString(R.string.error)}: ${errCode} \n${getString(R.string.select_another)}" )
+                        .setPositiveButton(android.R.string.ok) { dialog, which -> dialog.dismiss() }
+                        .show()
+                }
+                else {
+                    /* 再生可能 */
+                    binding.pyvVideoThumbnail2.setVideoUri(uri)
+                    _viewModel.mutableIsEnable.value = true
+                }
             }
         }
 
@@ -231,7 +258,23 @@ class FreeFragment : Fragment() {
         }
         /* 保存 */
         binding.btnSave.setOnClickListener {
-            TODO("保存押下")
+//            /* ViewModelのリスト更新 */
+//            targetName.let { targetName ->
+//                val currentList = _settingViewModel.markerVideoSetList.value.toMutableList()
+//                val index = currentList.indexOfFirst { it.targetName == targetName }
+//                if (index == -1) return@let
+//
+////                /* targetImageUri を更新 */ ← 保存押下ですればよくって、ここでは実行する必要がない。
+////                val updatedItem = when {
+////                    mimeType.startsWith("image") -> currentList[index].copy(targetImageUri = uri)
+////                    mimeType.startsWith("video") -> currentList[index].copy(videoUri = uri)
+////                    else -> throw RuntimeException("Unknown mimeType: $mimeType")
+////                }
+////                currentList[index] = updatedItem
+////                _viewModel.updateMarkerVideoSetList(currentList)
+//            /* Uriを返却 */
+//            onFileUrlPicked?.invoke(uri)
+//            onFileUrlPicked = null
         }
     }
 

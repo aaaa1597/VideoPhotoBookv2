@@ -38,11 +38,14 @@ import com.tks.videophotobook.Utils
 import kotlinx.coroutines.launch
 import kotlin.getValue
 import androidx.core.net.toUri
+import androidx.fragment.app.viewModels
+import com.tks.videophotobook.databinding.DialogMarkerVideoBinding
 import kotlinx.coroutines.CompletableDeferred
 
 class FreeFragment : Fragment() {
     private lateinit var _binding: FragmentFreeBinding
-    private val _viewModel: SettingViewModel by activityViewModels()
+    private val _settingViewModel: SettingViewModel by activityViewModels()
+    private val _viewModel: FreeViewModel by viewModels()
     private lateinit var _markerVideoSetAdapter: MarkerVideoSetAdapter
     /* なんのTargetNameでどっち(image/video)のファイル選択したかを一時保持 */
     private var pendingTargetNameAndMimeType: Pair<String, String>? = null
@@ -67,7 +70,7 @@ class FreeFragment : Fragment() {
 
             /* ViewModelのリスト更新 */
             targetName.let { targetName ->
-                val currentList = _viewModel.markerVideoSetList.value.toMutableList()
+                val currentList = _settingViewModel.markerVideoSetList.value.toMutableList()
                 val index = currentList.indexOfFirst { it.targetName == targetName }
                 if (index == -1) return@let
 
@@ -95,16 +98,7 @@ class FreeFragment : Fragment() {
 
         val onItemClickedItemProperties: (MarkerVideoSet) -> Unit = {
             markerVideoSet ->
-                val dialogView = layoutInflater.inflate(R.layout.dialog_marker_video, null)
-                setInfoToDialogView(requireContext(), dialogView, markerVideoSet)
-                val dialog = AlertDialog.Builder(requireContext())
-                    .setView(dialogView)
-                    .create()
-                dialog.setOnDismissListener {
-                    val playerView = dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2)
-                    playerView.releasePlayer()
-                }
-                dialog.show()
+                showMarkerVideoSetDialog( requireContext(), markerVideoSet)
         }
         _markerVideoSetAdapter = MarkerVideoSetAdapter(requireContext(), onItemClickedItemProperties)
         _binding.recyclerViewMarkerVideo.adapter = _markerVideoSetAdapter
@@ -114,42 +108,58 @@ class FreeFragment : Fragment() {
         collectMarkerVideoSetListFlow()
     }
 
-    private fun setInfoToDialogView(context: Context, dialogView: View, item: MarkerVideoSet) {
-        val playerView = dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2)
+    private fun showMarkerVideoSetDialog(context: Context, makerVideoSet: MarkerVideoSet) {
+        val binding = DialogMarkerVideoBinding.inflate(layoutInflater)
+        setInfoToDialogView(requireContext(), binding, makerVideoSet)
+        collectIsEnableFlow(binding)
+        /* Uriの有効判定(無効なら空Uriにする) */
+        if (!Utils.isUriValid(requireContext(), makerVideoSet.videoUri))
+            makerVideoSet.videoUri = "".toUri()
+        _viewModel.mutableIsEnable.value = (makerVideoSet.videoUri != "".toUri())
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(binding.root)
+            .create()
+        dialog.setOnDismissListener {
+            binding.pyvVideoThumbnail2.releasePlayer()
+        }
+        dialog.show()
+    }
+
+    private fun setInfoToDialogView(context: Context, binding: DialogMarkerVideoBinding, item: MarkerVideoSet) {
         /* ARマーカーID */
-        dialogView.findViewById<TextView>(R.id.txt_targetname).text = item.targetName
+        binding.txtTargetname.text = item.targetName
         /* ARマーカー画像 */
         if(Utils.isUriValid(context, item.targetImageUri))
-            dialogView.findViewById<ImageView>(R.id.igv_markerpreview).setImageURI(item.targetImageUri)
+            binding.igvMarkerpreview.setImageURI(item.targetImageUri)
         else {
             item.targetImageUri = "".toUri()
-            dialogView.findViewById<ImageView>(R.id.igv_markerpreview).setImageResource(item.targetImageTemplateResId)
+            binding.igvMarkerpreview.setImageResource(item.targetImageTemplateResId)
         }
         /* 動画名/動画ファイル */
         if(Utils.isUriValid(context, item.videoUri)) {
-            dialogView.findViewById<TextView>(R.id.txt_videoname).text = Utils.getFileNameFromUri(context, item.videoUri)
-            playerView.setVideoUri(item.videoUri)
+            binding.txtVideoname.text = Utils.getFileNameFromUri(context, item.videoUri)
+            binding.pyvVideoThumbnail2.setVideoUri(item.videoUri)
         }
         else {
             item.videoUri = "".toUri()
-            dialogView.findViewById<TextView>(R.id.txt_videoname).text = context.getString(R.string.video_none)
-            playerView.setFileNotFoundMp4()
+            binding.txtVideoname.text = context.getString(R.string.video_none)
+            binding.pyvVideoThumbnail2.setFileNotFoundMp4()
         }
 
-        dialogView.findViewById<TextView>(R.id.etv_comment).text = item.comment
+        binding.etvComment.setText(item.comment)
 
         val launchFilePicker: (String, MarkerVideoSet) -> Unit = {
-                mimeType, item ->
-                    pendingTargetNameAndMimeType = item.targetName to mimeType
-                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                        addCategory(Intent.CATEGORY_OPENABLE)
-                        type = mimeType
-                        /* 初期表示ディレクトリ指定 */
-                        putExtra(DocumentsContract.EXTRA_INITIAL_URI, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
-                    }
-                    /* 生成Intentで起動 */
-                    _pickFileLauncher.launch(intent)
+            mimeType, item ->
+                pendingTargetNameAndMimeType = item.targetName to mimeType
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = mimeType
+                    /* 初期表示ディレクトリ指定 */
+                    putExtra(DocumentsContract.EXTRA_INITIAL_URI, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                }
+                /* 生成Intentで起動 */
+                _pickFileLauncher.launch(intent)
         }
 
         suspend fun pickFileAndWaitForUri(mimeType: String, item: MarkerVideoSet): Uri {
@@ -165,7 +175,7 @@ class FreeFragment : Fragment() {
         }
 
         /* マーカー画像設定 */
-        dialogView.findViewById<ImageView>(R.id.igv_markerpreview).setOnClickListener {
+        binding.igvMarkerpreview.setOnClickListener {
             lifecycleScope.launch {
                 val uri = pickFileAndWaitForUri("image/*", item)
                 /* 取得UriからBitmap生成 */
@@ -176,7 +186,7 @@ class FreeFragment : Fragment() {
                                     .scale(resizedBitmap.width, resizedBitmap.height)
                 val canvas = Canvas(resizedBitmap)
                 canvas.drawBitmap(resizedFrame, 0f, 0f, null)
-                dialogView.findViewById<ImageView>(R.id.igv_markerpreview).setImageBitmap(resizedBitmap)
+                binding.igvMarkerpreview.setImageBitmap(resizedBitmap)
             }
         }
 
@@ -184,9 +194,8 @@ class FreeFragment : Fragment() {
         fun setVideo(set: MarkerVideoSet) {
             lifecycleScope.launch {
                 val uri = pickFileAndWaitForUri("video/*", set)
-                val playerView = dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2)
-                playerView.setVideoUri(uri)
-//              playerView.setOnClickListener { playerView.togglePlayPause() }
+                binding.pyvVideoThumbnail2.setVideoUri(uri)
+                _viewModel.mutableIsEnable.value = true
             }
         }
 
@@ -196,7 +205,7 @@ class FreeFragment : Fragment() {
                 return true
             }
         })
-        dialogView.findViewById<VideoThumbnailPlayerView>(R.id.pyv_video_thumbnail2).setOnTouchListener {
+        binding.pyvVideoThumbnail2.setOnTouchListener {
             v, event ->
                 gestureDetector.onTouchEvent(event)
                 if (event.action == MotionEvent.ACTION_UP)
@@ -204,11 +213,11 @@ class FreeFragment : Fragment() {
                 true
         }
         /* キャンセル */
-        dialogView.findViewById<Button>(R.id.btnCancel).setOnClickListener {
+        binding.btnCancel.setOnClickListener {
             TODO("キャンセル押下")
         }
         /* 保存 */
-        dialogView.findViewById<Button>(R.id.btnSave).setOnClickListener {
+        binding.btnSave.setOnClickListener {
             TODO("保存押下")
         }
     }
@@ -218,14 +227,45 @@ class FreeFragment : Fragment() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 // ViewModelのStateFlowを収集
-                _viewModel.markerVideoSetList.collect { list ->
+                _settingViewModel.markerVideoSetList.collect { list ->
                     /* Flowから新しいリストが放出されたら、Adapterにセットして画面を更新 */
                     _markerVideoSetAdapter.submitList(list)
                 }
             }
         }
     }
+
+    private fun collectIsEnableFlow(binding: DialogMarkerVideoBinding) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // ViewModelのStateFlowを収集
+                _viewModel.isEnable.collect { isEnable ->
+                    /* Flowから新しい値が放出されたら、UIの有効/無効を切り替え */
+                    binding.txtTargetname.   isEnabled = isEnable
+                    binding.igvMarkerpreview.isEnabled = isEnable
+                    binding.etvComment.      isEnabled = isEnable
+                    binding.btnSave.         isEnabled = isEnable
+                    when(isEnable) {
+                        true  -> {
+                            binding.viwDisableMarker .visibility = View.GONE
+                            binding.viwDisableComment.visibility = View.GONE
+                        }
+                        false -> {
+                            binding.viwDisableMarker .visibility = View.VISIBLE
+                            binding.viwDisableComment.visibility = View.VISIBLE
+                        }
+                    }
+                    val alpha = if (isEnable) 1.0f else 0.3f
+                    binding.txtTargetname.   alpha = alpha
+                    binding.igvMarkerpreview.alpha = alpha
+                    binding.etvComment.      alpha = alpha
+                    binding.btnSave.         alpha = alpha
+                }
+            }
+        }
+    }
 }
+
 
 /* Adapterクラス */
 class MarkerVideoSetAdapter(private val context: Context, private val onItemClicked: (MarkerVideoSet) -> Unit) :

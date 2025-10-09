@@ -63,6 +63,14 @@
         android:textColor="#000000"
         app:layout_constraintTop_toBottomOf="@id/txt_targettitle"
         app:layout_constraintStart_toStartOf="parent"/>
+    <View
+        android:id="@+id/viw_disable_marker"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="#88333333"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/igv_markerpreview"
+        app:layout_constraintBottom_toBottomOf="@id/igv_markerpreview"/>
 
     <!-- 動画情報 -->
     <com.google.android.material.divider.MaterialDivider
@@ -136,6 +144,15 @@
         android:textColor="#000000"
         app:layout_constraintTop_toBottomOf="@id/txt_commenttitle"
         app:layout_constraintStart_toStartOf="parent"/>
+    <View
+        android:id="@+id/viw_disable_comment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="#88333333"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/etv_comment"
+        app:layout_constraintBottom_toBottomOf="@id/etv_comment"/>
+
 
     <!-- ボタン群 -->
     <com.google.android.material.divider.MaterialDivider

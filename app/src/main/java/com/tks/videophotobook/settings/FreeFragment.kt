@@ -109,7 +109,7 @@ class FreeFragment : Fragment() {
 
     private fun showMarkerVideoSetDialog(context: Context, makerVideoSet: MarkerVideoSet) {
         val binding = DialogMarkerVideoBinding.inflate(layoutInflater)
-        setInfoToDialogView(requireContext(), binding, makerVideoSet)
+        bindInfoToDialog(requireContext(), binding, makerVideoSet)
         collectIsEnableFlow(binding)
         /* Uriの有効判定(無効なら空Uriにする) */
         if (!Utils.isUriValid(requireContext(), makerVideoSet.videoUri))
@@ -124,7 +124,7 @@ class FreeFragment : Fragment() {
         dialog.show()
     }
 
-    private fun setInfoToDialogView(context: Context, binding: DialogMarkerVideoBinding, item: MarkerVideoSet) {
+    private fun bindInfoToDialog(context: Context, binding: DialogMarkerVideoBinding, item: MarkerVideoSet) {
         /* ARマーカーID */
         binding.txtTargetname.text = item.targetName
         /* ARマーカー画像 */

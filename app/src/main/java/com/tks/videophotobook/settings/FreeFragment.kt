@@ -174,19 +174,33 @@ class FreeFragment : Fragment() {
         }
 
         /* マーカー画像設定 */
-        binding.igvMarkerpreview.setOnClickListener {
+       fun setMarker(set: MarkerVideoSet) {
             lifecycleScope.launch {
-                val uri = pickFileAndWaitForUri("image/*", item)
+                val uri = pickFileAndWaitForUri("image/*", set)
                 /* 取得UriからBitmap生成 */
                 val originalBitmap = Utils.decodeBitmapFromUri(requireContext(), uri)
                 val resizedBitmap = Utils.resizeBitmapWithAspectRatio(originalBitmap!!, 1280, 720)
                 /* 画像合成 */
-                val resizedFrame = BitmapFactory.decodeResource(resources, item.targetImageTemplateResId)
+                val resizedFrame = BitmapFactory.decodeResource(resources, set.targetImageTemplateResId)
                                     .scale(resizedBitmap.width, resizedBitmap.height)
                 val canvas = Canvas(resizedBitmap)
                 canvas.drawBitmap(resizedFrame, 0f, 0f, null)
                 binding.igvMarkerpreview.setImageBitmap(resizedBitmap)
             }
+        }
+        val gestureDetectorForMarker = GestureDetector(requireContext(), object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                setMarker(item)
+                return true
+            }
+        })
+        @Suppress("ClickableViewAccessibility")
+        binding.igvMarkerpreview.setOnTouchListener {
+            v, event ->
+                gestureDetectorForMarker.onTouchEvent(event)
+                if (event.action == MotionEvent.ACTION_UP)
+                    v.performClick()
+                true
         }
 
         /* 再生動画設定 */

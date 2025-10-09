@@ -15,7 +15,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
@@ -96,11 +95,11 @@ class FreeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val onItemClickedItemProperties: (MarkerVideoSet) -> Unit = {
+        val onItemDoubleTapItemProperties: (MarkerVideoSet) -> Unit = {
             markerVideoSet ->
                 showMarkerVideoSetDialog( requireContext(), markerVideoSet)
         }
-        _markerVideoSetAdapter = MarkerVideoSetAdapter(requireContext(), onItemClickedItemProperties)
+        _markerVideoSetAdapter = MarkerVideoSetAdapter(requireContext(), onItemDoubleTapItemProperties)
         _binding.recyclerViewMarkerVideo.adapter = _markerVideoSetAdapter
         _binding.recyclerViewMarkerVideo.layoutManager = LinearLayoutManager(context)
 
@@ -268,7 +267,7 @@ class FreeFragment : Fragment() {
 
 
 /* Adapterクラス */
-class MarkerVideoSetAdapter(private val context: Context, private val onItemClicked: (MarkerVideoSet) -> Unit) :
+class MarkerVideoSetAdapter(private val context: Context, private val onItemDoubleTap: (MarkerVideoSet) -> Unit) :
     ListAdapter<MarkerVideoSet, MarkerVideoSetAdapter.MarkerVideoSetViewHolder>(MarkerVideoSetDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarkerVideoSetViewHolder {
@@ -279,7 +278,7 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemClic
 
     override fun onBindViewHolder(holder: MarkerVideoSetViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(context, item, onItemClicked)
+        holder.bind(context, item, onItemDoubleTap)
     }
 
     class MarkerVideoSetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -292,7 +291,7 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemClic
         private val videothumbnailImv: ImageView = itemView.findViewById(R.id.imv_video_thumbnail)
         private val commentTxt: TextView = itemView.findViewById(R.id.txt_comment)
 
-        fun bind(context: Context, item: MarkerVideoSet, onItemClicked: (MarkerVideoSet) -> Unit) {
+        fun bind(context: Context, item: MarkerVideoSet, onItemDoubleTap: (MarkerVideoSet) -> Unit) {
             /* ARマーカーID */
             targetNameTxt.text = item.targetName
             /* ARマーカー画像 */
@@ -319,9 +318,21 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemClic
 
             commentTxt.text = item.comment
 
+            val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+                override fun onDoubleTap(e: MotionEvent): Boolean {
+                    onItemDoubleTap(item)
+                    return true
+                }
+            })
+
             /* クリックリスナーの設定 */
-            topCdv.setOnClickListener {
-                onItemClicked(item)
+            @Suppress("ClickableViewAccessibility")
+            topCdv.setOnTouchListener {
+                v, event ->
+                    gestureDetector.onTouchEvent(event)
+                    if (event.action == MotionEvent.ACTION_UP)
+                        v.performClick()
+                true
             }
         }
     }

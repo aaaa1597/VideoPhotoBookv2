@@ -73,7 +73,7 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
             setPlayer(exoPlayer)
             this.useController = false
             this.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-            val uri = "android.resource://${context.packageName}/${R.raw.videofilenotfound}"
+            val uri = "android.resource://${context.packageName}/${R.raw.double_tap_to_choose_a_video}"
             val mediaItem = MediaItem.fromUri(uri)
             exoPlayer.setMediaItem(mediaItem)
             exoPlayer.prepare()

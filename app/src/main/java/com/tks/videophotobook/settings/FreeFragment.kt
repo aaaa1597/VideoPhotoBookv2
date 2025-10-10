@@ -68,8 +68,8 @@ class FreeFragment : Fragment() {
             val uri = result.data!!.data!!
             Log.d("aaaaa", "file URI: $uri")
             /* URIに対する永続権限を取得 */
-            try { requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            } catch (e: SecurityException) { throw RuntimeException("SecurityException!! ${e.printStackTrace()}") }
+            try { requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+            catch (e: SecurityException) { throw RuntimeException("SecurityException!! ${e.printStackTrace()}") }
 
             /* Uri動画の再生チェック */
             if (mimeType.startsWith("video"))
@@ -123,12 +123,18 @@ class FreeFragment : Fragment() {
     }
 
     private fun showMarkerVideoSetDialog(context: Context, makerVideoSet: MarkerVideoSet) {
+        /* Uriの有効判定(無効なら空Uriにする) */
+        if (!Utils.isUriValid(requireContext(), makerVideoSet.targetImageUri)){
+            Log.d("aaaaa", "Warning!! Invalid targetImageUri: ${makerVideoSet.targetImageUri}!! Set to empty.")
+            makerVideoSet.targetImageUri = "".toUri()
+        }
+        else if (!Utils.isUriValid(requireContext(), makerVideoSet.videoUri)) {
+            Log.d("aaaaa", "Warning!! Invalid videoUri: ${makerVideoSet.videoUri}!! Set to empty.")
+            makerVideoSet.videoUri = "".toUri()
+        }
         val binding = DialogMarkerVideoBinding.inflate(layoutInflater)
         bindInfoToDialog(requireContext(), binding, makerVideoSet)
         collectIsEnableFlow(binding)
-        /* Uriの有効判定(無効なら空Uriにする) */
-        if (!Utils.isUriValid(requireContext(), makerVideoSet.videoUri))
-            makerVideoSet.videoUri = "".toUri()
         _viewModel.mutableIsEnable.value = (makerVideoSet.videoUri != "".toUri())
         val dialog = AlertDialog.Builder(requireContext())
             .setView(binding.root)
@@ -146,7 +152,6 @@ class FreeFragment : Fragment() {
         if(Utils.isUriValid(context, item.targetImageUri))
             binding.igvMarkerpreview.setImageURI(item.targetImageUri)
         else {
-            item.targetImageUri = "".toUri()
             binding.igvMarkerpreview.setImageResource(item.targetImageTemplateResId)
         }
         /* 動画名/動画ファイル */
@@ -155,7 +160,6 @@ class FreeFragment : Fragment() {
             binding.pyvVideoThumbnail2.setVideoUri(item.videoUri)
         }
         else {
-            item.videoUri = "".toUri()
             binding.txtVideoname.text = context.getString(R.string.video_none)
             binding.pyvVideoThumbnail2.setFileNotFoundMp4()
         }
@@ -377,7 +381,7 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemDoub
 
             val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
                 override fun onDoubleTap(e: MotionEvent): Boolean {
-                    onItemDoubleTap(item)
+                    onItemDoubleTap(item.copy())
                     return true
                 }
             })

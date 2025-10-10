@@ -124,11 +124,11 @@ class FreeFragment : Fragment() {
 
     private fun showMarkerVideoSetDialog(context: Context, makerVideoSet: MarkerVideoSet) {
         /* Uriの有効判定(無効なら空Uriにする) */
-        if (!Utils.isUriValid(requireContext(), makerVideoSet.targetImageUri)){
+        if (!Utils.isUriValid(requireContext(), makerVideoSet.targetImageUri) && (makerVideoSet.targetImageUri!="".toUri())){
             Log.d("aaaaa", "Warning!! Invalid targetImageUri: ${makerVideoSet.targetImageUri}!! Set to empty.")
             makerVideoSet.targetImageUri = "".toUri()
         }
-        else if (!Utils.isUriValid(requireContext(), makerVideoSet.videoUri)) {
+        if (!Utils.isUriValid(requireContext(), makerVideoSet.videoUri) && (makerVideoSet.videoUri!="".toUri())) {
             Log.d("aaaaa", "Warning!! Invalid videoUri: ${makerVideoSet.videoUri}!! Set to empty.")
             makerVideoSet.videoUri = "".toUri()
         }

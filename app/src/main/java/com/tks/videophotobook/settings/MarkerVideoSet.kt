@@ -2,8 +2,10 @@ package com.tks.videophotobook.settings
 
 import android.content.Context
 import android.net.Uri
+import android.os.Parcelable
 import android.util.Xml
 import androidx.annotation.DrawableRes
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.xmlpull.v1.XmlPullParser
 import java.io.File
@@ -15,7 +17,9 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import androidx.core.net.toUri
 
+@Parcelize
 @Serializable
 data class MarkerVideoSet(
     /* ARマーカー系定義 */
@@ -25,7 +29,7 @@ data class MarkerVideoSet(
     /* Video系定義 */
     @Serializable(with = UriSerializer::class) var videoUri: Uri,
     var comment: String
-) {
+): Parcelable {
     companion object {
         fun loadFromJsonFile(context: Context, file: File): List<MarkerVideoSet> {
             /* ファイルが存在しない場合、空リストを返す */
@@ -101,6 +105,6 @@ object UriSerializer : KSerializer<Uri> {
     }
 
     override fun deserialize(decoder: Decoder): Uri {
-        return Uri.parse(decoder.decodeString())
+        return decoder.decodeString().toUri()
     }
 }

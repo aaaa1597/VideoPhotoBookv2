@@ -6,9 +6,14 @@ import android.graphics.BitmapFactory
 import android.icu.number.IntegerWidth
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import java.io.File
 import androidx.core.graphics.scale
 import androidx.core.graphics.createBitmap
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 
 class Utils {
     companion object {
@@ -80,6 +85,29 @@ class Utils {
             val top  = (targetHeight- newHeight)/ 2f
             canvas.drawBitmap(scaledBitmap, left, top, null)
             return outputBitmap
+        }
+
+        fun checkVideoCompatibilitybyPlayback(context: Context, uri: Uri, onResult: (Uri, Int) -> Unit) {
+            /* ExoPlayerで再生できるか試す */
+            val player = ExoPlayer.Builder(context).build()
+            player.addListener(object : Player.Listener {
+                override fun onPlayerError(error: PlaybackException) {
+                    Log.e("aaaaa", "Error occurred!! errCode=${error.errorCode} getErrorCodeName()= ${PlaybackException.getErrorCodeName(error.errorCode)}")
+                    player.release()
+                    onResult(uri, error.errorCode)
+                }
+                override fun onPlaybackStateChanged(state: Int) {
+                    if (state == Player.STATE_READY) {
+                        /* 再生成功 -> DRMなし かつ サポート形式 */
+                        Log.i("aaaaa", "ok. video is available!!")
+                        player.release()
+                        onResult(uri, 0)
+                    }
+                }
+            })
+            val mediaItem = MediaItem.fromUri(uri)
+            player.setMediaItem(mediaItem)
+            player.prepare()
         }
     }
 }

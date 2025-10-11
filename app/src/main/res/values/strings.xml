@@ -16,7 +16,7 @@
     <string name="video_settings">Video Settings</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
-    <string name="no_setting_configured">No setting configured.</string>
+    <string name="no_setting_configured">Double-tap to open Linking Settings.</string>
     <string name="comment">Comment(Option)</string>
     <string name="comment_freeinput">This is a free input field. It does not affect functionality.</string>
     <string name="no_data">No data available.</string>
@@ -24,4 +24,6 @@
     <string name="could_not_played">The video could not be played.</string>
     <string name="error">Error : </string>
     <string name="select_another">Please select another video.</string>
+    <string name="settings_disp_title">Settings</string>
+    <string name="delete_setting">delete setting</string>
 </resources>

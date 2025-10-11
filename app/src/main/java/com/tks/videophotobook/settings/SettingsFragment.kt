@@ -10,10 +10,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayoutMediator
 import com.tks.videophotobook.R
-import com.tks.videophotobook.databinding.FragmentSettingBinding
+import com.tks.videophotobook.databinding.FragmentSettingsBinding
 
-class SettingFragment : Fragment() {
-    private var _binding: FragmentSettingBinding? = null
+class SettingsFragment : Fragment() {
+    private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SettingViewModel by activityViewModels()
 
@@ -22,7 +22,7 @@ class SettingFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View {
-        _binding = FragmentSettingBinding.inflate(inflater, container, false)
+        _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         return binding.root
     }
 

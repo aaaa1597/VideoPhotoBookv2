@@ -81,6 +81,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="center"
+            android:contentDescription="@string/delete_setting"
             android:src="@android:drawable/ic_delete"
             android:background="?attr/selectableItemBackgroundBorderless"/>
     </LinearLayout>

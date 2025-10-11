@@ -39,9 +39,9 @@
 
     <fragment
         android:id="@+id/settingFragment"
-        android:name="com.tks.videophotobook.settings.SettingFragment"
+        android:name="com.tks.videophotobook.settings.SettingsFragment"
         android:label="fragment_setting"
-        tools:layout="@layout/fragment_setting">
+        tools:layout="@layout/fragment_settings">
 
     </fragment>
 

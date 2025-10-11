@@ -7,14 +7,14 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayoutMediator
 import com.tks.videophotobook.R
 import com.tks.videophotobook.databinding.FragmentSettingBinding
 
 class SettingFragment : Fragment() {
-    private lateinit var _binding: FragmentSettingBinding
+    private var _binding: FragmentSettingBinding? = null
+    private val binding get() = _binding!!
     private val viewModel: SettingViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,15 +23,15 @@ class SettingFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View {
         _binding = FragmentSettingBinding.inflate(inflater, container, false)
-        return _binding.root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding.viewPager.adapter = SettingPagerAdapter(requireActivity())
+        binding.viewPager.adapter = SettingPagerAdapter(requireActivity())
 
         /* TabLayoutとViewPager2を連携 */
-        TabLayoutMediator(_binding.tabLayout, _binding.viewPager) { tab, position ->
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = when (position) {
                 0 -> getString(R.string.free)
                 1 -> getString(R.string.paid)
@@ -40,6 +40,11 @@ class SettingFragment : Fragment() {
         }.attach()
 
         viewModel.initMarkerVideoSetList()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
 

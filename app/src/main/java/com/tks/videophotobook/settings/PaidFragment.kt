@@ -12,15 +12,12 @@ import com.tks.videophotobook.databinding.FragmentPaidBinding
 import kotlin.getValue
 
 class PaidFragment : Fragment() {
-    private lateinit var _binding: FragmentPaidBinding
+    private var _binding: FragmentPaidBinding? = null
+    private val binding get() = _binding!!
     private val _viewModel: SettingViewModel by activityViewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
         _binding = FragmentPaidBinding.inflate(inflater, container, false)
-        return _binding.root
+        return binding.root
     }
 }

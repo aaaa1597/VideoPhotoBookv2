@@ -20,7 +20,7 @@
     <string name="comment">Comment(Option)</string>
     <string name="comment_freeinput">This is a free input field. It does not affect functionality.</string>
     <string name="no_data">No data available.</string>
-    <string name="no_bind_data">Marker – No linked video data found.\nPlease create one, or receive it from a contact.</string>
+    <string name="no_bind_data">There\'s no linkage data between the Marker and the video.\nYou will be taken to the settings screen.\nYou can also receive it from someone you know.</string>
     <string name="could_not_played">The video could not be played.</string>
     <string name="error">Error : </string>
     <string name="select_another">Please select another video.</string>

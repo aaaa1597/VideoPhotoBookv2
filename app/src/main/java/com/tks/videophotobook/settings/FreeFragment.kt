@@ -1,7 +1,6 @@
 package com.tks.videophotobook.settings
 
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
@@ -28,42 +27,16 @@ import com.tks.videophotobook.Utils
 import kotlinx.coroutines.launch
 import kotlin.getValue
 import androidx.core.net.toUri
-import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
 
 class FreeFragment : Fragment() {
-    private lateinit var _binding: FragmentFreeBinding
+    private var _binding: FragmentFreeBinding? = null
+    private val binding get() = _binding!!
     private val _settingViewModel: SettingViewModel by activityViewModels()
     private lateinit var _markerVideoSetAdapter: MarkerVideoSetAdapter
 
-    private fun checkVideoCompatibilitybyPlayback(context: Context, uri: Uri, onResult: (Uri, Int) -> Unit) {
-        /* ExoPlayerで再生できるか試す */
-        val player = ExoPlayer.Builder(context).build()
-        player.addListener(object : Player.Listener {
-            override fun onPlayerError(error: PlaybackException) {
-                Log.d("aaaaa", "Error occurred!! errCode=${error.errorCode} getErrorCodeName()= ${PlaybackException.getErrorCodeName(error.errorCode)}")
-                player.release()
-                onResult(uri, error.errorCode)
-            }
-            override fun onPlaybackStateChanged(state: Int) {
-                if (state == Player.STATE_READY) {
-                    /* 再生成功 -> DRMなし かつ サポート形式 */
-                    Log.d("aaaaa", "ok. video is available!!")
-                    player.release()
-                    onResult(uri, 0)
-                }
-            }
-        })
-        val mediaItem = MediaItem.fromUri(uri)
-        player.setMediaItem(mediaItem)
-        player.prepare()
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
         _binding = FragmentFreeBinding.inflate(inflater, container, false)
-        return _binding.root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -73,11 +46,11 @@ class FreeFragment : Fragment() {
             markerVideoSet ->
                 /* Uriの有効判定(無効なら空Uriにする) */
                 if (!Utils.isUriValid(requireContext(), markerVideoSet.targetImageUri) && (markerVideoSet.targetImageUri!="".toUri())){
-                    Log.d("aaaaa", "Warning!! Invalid targetImageUri: ${markerVideoSet.targetImageUri}!! Set to empty.")
+                    Log.w("aaaaa", "Warning!! Invalid targetImageUri: ${markerVideoSet.targetImageUri}!! Set to empty.")
                     markerVideoSet.targetImageUri = "".toUri()
                 }
                 if (!Utils.isUriValid(requireContext(), markerVideoSet.videoUri) && (markerVideoSet.videoUri!="".toUri())) {
-                    Log.d("aaaaa", "Warning!! Invalid videoUri: ${markerVideoSet.videoUri}!! Set to empty.")
+                    Log.w("aaaaa", "Warning!! Invalid videoUri: ${markerVideoSet.videoUri}!! Set to empty.")
                     markerVideoSet.videoUri = "".toUri()
                 }
                 /* ダイアログ表示 */
@@ -85,8 +58,8 @@ class FreeFragment : Fragment() {
                 dialog.show(parentFragmentManager, "MarkerVideoSetDialog")
         }
         _markerVideoSetAdapter = MarkerVideoSetAdapter(requireContext(), onItemDoubleTapItemProperties)
-        _binding.recyclerViewMarkerVideo.adapter = _markerVideoSetAdapter
-        _binding.recyclerViewMarkerVideo.layoutManager = LinearLayoutManager(context)
+        binding.recyclerViewMarkerVideo.adapter = _markerVideoSetAdapter
+        binding.recyclerViewMarkerVideo.layoutManager = LinearLayoutManager(context)
 
         /* Flow収集 */
         collectMarkerVideoSetListFlow()
@@ -103,6 +76,11 @@ class FreeFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
 

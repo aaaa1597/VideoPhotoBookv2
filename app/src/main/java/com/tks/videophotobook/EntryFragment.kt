@@ -8,18 +8,17 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.navigation.fragment.findNavController
 import com.tks.videophotobook.databinding.FragmentEntryBinding
+import com.tks.videophotobook.databinding.FragmentSettingBinding
 import com.tks.videophotobook.settings.MARKER_VIDEO_MAP_JSON
 import java.io.File
 
 class EntryFragment : Fragment() {
-    private lateinit var _binding: FragmentEntryBinding
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    private var _binding: FragmentEntryBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
         _binding = FragmentEntryBinding.inflate(inflater, container, false)
-        return _binding.root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -38,5 +37,10 @@ class EntryFragment : Fragment() {
                 }
                 .show()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

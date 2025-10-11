@@ -20,7 +20,7 @@
     <string name="comment">コメント(任意入力)</string>
     <string name="comment_freeinput">自由入力欄です。特に動作に影響しません。</string>
     <string name="no_data">データがありません。</string>
-    <string name="no_bind_data">Marker - 動画の紐付けデータがありません。\n作成してください。知り合いから受信することもできます。</string>
+    <string name="no_bind_data">Markerと動画の紐付けデータがありません。\n設定画面に遷移します。\n知り合いから受信することもできます。</string>
     <string name="could_not_played">再生できない動画です。</string>
     <string name="error">Error : </string>
     <string name="select_another">別の動画を選択してください。</string>

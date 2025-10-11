@@ -235,10 +235,12 @@ class LinkingSettingsDialog: DialogFragment() {
                         true  -> {
                             binding.viwDisableMarker .visibility = View.GONE
                             binding.viwDisableComment.visibility = View.GONE
+                            binding.viwDoubleTapGuide.visibility = View.GONE
                         }
                         false -> {
                             binding.viwDisableMarker .visibility = View.VISIBLE
                             binding.viwDisableComment.visibility = View.VISIBLE
+                            binding.viwDoubleTapGuide.visibility = View.VISIBLE
                         }
                     }
                     val alpha = if (isEnable) 1.0f else 0.3f

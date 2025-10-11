@@ -65,29 +65,6 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
         }
     }
 
-    @OptIn(UnstableApi::class)
-    fun setFileNotFoundMp4() {
-        player?.release()
-        player = null
-        player = ExoPlayer.Builder(context).build().also { exoPlayer ->
-            setPlayer(exoPlayer)
-            this.useController = false
-            this.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-            val uri = "android.resource://${context.packageName}/${R.raw.double_tap_to_choose_a_video}"
-            val mediaItem = MediaItem.fromUri(uri)
-            exoPlayer.setMediaItem(mediaItem)
-            exoPlayer.prepare()
-            exoPlayer.playWhenReady = true
-            exoPlayer.addListener(object : Player.Listener {
-                override fun onRenderedFirstFrame() {
-                    exoPlayer.pause()
-                    exoPlayer.seekTo(0)
-                    exoPlayer.removeListener(this)
-                }
-            })
-        }
-    }
-
     fun togglePlayPause() {
         player?.let {
             if (it.isPlaying)    it.pause()

@@ -44,26 +44,26 @@ class LinkingSettingsDialog: DialogFragment() {
     /* ファイル選択ランチャー */
     private val _pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         /* ファイルリストの戻り */
-            result ->
-        val (targetName, mimeType) = pendingTargetNameAndMimeType ?: throw RuntimeException("No way!! pendingTargetNameAndMimeType is null")
-        pendingTargetNameAndMimeType = null
-        if (result.resultCode != Activity.RESULT_OK) throw RuntimeException("No way!! resultCode isn't Activity.RESULT_OK")
-        if (result.data==null)                       throw RuntimeException("No way!! result.data is null")
-        if (result.data!!.data == null)              throw RuntimeException("No way!! result.data!!.data is null")
+        result ->
+            val (targetName, mimeType) = pendingTargetNameAndMimeType ?: throw RuntimeException("No way!! pendingTargetNameAndMimeType is null")
+            pendingTargetNameAndMimeType = null
+            if (result.resultCode != Activity.RESULT_OK) throw RuntimeException("No way!! resultCode isn't Activity.RESULT_OK")
+            if (result.data==null)                       throw RuntimeException("No way!! result.data is null")
+            if (result.data!!.data == null)              throw RuntimeException("No way!! result.data!!.data is null")
 
-        /* 単一のファイルが選択された */
-        val uri = result.data!!.data!!
-        Log.d("aaaaa", "file URI: $uri")
-        /* URIに対する永続権限を取得 */
-        try { requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
-        catch (e: SecurityException) { throw RuntimeException("SecurityException!! ${e.printStackTrace()}") }
+            /* 単一のファイルが選択された */
+            val uri = result.data!!.data!!
+            Log.d("aaaaa", "file URI: $uri")
+            /* URIに対する永続権限を取得 */
+            try { requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+            catch (e: SecurityException) { throw RuntimeException("SecurityException!! ${e.printStackTrace()}") }
 
-        /* Uri動画の再生チェック */
-        if (mimeType.startsWith("video"))
-            Utils.checkVideoCompatibilitybyPlayback(requireContext(), uri, onFileUrlPicked!!)
-        else
-            onFileUrlPicked!!(uri, 0)
-        onFileUrlPicked = null
+            /* Uri動画の再生チェック */
+            if (mimeType.startsWith("video"))
+                Utils.checkVideoCompatibilitybyPlayback(requireContext(), uri, onFileUrlPicked!!)
+            else
+                onFileUrlPicked!!(uri, 0)
+            onFileUrlPicked = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,7 +99,8 @@ class LinkingSettingsDialog: DialogFragment() {
         }
         else {
             binding.txtVideoname.text = context.getString(R.string.video_none)
-            binding.pyvVideoThumbnail2.setFileNotFoundMp4()
+            val uri = "android.resource://${context.packageName}/${R.raw.double_tap_to_choose_a_video}".toUri()
+            binding.pyvVideoThumbnail2.setVideoUri(uri)
         }
 
         binding.etvComment.setText(item.comment)

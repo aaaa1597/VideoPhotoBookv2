@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
 import kotlin.getValue
 
 const val ARG_SET = "arg_set"
-class MarkerVideoSetDialog: DialogFragment() {
+class LinkingSettingsDialog: DialogFragment() {
     private var _binding: DialogMarkerVideoBinding? = null
     private val binding get() = _binding!!
     private lateinit var set: MarkerVideoSet
@@ -261,8 +261,8 @@ class MarkerVideoSetDialog: DialogFragment() {
         _binding = null
     }
     companion object {
-        fun newInstance(set: MarkerVideoSet): MarkerVideoSetDialog {
-            return MarkerVideoSetDialog().apply {
+        fun newInstance(set: MarkerVideoSet): LinkingSettingsDialog {
+            return LinkingSettingsDialog().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARG_SET, set)
                 }

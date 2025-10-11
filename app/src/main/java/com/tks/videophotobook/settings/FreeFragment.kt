@@ -54,7 +54,7 @@ class FreeFragment : Fragment() {
                     markerVideoSet.videoUri = "".toUri()
                 }
                 /* ダイアログ表示 */
-                val dialog = MarkerVideoSetDialog.newInstance(markerVideoSet)
+                val dialog = LinkingSettingsDialog.newInstance(markerVideoSet)
                 dialog.show(parentFragmentManager, "MarkerVideoSetDialog")
         }
         _markerVideoSetAdapter = MarkerVideoSetAdapter(requireContext(), onItemDoubleTapItemProperties)

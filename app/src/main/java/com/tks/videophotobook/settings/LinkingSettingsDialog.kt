@@ -47,10 +47,10 @@ class LinkingSettingsDialog: DialogFragment() {
         result ->
             val (targetName, mimeType) = pendingTargetNameAndMimeType ?: throw RuntimeException("No way!! pendingTargetNameAndMimeType is null")
             pendingTargetNameAndMimeType = null
-            if (result.resultCode != Activity.RESULT_OK) throw RuntimeException("No way!! resultCode isn't Activity.RESULT_OK")
-            if (result.data==null)                       throw RuntimeException("No way!! result.data is null")
-            if (result.data!!.data == null)              throw RuntimeException("No way!! result.data!!.data is null")
-
+            if (result.resultCode != Activity.RESULT_OK || result.data?.data == null) {
+                onFileUrlPicked = null
+                return@registerForActivityResult
+            }
             /* 単一のファイルが選択された */
             val uri = result.data!!.data!!
             Log.d("aaaaa", "file URI: $uri")

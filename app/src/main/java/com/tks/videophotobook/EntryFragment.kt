@@ -27,14 +27,7 @@ class EntryFragment : Fragment() {
         val file = File(requireContext().externalCacheDir, MARKER_VIDEO_MAP_JSON)
         if ( !file.exists()) {
             /* 存在しない場合、SettingFragmentを表示(マーカー/動画紐付け情報を生成する)*/
-            AlertDialog.Builder(requireContext())
-                .setTitle(R.string.no_data)
-                .setMessage(R.string.no_bind_data)
-                .setPositiveButton(android.R.string.ok) { dialog, which ->
-                    dialog.dismiss()
-                    findNavController().navigate(R.id.action_mainFragment_to_settingFragment_slide)
-                }
-                .show()
+            GuidedDialog().show(parentFragmentManager, "GuidedDialog")
         }
     }
 

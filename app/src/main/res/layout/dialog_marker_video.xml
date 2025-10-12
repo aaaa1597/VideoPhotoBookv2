@@ -99,7 +99,7 @@
         app:layout_constraintTop_toBottomOf="@id/txt_videotitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-    <com.tks.videophotobook.settings.DoubleTapGuideView
+    <com.tks.videophotobook.DoubleTapGuideView
         android:id="@+id/viw_double_tap_guide"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

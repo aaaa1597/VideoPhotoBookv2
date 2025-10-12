@@ -197,7 +197,7 @@ class LinkingSettingsDialog: DialogFragment() {
         }
         /* キャンセル */
         binding.btnCancel.setOnClickListener {
-            TODO("キャンセル押下")
+            dismiss()
         }
         /* 保存 */
         binding.btnSave.setOnClickListener {

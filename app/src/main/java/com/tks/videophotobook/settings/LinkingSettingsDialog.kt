@@ -95,12 +95,12 @@ class LinkingSettingsDialog: DialogFragment() {
         /* 動画名/動画ファイル */
         if(Utils.isUriValid(context, item.videoUri)) {
             binding.txtVideoname.text = Utils.getFileNameFromUri(context, item.videoUri)
-            binding.pyvVideoThumbnail2.setVideoUri(item.videoUri)
+            binding.pyvVideoThumbnail2.setVideoUri(item.videoUri, true)
         }
         else {
             binding.txtVideoname.text = context.getString(R.string.video_none)
             val uri = "android.resource://${context.packageName}/${R.raw.double_tap_to_choose_a_video}".toUri()
-            binding.pyvVideoThumbnail2.setVideoUri(uri)
+            binding.pyvVideoThumbnail2.setVideoUri(uri, false)
         }
 
         binding.etvComment.setText(item.comment)
@@ -176,7 +176,7 @@ class LinkingSettingsDialog: DialogFragment() {
                 }
                 else {
                     /* 再生可能 */
-                    binding.pyvVideoThumbnail2.setVideoUri(uri)
+                    binding.pyvVideoThumbnail2.setVideoUri(uri,true)
                     _viewModel.mutableIsEnable.value = true
                 }
             }

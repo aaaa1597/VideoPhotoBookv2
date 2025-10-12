@@ -1,6 +1,7 @@
 package com.tks.videophotobook.settings
 
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
@@ -26,7 +27,6 @@ import com.tks.videophotobook.R
 import com.tks.videophotobook.Utils
 import kotlinx.coroutines.launch
 import kotlin.getValue
-import androidx.core.net.toUri
 
 class FreeFragment : Fragment() {
     private var _binding: FragmentFreeBinding? = null
@@ -45,13 +45,13 @@ class FreeFragment : Fragment() {
         val onItemDoubleTapItemProperties: (MarkerVideoSet) -> Unit = {
             markerVideoSet ->
                 /* Uriの有効判定(無効なら空Uriにする) */
-                if (!Utils.isUriValid(requireContext(), markerVideoSet.targetImageUri) && (markerVideoSet.targetImageUri!="".toUri())){
+                if (!Utils.isUriValid(requireContext(), markerVideoSet.targetImageUri) && (markerVideoSet.targetImageUri!=Uri.EMPTY)){
                     Log.w("aaaaa", "Warning!! Invalid targetImageUri: ${markerVideoSet.targetImageUri}!! Set to empty.")
-                    markerVideoSet.targetImageUri = "".toUri()
+                    markerVideoSet.targetImageUri = Uri.EMPTY
                 }
-                if (!Utils.isUriValid(requireContext(), markerVideoSet.videoUri) && (markerVideoSet.videoUri!="".toUri())) {
+                if (!Utils.isUriValid(requireContext(), markerVideoSet.videoUri) && (markerVideoSet.videoUri!=Uri.EMPTY)) {
                     Log.w("aaaaa", "Warning!! Invalid videoUri: ${markerVideoSet.videoUri}!! Set to empty.")
-                    markerVideoSet.videoUri = "".toUri()
+                    markerVideoSet.videoUri = Uri.EMPTY
                 }
                 /* ダイアログ表示 */
                 val dialog = LinkingSettingsDialog.newInstance(markerVideoSet)
@@ -61,8 +61,10 @@ class FreeFragment : Fragment() {
         binding.recyclerViewMarkerVideo.adapter = _markerVideoSetAdapter
         binding.recyclerViewMarkerVideo.layoutManager = LinearLayoutManager(context)
 
-        /* Flow収集 */
+        /* DataList用Flow収集 */
         collectMarkerVideoSetListFlow()
+        /* DoubleTapGuideView表示/非表示用Flow収集 */
+        collectVisibleDoubleTapGuideViewFlow()
     }
 
     private fun collectMarkerVideoSetListFlow() {
@@ -73,6 +75,18 @@ class FreeFragment : Fragment() {
                 _settingViewModel.markerVideoSetList.collect { list ->
                     /* Flowから新しいリストが放出されたら、Adapterにセットして画面を更新 */
                     _markerVideoSetAdapter.submitList(list)
+                }
+            }
+        }
+    }
+
+    private fun collectVisibleDoubleTapGuideViewFlow() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // ViewModelのStateFlowを収集
+                _settingViewModel.isVisibleDoubleTapGuideView.collect { isVisibility ->
+                    /* Flowから新しいVisibility状態が放出されたら、画面を更新 */
+                    binding.viwDoubletapGuide2.visibility = if (isVisibility) View.VISIBLE else View.GONE
                 }
             }
         }
@@ -116,7 +130,7 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemDoub
             if(Utils.isUriValid(context, item.targetImageUri))
                 targetImageImv.setImageURI(item.targetImageUri)
             else {
-                item.targetImageUri = "".toUri()
+                item.targetImageUri = Uri.EMPTY
                 targetImageImv.setImageResource(item.targetImageTemplateResId)
             }
             /* 動画名/動画ファイル */
@@ -127,7 +141,7 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemDoub
                 videothumbnailPyv.setVideoUri(item.videoUri)
             }
             else {
-                item.videoUri = "".toUri()
+                item.videoUri = Uri.EMPTY
                 videoName.text = context.getString(R.string.video_none)
                 videothumbnailPyv.visibility = View.GONE
                 videothumbnailImv.visibility = View.VISIBLE

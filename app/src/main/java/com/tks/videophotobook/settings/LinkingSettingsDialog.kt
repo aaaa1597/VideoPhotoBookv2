@@ -80,7 +80,7 @@ class LinkingSettingsDialog: DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         bindInfoToDialog(requireContext(), binding, set)
         collectIsEnableFlow(binding)
-        _viewModel.mutableIsEnable.value = (set.videoUri != "".toUri())
+        _viewModel.mutableIsEnable.value = (set.videoUri != Uri.EMPTY)
     }
 
     private fun bindInfoToDialog(context: Context, binding: DialogMarkerVideoBinding, item: MarkerVideoSet) {

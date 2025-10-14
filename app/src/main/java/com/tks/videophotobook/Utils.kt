@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.icu.number.IntegerWidth
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
@@ -69,10 +70,10 @@ class Utils {
         fun resizeBitmapWithAspectRatio(src: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap {
             val scale = minOf(
                 targetWidth.toFloat() / src.width,
-                targetHeight.toFloat()/ src.height
+                targetHeight.toFloat() / src.height
             )
             val newWidth = (src.width * scale).toInt()
-            val newHeight= (src.height * scale).toInt()
+            val newHeight = (src.height * scale).toInt()
             /* リサイズしたbitmapを作成 */
             val scaledBitmap = src.scale(newWidth, newHeight)
             /* 最終的な指定サイズのBitmapを作成し中央に配置 */
@@ -82,7 +83,7 @@ class Utils {
             canvas.drawColor(android.graphics.Color.WHITE)
             /* 中央に配置 */
             val left = (targetWidth - newWidth) / 2f
-            val top  = (targetHeight- newHeight)/ 2f
+            val top = (targetHeight - newHeight) / 2f
             canvas.drawBitmap(scaledBitmap, left, top, null)
             return outputBitmap
         }
@@ -108,6 +109,45 @@ class Utils {
             val mediaItem = MediaItem.fromUri(uri)
             player.setMediaItem(mediaItem)
             player.prepare()
+        }
+
+        /* 要素数3のBitmap配列(冒頭,中間,終盤)を返却 */
+        fun get3Thumbnail(context: Context, uri: Uri): Array<Bitmap?> {
+            /* Uri から一時ファイルにコピー */
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val tempFile = File.createTempFile("temp_video_000", ".mp4", context.cacheDir)
+            inputStream!!.copyTo(tempFile.outputStream())
+            inputStream.close()
+
+            /* mp4の再生時間を取得 */
+            val retriever = MediaMetadataRetriever().apply {
+                setDataSource(tempFile.absolutePath)
+            }
+            val durationMs = retriever.let {
+                val durStr = it.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                return@let durStr?.toLong() ?: 0L
+            }
+            val targetUs3 : Long = ((durationMs * 1000) * 0.03).toLong()
+            val targetUs50: Long =  (durationMs * 1000) / 2
+            val targetUs90: Long = ((durationMs * 1000) * 0.9 ).toLong()
+
+            val bitmapArray = Array<Bitmap?>(3) { idx ->
+                val retriever = MediaMetadataRetriever()
+                val timeUs: Long = when(idx) {0 -> targetUs3 ; 1 -> targetUs50 ; else -> targetUs90}
+                var retbitmap: Bitmap? = null
+                try {
+                    retriever.setDataSource(tempFile.absolutePath)
+                    retbitmap = retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST)
+                }
+                catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                finally {
+                    retriever.release()
+                }
+                retbitmap
+            }
+            return bitmapArray
         }
     }
 }

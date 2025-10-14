@@ -138,7 +138,7 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemDoub
                 videoName.text = Utils.getFileNameFromUri(context, item.videoUri)
                 videothumbnailImv.visibility = View.GONE
                 videothumbnailPyv.visibility = View.VISIBLE
-                videothumbnailPyv.setVideoUri(item.videoUri, true)
+                videothumbnailPyv.setVideoUri(item.videoUri, true, true, false)
             }
             else {
                 item.videoUri = Uri.EMPTY

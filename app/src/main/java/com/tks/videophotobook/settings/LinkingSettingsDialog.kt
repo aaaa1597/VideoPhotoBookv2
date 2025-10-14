@@ -6,6 +6,9 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
@@ -14,8 +17,13 @@ import android.util.Log
 import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
+import android.view.animation.LinearInterpolator
+import android.widget.FrameLayout
+import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.scale
@@ -95,12 +103,12 @@ class LinkingSettingsDialog: DialogFragment() {
         /* 動画名/動画ファイル */
         if(Utils.isUriValid(context, item.videoUri)) {
             binding.txtVideoname.text = Utils.getFileNameFromUri(context, item.videoUri)
-            binding.pyvVideoThumbnail2.setVideoUri(item.videoUri, true)
+            binding.pyvVideoThumbnail2.setVideoUri(item.videoUri, true, false, true)
         }
         else {
             binding.txtVideoname.text = context.getString(R.string.video_none)
             val uri = "android.resource://${context.packageName}/${R.raw.double_tap_to_choose_a_video}".toUri()
-            binding.pyvVideoThumbnail2.setVideoUri(uri, false)
+            binding.pyvVideoThumbnail2.setVideoUri(uri, false, false, true)
         }
 
         binding.etvComment.setText(item.comment)
@@ -163,7 +171,7 @@ class LinkingSettingsDialog: DialogFragment() {
         }
 
         /* 再生動画設定 */
-        fun setVideo(set: MarkerVideoSet) {
+        fun setVideoAndGet3Thumbnail(set: MarkerVideoSet) {
             lifecycleScope.launch {
                 val (uri, errCode) = pickFileAndWaitForUri("video/*", set)
                 if(errCode != 0) {
@@ -176,24 +184,32 @@ class LinkingSettingsDialog: DialogFragment() {
                 }
                 else {
                     /* 再生可能 */
-                    binding.pyvVideoThumbnail2.setVideoUri(uri,true)
+                    binding.pyvVideoThumbnail2.setVideoUri(uri,true, false, true)
                     _viewModel.mutableIsEnable.value = true
+                    /* 動画から3つのサムネイルを取得 */
+                    val thumbnails3 = Utils.get3Thumbnail(requireContext(), uri)
+                    /* アニメーション開始 */
+                    showFlashAnimation(binding, thumbnails3[0])
+//                    for (idx in 0..2) {
+//                        showFlashAnimation(binding, thumbnails3[idx])
+//                    }
                 }
             }
         }
 
         val gestureDetector = GestureDetector(requireContext(), object : GestureDetector.SimpleOnGestureListener() {
             override fun onDoubleTap(e: MotionEvent): Boolean {
-                setVideo(item)
+                setVideoAndGet3Thumbnail(item)
                 return true
             }
         })
+        /* PlayerViewをダブルタップ */
         binding.pyvVideoThumbnail2.setOnTouchListener {
-                v, event ->
-            gestureDetector.onTouchEvent(event)
-            if (event.action == MotionEvent.ACTION_UP)
-                v.performClick()
-            true
+            v, event ->
+                gestureDetector.onTouchEvent(event)
+                if (event.action == MotionEvent.ACTION_UP)
+                    v.performClick()
+                true
         }
         /* キャンセル */
         binding.btnCancel.setOnClickListener {
@@ -221,6 +237,124 @@ class LinkingSettingsDialog: DialogFragment() {
         }
     }
 
+    /* Flashアニメ → Image縮小 → BottomSheetDialogFragment表示 */
+    private fun showFlashAnimation(binding: DialogMarkerVideoBinding, thumbnail: android.graphics.Bitmap?) {
+        val container = binding.flyOverlayLayer
+//        /* すでに"FlashView" が存在していれば何も */
+//        if ((0 until container.childCount).any {
+//                container.getChildAt(it).tag == "FlashView"}) {
+//            return
+//        }
+
+        val blackView = View(container.context).apply {
+            setBackgroundColor(Color.BLACK)
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT)
+        }
+
+        val flashView = View(container.context).apply {
+            setBackgroundColor(Color.WHITE)
+            alpha = 1f
+            tag = "FlashView"
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT)
+        }
+
+        val imageView = object : View(container.context) {
+            private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+            init {
+                // scaleX/Y 用に property を使う
+                scaleX = 1f
+                scaleY = 1f
+                setBackgroundColor(Color.GREEN)
+            }
+
+            override fun onDraw(canvas: Canvas) {
+                super.onDraw(canvas)
+                Log.d("aaaaa", "@@@@@@@@ thumbnail=${thumbnail}, ${thumbnail?.height}, ${thumbnail?.height}")
+                if(thumbnail==null) return
+                val cx = width / 2f
+                val cy = height / 2f
+                val halfW = (thumbnail.width / 2f) * scaleX
+                val halfH = (thumbnail.height / 2f) * scaleY
+                val left = cx - halfW
+                val top = cy - halfH
+                val right = cx + halfW
+                val bottom = cy + halfH
+                canvas.drawBitmap(thumbnail, null, RectF(left, top, right, bottom), paint)
+            }
+        }.apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        }
+
+        val touchBlocker = View(container.context).apply {
+//            setBackgroundColor(Color.TRANSPARENT)
+            setBackgroundColor(Color.argb(0.5f, 0.1f, 0.5f, 0.9f))
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT)
+            isClickable = true
+            isFocusable = true
+        }
+
+        container.addView(blackView)
+        container.addView(imageView)
+        container.addView(flashView)
+        container.addView(touchBlocker)
+
+        /* 一旦真っ白になって徐々に消える */
+        flashView.animate()
+            .alpha(0f)
+            .setDuration(600)
+            .withEndAction {
+                container.removeView(flashView)
+            }
+            .start()
+
+
+        Log.d("aaaaa", "-------- binding.pyvVideoThumbnail2.findViewById<ViewGroup>(android.R.id.content) = ${binding.pyvVideoThumbnail2.findViewById<ViewGroup>(android.R.id.content)}")
+        binding.pyvVideoThumbnail2.findViewById<ViewGroup>(android.R.id.content)?.let {
+            Log.d("aaaaa", "-------- child count = ${it.childCount}")
+            for (i in 0 until it.childCount) {
+                Log.d("aaaaa", "-------- child[$i] = ${it.getChildAt(i)::class.java.name}")
+            }
+        }
+        Log.d("aaaaa", "videoThumbnailPlayerView class=${binding.pyvVideoThumbnail2::class.java.name}")
+
+        Log.d("aaaaaf", "z=${imageView.z}, parent.z=${container.z}")
+        Log.d("aaaaaf", "z=${flashView.z}, parent.z=${container.z}")
+        Log.d("aaaaaf", "z=${touchBlocker.z}, parent.z=${container.z}")
+
+        /* flashViewが消えた後、徐々に小さくなる */
+        Log.d("aaaaa", "scale before anim: ${imageView.scaleX}, ${imageView.scaleY}")
+        imageView.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
+            override fun onPreDraw(): Boolean {
+                imageView.viewTreeObserver.removeOnPreDrawListener(this)
+                imageView.animate()
+                    .scaleX(0.1f)
+                    .scaleY(0.1f)
+                    .setStartDelay(600)
+                    .setInterpolator(LinearInterpolator())
+//                  .translationY(container.height / 4f)
+                    .setDuration(1500)
+                    .withEndAction {
+                        container.removeView(blackView)
+                        container.removeView(imageView)
+                        container.removeView(touchBlocker)
+                    }
+                    .start()
+                return true
+            }
+        })
+    }
+
+    /* ViewModelのisEnableを収集してUIの有効/無効を切り替え */
     private fun collectIsEnableFlow(binding: DialogMarkerVideoBinding) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {

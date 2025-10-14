@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
+import android.view.SurfaceView
+import android.view.TextureView
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -14,7 +16,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 //import androidx.media3.datasource.DefaultDataSource
 //import androidx.media3.exoplayer.source.ProgressiveMediaSource
-import com.tks.videophotobook.R
 
 class VideoThumbnailPlayerView @JvmOverloads constructor(
     context: Context,
@@ -26,8 +27,8 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
     private var isPrepared = false
 
     @OptIn(UnstableApi::class)
-    fun setVideoUri(uri: Uri, luseController: Boolean) {
-        if (luseController) {
+    fun setVideoUri(uri: Uri, useControllerz: Boolean, isPlay: Boolean, isVolume: Boolean) {
+        if (useControllerz) {
             useController = true            /* Controllerを使う */
             controllerHideOnTouch = true    /* タッチで表示 */
             controllerShowTimeoutMs = 2000  /* 2秒で非表示 */
@@ -52,7 +53,10 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
             exoPlayer.setMediaItem(mediaItem)
             exoPlayer.prepare()
 
-            exoPlayer.playWhenReady = true
+            if(isPlay)
+                exoPlayer.playWhenReady = true
+            else
+                exoPlayer.playWhenReady = false
             exoPlayer.addListener(object : Player.Listener {
                 override fun onPlayerError(e: PlaybackException) {
                     e.printStackTrace()
@@ -60,13 +64,16 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
                 override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                     Log.d("aaaaa", "playWhenReady=${playWhenReady} playbackState: $playbackState")
                 }
-//                override fun onRenderedFirstFrame() {
-//                    exoPlayer.pause()
-//                    exoPlayer.seekTo(1000)
-//                    exoPlayer.removeListener(this)
-//                    isPrepared = true
-//                }
+                override fun onRenderedFirstFrame() {
+                    if(!isPlay) {
+                        exoPlayer.pause()
+                        exoPlayer.seekTo(0)
+                        isPrepared = true
+//                      exoPlayer.removeListener(this)
+                    }
+                }
             })
+            exoPlayer.volume = if(isVolume) 1.0f else 0.0f
         }
     }
 
@@ -81,6 +88,11 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
         player?.release()
         player = null
         isPrepared = false
+    }
+
+    fun pauseAndSeekTo(positionMs: Long) {
+        player?.pause()
+        player?.seekTo(positionMs)
     }
 
     fun play() {

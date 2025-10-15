@@ -1,5 +1,7 @@
 package com.tks.videophotobook.settings
 
+import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
@@ -8,6 +10,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.RectF
 import android.net.Uri
 import android.os.Bundle
@@ -21,11 +24,13 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.view.animation.AccelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import androidx.fragment.app.DialogFragment
@@ -190,9 +195,6 @@ class LinkingSettingsDialog: DialogFragment() {
                     val thumbnails3 = Utils.get3Thumbnail(requireContext(), uri)
                     /* アニメーション開始 */
                     showFlashAnimation(binding, thumbnails3[0])
-//                    for (idx in 0..2) {
-//                        showFlashAnimation(binding, thumbnails3[idx])
-//                    }
                 }
             }
         }
@@ -239,66 +241,42 @@ class LinkingSettingsDialog: DialogFragment() {
 
     /* Flashアニメ → Image縮小 → BottomSheetDialogFragment表示 */
     private fun showFlashAnimation(binding: DialogMarkerVideoBinding, thumbnail: android.graphics.Bitmap?) {
-        val container = binding.flyOverlayLayer
+        val container = binding.topView
 //        /* すでに"FlashView" が存在していれば何も */
 //        if ((0 until container.childCount).any {
 //                container.getChildAt(it).tag == "FlashView"}) {
 //            return
 //        }
 
+        /* pyv_video_thumbnail2と同じ制約を作成 */
+        val params = ConstraintLayout.LayoutParams(
+                binding.pyvVideoThumbnail2.width,
+                binding.pyvVideoThumbnail2.height).apply {
+            topToBottom = R.id.txt_videotitle
+            startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+        }
+
         val blackView = View(container.context).apply {
             setBackgroundColor(Color.BLACK)
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT)
+            layoutParams = params
+        }
+
+        val imageView = ImageView(container.context).apply {
+            setImageBitmap(thumbnail)
+            layoutParams = params
         }
 
         val flashView = View(container.context).apply {
             setBackgroundColor(Color.WHITE)
             alpha = 1f
             tag = "FlashView"
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT)
-        }
-
-        val imageView = object : View(container.context) {
-            private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-            init {
-                // scaleX/Y 用に property を使う
-                scaleX = 1f
-                scaleY = 1f
-                setBackgroundColor(Color.GREEN)
-            }
-
-            override fun onDraw(canvas: Canvas) {
-                super.onDraw(canvas)
-                Log.d("aaaaa", "@@@@@@@@ thumbnail=${thumbnail}, ${thumbnail?.height}, ${thumbnail?.height}")
-                if(thumbnail==null) return
-                val cx = width / 2f
-                val cy = height / 2f
-                val halfW = (thumbnail.width / 2f) * scaleX
-                val halfH = (thumbnail.height / 2f) * scaleY
-                val left = cx - halfW
-                val top = cy - halfH
-                val right = cx + halfW
-                val bottom = cy + halfH
-                canvas.drawBitmap(thumbnail, null, RectF(left, top, right, bottom), paint)
-            }
-        }.apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            )
+            layoutParams = params
         }
 
         val touchBlocker = View(container.context).apply {
-//            setBackgroundColor(Color.TRANSPARENT)
-            setBackgroundColor(Color.argb(0.5f, 0.1f, 0.5f, 0.9f))
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT)
+            setBackgroundColor(Color.TRANSPARENT)
+            layoutParams = params
             isClickable = true
             isFocusable = true
         }
@@ -317,41 +295,28 @@ class LinkingSettingsDialog: DialogFragment() {
             }
             .start()
 
-
-        Log.d("aaaaa", "-------- binding.pyvVideoThumbnail2.findViewById<ViewGroup>(android.R.id.content) = ${binding.pyvVideoThumbnail2.findViewById<ViewGroup>(android.R.id.content)}")
-        binding.pyvVideoThumbnail2.findViewById<ViewGroup>(android.R.id.content)?.let {
-            Log.d("aaaaa", "-------- child count = ${it.childCount}")
-            for (i in 0 until it.childCount) {
-                Log.d("aaaaa", "-------- child[$i] = ${it.getChildAt(i)::class.java.name}")
-            }
+        val path = Path().apply {
+            val startX = binding.pyvVideoThumbnail2.left.toFloat()
+            val startY = binding.pyvVideoThumbnail2.top.toFloat()
+            moveTo(startX, startY)
+            val endX = binding.igvMarkerpreview.left.toFloat()
+            val endY = binding.igvMarkerpreview.top.toFloat()
+            cubicTo(0f, -300f, -200f, -300f , endX, endY)
         }
-        Log.d("aaaaa", "videoThumbnailPlayerView class=${binding.pyvVideoThumbnail2::class.java.name}")
 
-        Log.d("aaaaaf", "z=${imageView.z}, parent.z=${container.z}")
-        Log.d("aaaaaf", "z=${flashView.z}, parent.z=${container.z}")
-        Log.d("aaaaaf", "z=${touchBlocker.z}, parent.z=${container.z}")
-
-        /* flashViewが消えた後、徐々に小さくなる */
-        Log.d("aaaaa", "scale before anim: ${imageView.scaleX}, ${imageView.scaleY}")
-        imageView.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
-            override fun onPreDraw(): Boolean {
-                imageView.viewTreeObserver.removeOnPreDrawListener(this)
-                imageView.animate()
-                    .scaleX(0.1f)
-                    .scaleY(0.1f)
-                    .setStartDelay(600)
-                    .setInterpolator(LinearInterpolator())
-//                  .translationY(container.height / 4f)
-                    .setDuration(1500)
-                    .withEndAction {
-                        container.removeView(blackView)
-                        container.removeView(imageView)
-                        container.removeView(touchBlocker)
-                    }
-                    .start()
-                return true
-            }
-        })
+        val animator = ObjectAnimator.ofFloat(imageView, View.X, View.Y, path).apply {
+            duration = 1500
+            interpolator = AccelerateInterpolator()
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    super.onAnimationEnd(animation)
+                    container.removeView(blackView)
+                    container.removeView(imageView)
+                    container.removeView(touchBlocker)
+                }
+            })
+            start()
+        }
     }
 
     /* ViewModelのisEnableを収集してUIの有効/無効を切り替え */

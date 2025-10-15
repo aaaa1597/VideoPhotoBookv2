@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/topView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@android:color/white"
@@ -91,31 +92,21 @@
         android:textColor="#000000"
         app:layout_constraintTop_toBottomOf="@id/igv_markerpreview"
         app:layout_constraintStart_toStartOf="parent"/>
-    <FrameLayout
-        android:id="@+id/fly_video_thumbnail2"
+    <com.tks.videophotobook.settings.VideoThumbnailPlayerView
+        android:id="@+id/pyv_video_thumbnail2"
         android:layout_width="0dp"
         android:layout_height="200dp"
+        android:background="#F5F5F5"
         app:layout_constraintTop_toBottomOf="@id/txt_videotitle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-        <com.tks.videophotobook.settings.VideoThumbnailPlayerView
-            android:id="@+id/pyv_video_thumbnail2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#F5F5F5"
-            app:surface_type="texture_view"/>
-        <FrameLayout
-            android:id="@+id/fly_overlay_layer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-    </FrameLayout>
+        app:layout_constraintEnd_toEndOf="parent"/>
     <com.tks.videophotobook.DoubleTapGuideView
         android:id="@+id/viw_double_tap_guide"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="-10dp"
         android:layout_marginEnd="-15dp"
-        app:layout_constraintTop_toTopOf="@id/fly_video_thumbnail2"
+        app:layout_constraintTop_toTopOf="@id/pyv_video_thumbnail2"
         app:layout_constraintEnd_toEndOf="parent" />
     <TextView
         android:id="@+id/txt_videoname"
@@ -134,7 +125,7 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="12dp"
-        app:layout_constraintTop_toBottomOf="@id/fly_video_thumbnail2"/>
+        app:layout_constraintTop_toBottomOf="@id/pyv_video_thumbnail2"/>
     <TextView
         android:id="@+id/txt_commenttitle"
         android:layout_width="wrap_content"
@@ -146,7 +137,7 @@
         android:text="@string/comment"
         android:textSize="15sp"
         android:textColor="#000000"
-        app:layout_constraintTop_toBottomOf="@id/fly_video_thumbnail2"
+        app:layout_constraintTop_toBottomOf="@id/pyv_video_thumbnail2"
         app:layout_constraintStart_toStartOf="parent"/>
     <EditText
         android:id="@+id/etv_comment"

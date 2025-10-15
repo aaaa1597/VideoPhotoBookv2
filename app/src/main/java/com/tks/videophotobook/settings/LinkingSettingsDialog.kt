@@ -268,10 +268,10 @@ class LinkingSettingsDialog: DialogFragment() {
             layoutParams = params
         }
 
-//        val imageView = ImageView(container.context).apply {
-//            setImageBitmap(thumbnail)
-//            layoutParams = params
-//        }
+        val imageView = ImageView(container.context).apply {
+            setImageBitmap(thumbnail)
+            layoutParams = params
+        }
 
         val flashView = View(container.context).apply {
             setBackgroundColor(Color.WHITE)
@@ -288,7 +288,7 @@ class LinkingSettingsDialog: DialogFragment() {
         }
 
         container.addView(blackView)
-//        container.addView(imageView)
+        container.addView(imageView)
         container.addView(flashView)
         container.addView(touchBlocker)
 
@@ -301,101 +301,54 @@ class LinkingSettingsDialog: DialogFragment() {
             }
             .start()
 
-        val fromView = binding.pyvVideoThumbnail2
-        val toView = binding.igvMarkerpreview
-
-        val fromWidth = fromView.width.toFloat()
-        val fromHeight = fromView.height.toFloat()
-        val toWidth = toView.width.toFloat()
-        val toHeight = toView.height.toFloat()
-
-        val fromX = fromView.left.toFloat()
-        val fromY = fromView.top.toFloat()
-        val toCenterX = toView.left + toWidth / 2f
-        val toCenterY = toView.top + toHeight / 2f
-
-        val imageView = ImageView(context).apply {
-            setImageBitmap(thumbnail)
-            layoutParams = FrameLayout.LayoutParams(fromWidth.toInt(), fromHeight.toInt())
-            x = fromX
-            y = fromY
-            pivotX = 0f
-            pivotY = 0f
-            container.addView(this)
-        }
-
-// Path（translationX/Y）用：差分座標で曲線移動
-        val dx = toCenterX - fromX - fromWidth / 2f
-        val dy = toCenterY - fromY - fromHeight / 2f
-
-        val path = Path().apply {
-            moveTo(0f, 0f)
-            cubicTo(200 * 0.3f, dy - 300f, 10 * 0.7f, dy - 300f, dx, dy)
-        }
-
-        val pathAnimator = ObjectAnimator.ofFloat(imageView, View.TRANSLATION_X, View.TRANSLATION_Y, path).apply {
-            duration = 1500
-            interpolator = AccelerateDecelerateInterpolator()
-        }
-
-// スケールアニメーション（サイズをtoViewに合わせる）
-        val scaleX = toWidth / fromWidth
-        val scaleY = toHeight / fromHeight
-
-        val scaleXAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_X, 1f, scaleX)
-        val scaleYAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_Y, 1f, scaleY)
-
-        AnimatorSet().apply {
-            playTogether(pathAnimator, scaleXAnim, scaleYAnim)
-            duration = 1500
-            interpolator = AccelerateDecelerateInterpolator()
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    lifecycleScope.launch {
-                        /* 200ms待ってから */
-                        kotlinx.coroutines.delay(2000)
-                        container.removeView(blackView)
-                        container.removeView(imageView)
-                        container.removeView(touchBlocker)
-                    }
-                }
-            })
-            start()
-        }
+//        val fromView = binding.pyvVideoThumbnail2
+//        val toView = binding.igvMarkerpreview
+//
+//        val fromWidth = fromView.width.toFloat()
+//        val fromHeight = fromView.height.toFloat()
+//        val toWidth = toView.width.toFloat()
+//        val toHeight = toView.height.toFloat()
+//
+//        val fromX = fromView.left.toFloat()
+//        val fromY = fromView.top.toFloat()
+//        val toCenterX = toView.left + toWidth / 2f
+//        val toCenterY = toView.top + toHeight / 2f
+//
+//        val imageView = ImageView(context).apply {
+//            setImageBitmap(thumbnail)
+//            layoutParams = FrameLayout.LayoutParams(fromWidth.toInt(), fromHeight.toInt())
+//            x = fromX
+//            y = fromY
+//            pivotX = 0f
+//            pivotY = 0f
+//            container.addView(this)
+//        }
+//
+//// Path（translationX/Y）用：差分座標で曲線移動
+//        val dx = toCenterX - fromX - fromWidth / 2f
+//        val dy = toCenterY - fromY - fromHeight / 2f
+//
 //        val path = Path().apply {
-//            val imageViewStartX = binding.pyvVideoThumbnail2.left.toFloat()
-//            val imageViewStartY = binding.pyvVideoThumbnail2.top.toFloat()
-//            val targetX = binding.igvMarkerpreview.left.toFloat()
-//            val targetY = binding.igvMarkerpreview.top.toFloat()
-//            val dx = targetX - imageViewStartX
-//            val dy = targetY - imageViewStartY
-//            Log.d("aaaaa", "dx=$dx, dy=$dy imageViewStartX=$imageViewStartX, imageViewStartY=$imageViewStartY, targetX=$targetX, targetY=$targetY")
 //            moveTo(0f, 0f)
 //            cubicTo(200 * 0.3f, dy - 300f, 10 * 0.7f, dy - 300f, dx, dy)
 //        }
 //
-//        val pathAnim = ObjectAnimator.ofFloat(imageView, View.TRANSLATION_X, View.TRANSLATION_Y, path).apply {
+//        val pathAnimator = ObjectAnimator.ofFloat(imageView, View.TRANSLATION_X, View.TRANSLATION_Y, path).apply {
 //            duration = 1500
-//            interpolator = AccelerateInterpolator()
+//            interpolator = AccelerateDecelerateInterpolator()
 //        }
 //
-//        /* 拡縮比（縦横比を維持しつつ、はみ出さない最大スケール） */
-//        val fromWidth = binding.pyvVideoThumbnail2.width.toFloat()
-//        val fromHeight = binding.pyvVideoThumbnail2.height.toFloat()
-//        val toWidth = binding.igvMarkerpreview.width.toFloat()
-//        val toHeight = binding.igvMarkerpreview.height.toFloat()
-//        val scale = minOf(toWidth / fromWidth, toHeight / fromHeight)
+//// スケールアニメーション（サイズをtoViewに合わせる）
+//        val scaleX = toWidth / fromWidth
+//        val scaleY = toHeight / fromHeight
 //
-//        val scaleXAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_X, 1f, 1.5f, scale).apply {
-//            duration = 1500
-//        }
-//        val scaleYAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_Y, 1f, 1.5f, scale).apply {
-//            duration = 1500
-//        }
+//        val scaleXAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_X, 1f, scaleX)
+//        val scaleYAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_Y, 1f, scaleY)
 //
-//        /* アニメーションを同時に実行 */
 //        AnimatorSet().apply {
-//            playTogether(pathAnim, scaleXAnim, scaleYAnim)
+//            playTogether(pathAnimator, scaleXAnim, scaleYAnim)
+//            duration = 1500
+//            interpolator = AccelerateDecelerateInterpolator()
 //            addListener(object : AnimatorListenerAdapter() {
 //                override fun onAnimationEnd(animation: Animator) {
 //                    lifecycleScope.launch {
@@ -409,6 +362,53 @@ class LinkingSettingsDialog: DialogFragment() {
 //            })
 //            start()
 //        }
+        val path = Path().apply {
+            val imageViewStartX = binding.pyvVideoThumbnail2.left.toFloat()
+            val imageViewStartY = binding.pyvVideoThumbnail2.top.toFloat()
+            val targetX = binding.igvMarkerpreview.left.toFloat()
+            val targetY = binding.igvMarkerpreview.top.toFloat()
+            val dx = targetX - imageViewStartX
+            val dy = targetY - imageViewStartY
+            Log.d("aaaaa", "dx=$dx, dy=$dy imageViewStartX=$imageViewStartX, imageViewStartY=$imageViewStartY, targetX=$targetX, targetY=$targetY")
+            moveTo(0f, 0f)
+            cubicTo(200 * 0.3f, dy - 300f, 10 * 0.7f, dy - 100f, dx, dy-150)
+        }
+
+        val pathAnim = ObjectAnimator.ofFloat(imageView, View.TRANSLATION_X, View.TRANSLATION_Y, path).apply {
+            duration = 1500
+            interpolator = AccelerateInterpolator()
+        }
+
+        /* 拡縮比（縦横比を維持しつつ、はみ出さない最大スケール） */
+        val fromWidth = binding.pyvVideoThumbnail2.width.toFloat()
+        val fromHeight = binding.pyvVideoThumbnail2.height.toFloat()
+        val toWidth = binding.igvMarkerpreview.width.toFloat()
+        val toHeight = binding.igvMarkerpreview.height.toFloat()
+        val scale = minOf(toWidth / fromWidth, toHeight / fromHeight)
+
+        val scaleXAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_X, 1f, 1.5f, scale).apply {
+            duration = 1500
+        }
+        val scaleYAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_Y, 1f, 1.5f, scale).apply {
+            duration = 1500
+        }
+
+        /* アニメーションを同時に実行 */
+        AnimatorSet().apply {
+            playTogether(pathAnim, scaleXAnim, scaleYAnim)
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    lifecycleScope.launch {
+                        /* 200ms待ってから */
+                        kotlinx.coroutines.delay(2000)
+                        container.removeView(blackView)
+                        container.removeView(imageView)
+                        container.removeView(touchBlocker)
+                    }
+                }
+            })
+            start()
+        }
     }
 
     /* ViewModelのisEnableを収集してUIの有効/無効を切り替え */

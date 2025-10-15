@@ -1,6 +1,8 @@
 package com.tks.videophotobook.settings
 
+import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Context
@@ -9,9 +11,7 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.RectF
 import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
@@ -20,12 +20,10 @@ import android.util.Log
 import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.MotionEvent
-import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
-import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,6 +31,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
+import androidx.core.view.doOnLayout
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -94,6 +93,13 @@ class LinkingSettingsDialog: DialogFragment() {
         bindInfoToDialog(requireContext(), binding, set)
         collectIsEnableFlow(binding)
         _viewModel.mutableIsEnable.value = (set.videoUri != Uri.EMPTY)
+
+        view.doOnLayout {
+            Log.d("aaaaa", "     top               X=${it.x}, Y=${it.y}, W=${it.width}, H=${it.height}")
+            Log.d("aaaaa", "     txt_toptitle      X=${binding.txtVideotitle.x}, Y=${binding.txtVideotitle.y}, W=${binding.txtVideotitle.width}, H=${binding.txtVideotitle.height}")
+            Log.d("aaaaa", "     txt_targettitle   X=${binding.txtTargettitle.x}, Y=${binding.txtTargettitle.y}, W=${binding.txtTargettitle.width}, H=${binding.txtTargettitle.height}")
+            Log.d("aaaaa", "     igv_markerpreview X=${binding.igvMarkerpreview.x}, Y=${binding.igvMarkerpreview.y}, W=${binding.igvMarkerpreview.width}, H=${binding.igvMarkerpreview.height}")
+        }
     }
 
     private fun bindInfoToDialog(context: Context, binding: DialogMarkerVideoBinding, item: MarkerVideoSet) {
@@ -168,11 +174,11 @@ class LinkingSettingsDialog: DialogFragment() {
         })
         @Suppress("ClickableViewAccessibility")
         binding.igvMarkerpreview.setOnTouchListener {
-                v, event ->
-            gestureDetectorForMarker.onTouchEvent(event)
-            if (event.action == MotionEvent.ACTION_UP)
-                v.performClick()
-            true
+            v, event ->
+                gestureDetectorForMarker.onTouchEvent(event)
+                if (event.action == MotionEvent.ACTION_UP)
+                    v.performClick()
+                true
         }
 
         /* 再生動画設定 */
@@ -241,7 +247,7 @@ class LinkingSettingsDialog: DialogFragment() {
 
     /* Flashアニメ → Image縮小 → BottomSheetDialogFragment表示 */
     private fun showFlashAnimation(binding: DialogMarkerVideoBinding, thumbnail: android.graphics.Bitmap?) {
-        val container = binding.topView
+        val container = binding.dialogTopView
 //        /* すでに"FlashView" が存在していれば何も */
 //        if ((0 until container.childCount).any {
 //                container.getChildAt(it).tag == "FlashView"}) {
@@ -262,10 +268,10 @@ class LinkingSettingsDialog: DialogFragment() {
             layoutParams = params
         }
 
-        val imageView = ImageView(container.context).apply {
-            setImageBitmap(thumbnail)
-            layoutParams = params
-        }
+//        val imageView = ImageView(container.context).apply {
+//            setImageBitmap(thumbnail)
+//            layoutParams = params
+//        }
 
         val flashView = View(container.context).apply {
             setBackgroundColor(Color.WHITE)
@@ -282,7 +288,7 @@ class LinkingSettingsDialog: DialogFragment() {
         }
 
         container.addView(blackView)
-        container.addView(imageView)
+//        container.addView(imageView)
         container.addView(flashView)
         container.addView(touchBlocker)
 
@@ -295,28 +301,114 @@ class LinkingSettingsDialog: DialogFragment() {
             }
             .start()
 
-        val path = Path().apply {
-            val startX = binding.pyvVideoThumbnail2.left.toFloat()
-            val startY = binding.pyvVideoThumbnail2.top.toFloat()
-            moveTo(startX, startY)
-            val endX = binding.igvMarkerpreview.left.toFloat()
-            val endY = binding.igvMarkerpreview.top.toFloat()
-            cubicTo(0f, -300f, -200f, -300f , endX, endY)
+        val fromView = binding.pyvVideoThumbnail2
+        val toView = binding.igvMarkerpreview
+
+        val fromWidth = fromView.width.toFloat()
+        val fromHeight = fromView.height.toFloat()
+        val toWidth = toView.width.toFloat()
+        val toHeight = toView.height.toFloat()
+
+        val fromX = fromView.left.toFloat()
+        val fromY = fromView.top.toFloat()
+        val toCenterX = toView.left + toWidth / 2f
+        val toCenterY = toView.top + toHeight / 2f
+
+        val imageView = ImageView(context).apply {
+            setImageBitmap(thumbnail)
+            layoutParams = FrameLayout.LayoutParams(fromWidth.toInt(), fromHeight.toInt())
+            x = fromX
+            y = fromY
+            pivotX = 0f
+            pivotY = 0f
+            container.addView(this)
         }
 
-        val animator = ObjectAnimator.ofFloat(imageView, View.X, View.Y, path).apply {
+// Path（translationX/Y）用：差分座標で曲線移動
+        val dx = toCenterX - fromX - fromWidth / 2f
+        val dy = toCenterY - fromY - fromHeight / 2f
+
+        val path = Path().apply {
+            moveTo(0f, 0f)
+            cubicTo(200 * 0.3f, dy - 300f, 10 * 0.7f, dy - 300f, dx, dy)
+        }
+
+        val pathAnimator = ObjectAnimator.ofFloat(imageView, View.TRANSLATION_X, View.TRANSLATION_Y, path).apply {
             duration = 1500
-            interpolator = AccelerateInterpolator()
+            interpolator = AccelerateDecelerateInterpolator()
+        }
+
+// スケールアニメーション（サイズをtoViewに合わせる）
+        val scaleX = toWidth / fromWidth
+        val scaleY = toHeight / fromHeight
+
+        val scaleXAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_X, 1f, scaleX)
+        val scaleYAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_Y, 1f, scaleY)
+
+        AnimatorSet().apply {
+            playTogether(pathAnimator, scaleXAnim, scaleYAnim)
+            duration = 1500
+            interpolator = AccelerateDecelerateInterpolator()
             addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: android.animation.Animator) {
-                    super.onAnimationEnd(animation)
-                    container.removeView(blackView)
-                    container.removeView(imageView)
-                    container.removeView(touchBlocker)
+                override fun onAnimationEnd(animation: Animator) {
+                    lifecycleScope.launch {
+                        /* 200ms待ってから */
+                        kotlinx.coroutines.delay(2000)
+                        container.removeView(blackView)
+                        container.removeView(imageView)
+                        container.removeView(touchBlocker)
+                    }
                 }
             })
             start()
         }
+//        val path = Path().apply {
+//            val imageViewStartX = binding.pyvVideoThumbnail2.left.toFloat()
+//            val imageViewStartY = binding.pyvVideoThumbnail2.top.toFloat()
+//            val targetX = binding.igvMarkerpreview.left.toFloat()
+//            val targetY = binding.igvMarkerpreview.top.toFloat()
+//            val dx = targetX - imageViewStartX
+//            val dy = targetY - imageViewStartY
+//            Log.d("aaaaa", "dx=$dx, dy=$dy imageViewStartX=$imageViewStartX, imageViewStartY=$imageViewStartY, targetX=$targetX, targetY=$targetY")
+//            moveTo(0f, 0f)
+//            cubicTo(200 * 0.3f, dy - 300f, 10 * 0.7f, dy - 300f, dx, dy)
+//        }
+//
+//        val pathAnim = ObjectAnimator.ofFloat(imageView, View.TRANSLATION_X, View.TRANSLATION_Y, path).apply {
+//            duration = 1500
+//            interpolator = AccelerateInterpolator()
+//        }
+//
+//        /* 拡縮比（縦横比を維持しつつ、はみ出さない最大スケール） */
+//        val fromWidth = binding.pyvVideoThumbnail2.width.toFloat()
+//        val fromHeight = binding.pyvVideoThumbnail2.height.toFloat()
+//        val toWidth = binding.igvMarkerpreview.width.toFloat()
+//        val toHeight = binding.igvMarkerpreview.height.toFloat()
+//        val scale = minOf(toWidth / fromWidth, toHeight / fromHeight)
+//
+//        val scaleXAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_X, 1f, 1.5f, scale).apply {
+//            duration = 1500
+//        }
+//        val scaleYAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_Y, 1f, 1.5f, scale).apply {
+//            duration = 1500
+//        }
+//
+//        /* アニメーションを同時に実行 */
+//        AnimatorSet().apply {
+//            playTogether(pathAnim, scaleXAnim, scaleYAnim)
+//            addListener(object : AnimatorListenerAdapter() {
+//                override fun onAnimationEnd(animation: Animator) {
+//                    lifecycleScope.launch {
+//                        /* 200ms待ってから */
+//                        kotlinx.coroutines.delay(2000)
+//                        container.removeView(blackView)
+//                        container.removeView(imageView)
+//                        container.removeView(touchBlocker)
+//                    }
+//                }
+//            })
+//            start()
+//        }
     }
 
     /* ViewModelのisEnableを収集してUIの有効/無効を切り替え */

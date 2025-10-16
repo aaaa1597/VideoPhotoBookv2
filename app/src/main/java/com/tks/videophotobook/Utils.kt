@@ -111,40 +111,52 @@ class Utils {
             player.prepare()
         }
 
-        /* 要素数3のBitmap配列(冒頭,中間,終盤)を返却 */
-        fun get3Thumbnail(context: Context, uri: Uri): Array<Bitmap?> {
+        /* 動画からサムネイル取得 */
+        fun getThumbnail(context: Context, uri: Uri, timeUs: Long): Bitmap? {
             /* Uri から一時ファイルにコピー */
             val inputStream = context.contentResolver.openInputStream(uri)
             val tempFile = File.createTempFile("temp_video_000", ".mp4", context.cacheDir)
             inputStream!!.copyTo(tempFile.outputStream())
             inputStream.close()
 
+            val retriever = MediaMetadataRetriever()
+            var retbitmap: Bitmap? = null
+            try {
+                retriever.setDataSource(tempFile.absolutePath)
+                retbitmap = retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST)
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+            }
+            finally {
+                retriever.release()
+            }
+            tempFile.delete()
+            return retbitmap
+        }
+
+        /* 動画再生時間取得 */
+        fun getDurationMsVideo(context: Context, uri: Uri): Long {
             /* mp4の再生時間を取得 */
             val retriever = MediaMetadataRetriever().apply {
-                setDataSource(tempFile.absolutePath)
+                setDataSource(context, uri)
             }
             val durationMs = retriever.let {
                 val durStr = it.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 return@let durStr?.toLong() ?: 0L
             }
-            val targetUs3 : Long = ((durationMs * 1000) * 0.03).toLong()
+            return durationMs
+        }
+
+        fun get2ThumbnailMidAndEnd(context: Context, uri: Uri): Array<Bitmap?> {
+            /* mp4の再生時間を取得 */
+            val durationMs = getDurationMsVideo(context, uri)
             val targetUs50: Long =  (durationMs * 1000) / 2
             val targetUs90: Long = ((durationMs * 1000) * 0.9 ).toLong()
 
-            val bitmapArray = Array<Bitmap?>(3) { idx ->
-                val retriever = MediaMetadataRetriever()
-                val timeUs: Long = when(idx) {0 -> targetUs3 ; 1 -> targetUs50 ; else -> targetUs90}
-                var retbitmap: Bitmap? = null
-                try {
-                    retriever.setDataSource(tempFile.absolutePath)
-                    retbitmap = retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST)
-                }
-                catch (e: Exception) {
-                    e.printStackTrace()
-                }
-                finally {
-                    retriever.release()
-                }
+            val bitmapArray = Array<Bitmap?>(2) { idx ->
+                val timeUs: Long = when(idx) {0 -> targetUs50 ; else -> targetUs90}
+                val retbitmap: Bitmap? = getThumbnail(context, uri, timeUs)
                 retbitmap
             }
             return bitmapArray

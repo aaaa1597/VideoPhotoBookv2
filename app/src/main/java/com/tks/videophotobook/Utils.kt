@@ -161,5 +161,14 @@ class Utils {
             }
             return bitmapArray
         }
+
+        fun deleteRecursively(file: File) {
+            if (file.isDirectory) {
+                file.listFiles()?.forEach { child ->
+                    deleteRecursively(child)
+                }
+            }
+            file.delete()
+        }
     }
 }

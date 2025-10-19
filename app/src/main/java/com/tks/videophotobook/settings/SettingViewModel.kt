@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
+const val PREFS = "PREFS"
+const val CURRENT_INDEX = "CURRENT_INDEX"
 const val MARKER_VIDEO_MAP_JSON = "marker_video_map.json"
 class SettingViewModel(application: Application) : AndroidViewModel(application) {
     private val _markerVideoSetList = MutableStateFlow<List<MarkerVideoSet>>(emptyList())

@@ -8,6 +8,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
+import androidx.core.content.FileProvider
 import java.io.File
 import androidx.core.graphics.scale
 import androidx.core.graphics.createBitmap
@@ -169,6 +170,18 @@ class Utils {
                 }
             }
             file.delete()
+        }
+
+        fun saveBitmapToCacheAndGetUri(context: Context, bitmap: Bitmap, fileName: String): Uri {
+            val cacheDir = context.cacheDir
+            val file = File(cacheDir, fileName)
+            file.outputStream().use { out ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+            /* content://始まりのUriを返却 */
+            return FileProvider.getUriForFile(
+                context,"${context.packageName}.fileprovider",file )
+
         }
     }
 }

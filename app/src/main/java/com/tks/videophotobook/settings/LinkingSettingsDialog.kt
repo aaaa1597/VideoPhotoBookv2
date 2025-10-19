@@ -23,13 +23,9 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
-import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.graphics.scale
@@ -47,7 +43,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import kotlin.getValue
 
 const val ARG_SET = "arg_set"
@@ -169,14 +164,18 @@ class LinkingSettingsDialog: DialogFragment() {
                 val (uri,_) = pickFileAndWaitForUri("image/*", set)
                 Log.d("aaaaa", "OK!!! Maker URI: $uri")
                 /* 取得UriからBitmap生成 */
-                val originalBitmap = Utils.decodeBitmapFromUri(requireContext(), uri)
-                val resizedBitmap = Utils.resizeBitmapWithAspectRatio(originalBitmap!!, 1280, 720)
+                val selectedBitmap = Utils.decodeBitmapFromUri(requireContext(), uri)
+                val resizedBitmap = Utils.resizeBitmapWithAspectRatio(selectedBitmap!!, 1280, 720)
                 /* 画像合成 */
                 val resizedFrame = BitmapFactory.decodeResource(resources, set.targetImageTemplateResId)
                     .scale(resizedBitmap.width, resizedBitmap.height)
                 val canvas = Canvas(resizedBitmap)
                 canvas.drawBitmap(resizedFrame, 0f, 0f, null)
-                binding.igvMarkerpreview.setImageBitmap(resizedBitmap)
+                /* キャッシュ領域にBitmapを保存 */
+                val savedUri = Utils.saveBitmapToCacheAndGetUri(requireContext(), resizedBitmap, "${set.targetName}_marker.png")
+                _viewModel.mutableMarkerVideoSet.value = _viewModel.mutableMarkerVideoSet.value.copy(
+                    targetImageUri = savedUri   /* Uriだけ更新 */
+                )
             }
         }
         val gestureDetectorForMarker = GestureDetector(requireContext(), object : GestureDetector.SimpleOnGestureListener() {

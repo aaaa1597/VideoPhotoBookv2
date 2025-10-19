@@ -23,6 +23,8 @@ val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA, Manifest.permissi
 
 class PermissionsFragment : Fragment() {
     private lateinit var _binding: FragmentPermissionsBinding
+    private var hasRequestedPermissions = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -40,8 +42,10 @@ class PermissionsFragment : Fragment() {
             findNavController().navigate(R.id.action_permissionsFragment_to_mainFragment_fade1, null,
                 NavOptions.Builder().setPopUpTo(R.id.permissionsFragment, true).build()/* 戻る必要がない */)
         }
-
-        permissionLauncher.launch(REQUIRED_PERMISSIONS)
+        else if( !hasRequestedPermissions) {
+            hasRequestedPermissions = true
+            permissionLauncher.launch(REQUIRED_PERMISSIONS)
+        }
     }
 
     private fun checkPermissionsGranted(): Boolean {

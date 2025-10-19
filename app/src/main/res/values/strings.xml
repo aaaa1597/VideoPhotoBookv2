@@ -27,4 +27,5 @@
     <string name="settings_disp_title">Settings</string>
     <string name="delete_setting">delete setting</string>
     <string name="ok">OK</string>
+    <string name="armarker_image_pick_title">Choose AR Marker</string>
 </resources>

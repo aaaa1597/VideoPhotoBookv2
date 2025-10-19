@@ -27,4 +27,5 @@
     <string name="select_another">別の動画を選択してください。</string>
     <string name="settings_disp_title">設定一覧</string>
     <string name="delete_setting">delete setting</string>
+    <string name="armarker_image_pick_title">マーカー選択</string>
 </resources>

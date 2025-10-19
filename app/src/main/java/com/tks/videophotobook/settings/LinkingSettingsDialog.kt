@@ -40,6 +40,7 @@ import com.tks.videophotobook.R
 import com.tks.videophotobook.Utils
 import com.tks.videophotobook.databinding.DialogMarkerVideoBinding
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -184,13 +185,16 @@ class LinkingSettingsDialog: DialogFragment() {
                 return true
             }
         })
-        @Suppress("ClickableViewAccessibility")
-        binding.igvMarkerpreview.setOnTouchListener {
-            v, event ->
-                gestureDetectorForMarker.onTouchEvent(event)
-                if (event.action == MotionEvent.ACTION_UP)
-                    v.performClick()
-                true
+//        @Suppress("ClickableViewAccessibility")
+//        binding.igvMarkerpreview.setOnTouchListener {
+//            v, event ->
+//                gestureDetectorForMarker.onTouchEvent(event)
+//                if (event.action == MotionEvent.ACTION_UP)
+//                    v.performClick()
+//                true
+//        }
+        binding.igvMarkerpreview.setOnClickListener {
+            ImagePickBottomDialogFragment().show(parentFragmentManager, "ImagePickBottomSheetDialog")
         }
 
         /* 再生動画設定 */
@@ -219,10 +223,15 @@ class LinkingSettingsDialog: DialogFragment() {
                         _viewModel.mutableIsEnable.value = true
                     }
                     /* 動画から中盤/終盤のサムネイルを取得 */
-                    lifecycleScope.launch {
+                    lifecycleScope.launch(Dispatchers.IO) {
                         val thumbnails2 = Utils.get2ThumbnailMidAndEnd(requireContext(), uri)
                         thumbnails3[1] = thumbnails2[0]
                         thumbnails3[2] = thumbnails2[1]
+                        val updatedBitmapArray = _viewModel.t3Thumbnail.value.copyOf()
+                        updatedBitmapArray[0] = thumbnails3[0]
+                        updatedBitmapArray[1] = thumbnails3[1]
+                        updatedBitmapArray[2] = thumbnails3[2]
+                        _viewModel.mutable3Thumbnail.value = updatedBitmapArray
                     }
                 }
             }

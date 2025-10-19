@@ -29,6 +29,7 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.graphics.scale
@@ -43,14 +44,16 @@ import com.tks.videophotobook.R
 import com.tks.videophotobook.Utils
 import com.tks.videophotobook.databinding.DialogMarkerVideoBinding
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import kotlin.getValue
 
 const val ARG_SET = "arg_set"
 class LinkingSettingsDialog: DialogFragment() {
     private var _binding: DialogMarkerVideoBinding? = null
     private val binding get() = _binding!!
-    private lateinit var set: MarkerVideoSet
     private val _viewModel: SetDialogViewModel by activityViewModels()
     /* なんのTargetNameでどっち(image/video)のファイル選択したかを一時保持 */
     private var pendingTargetNameAndMimeType: Pair<String, String>? = null
@@ -82,7 +85,11 @@ class LinkingSettingsDialog: DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        set = requireArguments().getParcelable(ARG_SET, MarkerVideoSet::class.java)!!
+        if(savedInstanceState == null) {
+            val set = requireArguments().getParcelable(ARG_SET, MarkerVideoSet::class.java)!!
+            _viewModel.mutableMarkerVideoSet = MutableStateFlow(set)
+            _viewModel.mutableIsEnable.value = (set.videoUri != Uri.EMPTY)
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -92,9 +99,9 @@ class LinkingSettingsDialog: DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        bindInfoToDialog(requireContext(), binding, set)
+        bindInfoToDialog(requireContext(), binding, _viewModel.mutableMarkerVideoSet.value)
+        collectMarkerVideoSetFlow(binding)
         collectIsEnableFlow(binding)
-        _viewModel.mutableIsEnable.value = (set.videoUri != Uri.EMPTY)
 
         view.doOnLayout {
             Log.d("aaaaa", "     top               X=${it.x}, Y=${it.y}, W=${it.width}, H=${it.height}")
@@ -104,7 +111,7 @@ class LinkingSettingsDialog: DialogFragment() {
         }
     }
 
-    private fun bindInfoToDialog(context: Context, binding: DialogMarkerVideoBinding, item: MarkerVideoSet) {
+    private fun bindData(context: Context, binding: DialogMarkerVideoBinding, item: MarkerVideoSet) {
         /* ARマーカーID */
         binding.txtTargetname.text = item.targetName
         /* ARマーカー画像 */
@@ -123,8 +130,12 @@ class LinkingSettingsDialog: DialogFragment() {
             val uri = "android.resource://${context.packageName}/${R.raw.double_tap_to_choose_a_video}".toUri()
             binding.pyvVideoThumbnail2.setVideoUri(uri, false, false, true)
         }
-
         binding.etvComment.setText(item.comment)
+    }
+
+    private fun bindInfoToDialog(context: Context, binding: DialogMarkerVideoBinding, item: MarkerVideoSet) {
+        /* データ紐付け */
+        bindData(context, binding, item)
 
         val launchFilePicker: (String, MarkerVideoSet) -> Unit = {
                 mimeType, item ->
@@ -205,11 +216,13 @@ class LinkingSettingsDialog: DialogFragment() {
                     }
                     /* Videoセット */
                     lifecycleScope.launch {
+                        delay(500) /* アニメーションを最優先させたいので少し待つ */
                         binding.pyvVideoThumbnail2.setVideoUri(uri,true, false, true)
                         _viewModel.mutableIsEnable.value = true
                     }
+                    /* 動画から中盤/終盤のサムネイルを取得 */
                     lifecycleScope.launch {
-                        /* 動画から3つのサムネイルを取得 */
+                        delay(500) /* アニメーションを最優先させたいので少し待つ */
                         val thumbnails2 = Utils.get2ThumbnailMidAndEnd(requireContext(), uri)
                         thumbnails3[1] = thumbnails2[0]
                         thumbnails3[2] = thumbnails2[1]
@@ -330,7 +343,7 @@ class LinkingSettingsDialog: DialogFragment() {
             val dy = targetY - imageViewStartY - (binding.igvMarkerpreview.height*(1-scale))
             Log.d("aaaaa", "dx=$dx, dy=$dy imageViewStartX=$imageViewStartX, imageViewStartY=$imageViewStartY, targetX=$targetX, targetY=$targetY")
             moveTo(0f, 0f)
-            cubicTo(200f, -400f, -200f, -200f, dx, dy)
+            cubicTo(300f, 0f, 300f, dy, dx, dy)
         }
 
         val pathAnim = ObjectAnimator.ofFloat(imageView, View.TRANSLATION_X, View.TRANSLATION_Y, path).apply {
@@ -338,11 +351,13 @@ class LinkingSettingsDialog: DialogFragment() {
             interpolator = DecelerateInterpolator()
         }
 
-        val scaleXAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_X, 1f, 1.5f, scale).apply {
+        val scaleXAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_X, 1f, 1.3f, scale).apply {
             duration = 1500
+            interpolator = DecelerateInterpolator()
         }
-        val scaleYAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_Y, 1f, 1.5f, scale).apply {
+        val scaleYAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_Y, 1f, 1.3f, scale).apply {
             duration = 1500
+            interpolator = DecelerateInterpolator()
         }
 
         /* アニメーションを同時に実行 */
@@ -352,7 +367,7 @@ class LinkingSettingsDialog: DialogFragment() {
                 override fun onAnimationEnd(animation: Animator) {
                     lifecycleScope.launch {
                         /* 200ms待ってから */
-                        kotlinx.coroutines.delay(2000)
+                        delay(2000)
                         container.removeView(blackView)
                         container.removeView(imageView)
                         container.removeView(touchBlocker)
@@ -364,10 +379,21 @@ class LinkingSettingsDialog: DialogFragment() {
     }
 
     /* ViewModelのisEnableを収集してUIの有効/無効を切り替え */
+    private fun collectMarkerVideoSetFlow(binding: DialogMarkerVideoBinding) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                /* mutableMarkerVideoSetを収集 */
+                _viewModel.mutableMarkerVideoSet.collect { set ->
+                    bindData(requireContext(), binding, _viewModel.markerVideoSet.value)
+                }
+            }
+        }
+    }
+
     private fun collectIsEnableFlow(binding: DialogMarkerVideoBinding) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // ViewModelのStateFlowを収集
+                /* ViewModelのStateFlowを収集 */
                 _viewModel.isEnable.collect { isEnable ->
                     /* Flowから新しい値が放出されたら、UIの有効/無効を切り替え */
                     binding.txtTargetname.   isEnabled = isEnable

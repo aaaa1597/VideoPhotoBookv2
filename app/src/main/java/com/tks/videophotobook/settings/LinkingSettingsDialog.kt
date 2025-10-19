@@ -216,13 +216,11 @@ class LinkingSettingsDialog: DialogFragment() {
                     }
                     /* Videoセット */
                     lifecycleScope.launch {
-                        delay(500) /* アニメーションを最優先させたいので少し待つ */
                         binding.pyvVideoThumbnail2.setVideoUri(uri,true, false, true)
                         _viewModel.mutableIsEnable.value = true
                     }
                     /* 動画から中盤/終盤のサムネイルを取得 */
                     lifecycleScope.launch {
-                        delay(500) /* アニメーションを最優先させたいので少し待つ */
                         val thumbnails2 = Utils.get2ThumbnailMidAndEnd(requireContext(), uri)
                         thumbnails3[1] = thumbnails2[0]
                         thumbnails3[2] = thumbnails2[1]

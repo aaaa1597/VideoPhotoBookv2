@@ -1,13 +1,17 @@
 package com.tks.videophotobook.settings
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.scale
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -23,6 +27,29 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
     private var _binding: FragmentImagePickBottomDialogBinding? = null
     private val binding get() = _binding!!
     private val _viewModel: SetDialogViewModel by activityViewModels()
+    private val _pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        /* ファイルリストの戻り */
+        result ->
+            val (targetName, mimeType) = Utils.pendingTargetNameAndMimeType ?: throw RuntimeException("No way!! pendingTargetNameAndMimeType is null")
+            Utils.pendingTargetNameAndMimeType = null
+            if (result.resultCode != Activity.RESULT_OK || result.data?.data == null) {
+                Utils.onFileUrlPicked = null
+                return@registerForActivityResult
+            }
+            /* 単一のファイルが選択された */
+            val uri = result.data!!.data!!
+            Log.d("aaaaa", "file URI: $uri")
+            /* URIに対する永続権限を取得 */
+            try { requireContext().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+            catch (e: SecurityException) { throw RuntimeException("SecurityException!! ${e.printStackTrace()}") }
+
+            /* Uri動画の再生チェック */
+            if (mimeType.startsWith("video"))
+                Utils.checkVideoCompatibilitybyPlayback(requireContext(), uri, Utils.onFileUrlPicked!!)
+            else
+                Utils.onFileUrlPicked!!(uri, 0)
+            Utils.onFileUrlPicked = null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +69,7 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
     private fun collect3ThumbnailFlow(binding: FragmentImagePickBottomDialogBinding) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                /* mutableMarkerVideoSetを収集 */
+                /* 3Thumbnailを収集 */
                 _viewModel.mutable3Thumbnail.collect { bitmaps ->
                     bindData(binding, bitmaps)
                 }
@@ -79,31 +106,29 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
         binding.imvThumbnail1.setOnClickListener {
             if(_viewModel.t3Thumbnail.value[0] != null)
                 setMarkerAndSaveBitmap(_viewModel.t3Thumbnail.value[0]!!)
+            dismissAllowingStateLoss()
         }
         binding.imvThumbnail2.setOnClickListener {
             if(_viewModel.t3Thumbnail.value[1] != null)
                 setMarkerAndSaveBitmap(_viewModel.t3Thumbnail.value[1]!!)
+            dismissAllowingStateLoss()
         }
         binding.imvThumbnail3.setOnClickListener {
             if(_viewModel.t3Thumbnail.value[2] != null)
                 setMarkerAndSaveBitmap(_viewModel.t3Thumbnail.value[2]!!)
+            dismissAllowingStateLoss()
         }
         binding.imvAdd.setOnClickListener {
-//            val (uri,_) = pickFileAndWaitForUri("image/*", set)
-//            Log.d("aaaaa", "OK!!! Maker URI: $uri")
-//            /* 取得UriからBitmap生成 */
-//            val selectedBitmap = Utils.decodeBitmapFromUri(requireContext(), uri)
-//            val resizedBitmap = Utils.resizeBitmapWithAspectRatio(selectedBitmap!!, 1280, 720)
-//            /* 画像合成 */
-//            val resizedFrame = BitmapFactory.decodeResource(resources, set.targetImageTemplateResId)
-//                .scale(resizedBitmap.width, resizedBitmap.height)
-//            val canvas = Canvas(resizedBitmap)
-//            canvas.drawBitmap(resizedFrame, 0f, 0f, null)
-//            /* キャッシュ領域にBitmapを保存 */
-//            val savedUri = Utils.saveBitmapToCacheAndGetUri(requireContext(), resizedBitmap, "${set.targetName}_marker.png")
-//            _viewModel.mutableMarkerVideoSet.value = _viewModel.mutableMarkerVideoSet.value.copy(
-//                targetImageUri = savedUri   /* Uriだけ更新 */
-//            )
+            lifecycleScope.launch {
+                val set: MarkerVideoSet = _viewModel.mutableMarkerVideoSet.value
+                val (uri,_) = Utils.pickFileAndWaitForUri("image/*", set, _pickFileLauncher)
+                Log.d("aaaaa", "OK!!! Maker URI: $uri")
+                /* 取得UriからBitmap生成 */
+                val selectedBitmap = Utils.decodeBitmapFromUri(requireContext(), uri)
+                /* bitmapをマーカー設定と保存 */
+                setMarkerAndSaveBitmap(selectedBitmap!!)
+                dismissAllowingStateLoss()
+            }
         }
     }
 

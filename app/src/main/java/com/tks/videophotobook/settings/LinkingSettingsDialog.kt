@@ -51,17 +51,14 @@ class LinkingSettingsDialog: DialogFragment() {
     private var _binding: DialogMarkerVideoBinding? = null
     private val binding get() = _binding!!
     private val _viewModel: SetDialogViewModel by activityViewModels()
-    /* なんのTargetNameでどっち(image/video)のファイル選択したかを一時保持 */
-    private var pendingTargetNameAndMimeType: Pair<String, String>? = null
-    private var onFileUrlPicked: ((Uri, Int) -> Unit)? = null
     /* ファイル選択ランチャー */
     private val _pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         /* ファイルリストの戻り */
         result ->
-            val (targetName, mimeType) = pendingTargetNameAndMimeType ?: throw RuntimeException("No way!! pendingTargetNameAndMimeType is null")
-            pendingTargetNameAndMimeType = null
+            val (targetName, mimeType) = Utils.pendingTargetNameAndMimeType ?: throw RuntimeException("No way!! pendingTargetNameAndMimeType is null")
+            Utils.pendingTargetNameAndMimeType = null
             if (result.resultCode != Activity.RESULT_OK || result.data?.data == null) {
-                onFileUrlPicked = null
+                Utils.onFileUrlPicked = null
                 return@registerForActivityResult
             }
             /* 単一のファイルが選択された */
@@ -73,10 +70,10 @@ class LinkingSettingsDialog: DialogFragment() {
 
             /* Uri動画の再生チェック */
             if (mimeType.startsWith("video"))
-                Utils.checkVideoCompatibilitybyPlayback(requireContext(), uri, onFileUrlPicked!!)
+                Utils.checkVideoCompatibilitybyPlayback(requireContext(), uri, Utils.onFileUrlPicked!!)
             else
-                onFileUrlPicked!!(uri, 0)
-            onFileUrlPicked = null
+                Utils.onFileUrlPicked!!(uri, 0)
+            Utils.onFileUrlPicked = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -133,74 +130,16 @@ class LinkingSettingsDialog: DialogFragment() {
         /* データ紐付け */
         bindData(context, binding, item)
 
-        val launchFilePicker: (String, MarkerVideoSet) -> Unit = {
-                mimeType, item ->
-                    pendingTargetNameAndMimeType = item.targetName to mimeType
-                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                        addCategory(Intent.CATEGORY_OPENABLE)
-                        type = mimeType
-                        /* 初期表示ディレクトリ指定 */
-                        putExtra(DocumentsContract.EXTRA_INITIAL_URI, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
-                    }
-                    /* 生成Intentで起動 */
-                    _pickFileLauncher.launch(intent)
-        }
-
-        suspend fun pickFileAndWaitForUri(mimeType: String, item: MarkerVideoSet): Pair<Uri, Int> {
-            val deferredUri = CompletableDeferred<Pair<Uri, Int>>()
-            /* コールバックでUriを受け取ったらComplete */
-            onFileUrlPicked = { uri, errCode ->
-                deferredUri.complete(uri to errCode)
-            }
-            /* ファイル選択画面を起動 */
-            launchFilePicker(mimeType, item)
-            /* Uriが設定されるまで待つ */
-            return deferredUri.await()
-        }
-
-        /* マーカー画像設定 */
-        fun setMarker(set: MarkerVideoSet) {
-            lifecycleScope.launch {
-                val (uri,_) = pickFileAndWaitForUri("image/*", set)
-                Log.d("aaaaa", "OK!!! Maker URI: $uri")
-                /* 取得UriからBitmap生成 */
-                val selectedBitmap = Utils.decodeBitmapFromUri(requireContext(), uri)
-                val resizedBitmap = Utils.resizeBitmapWithAspectRatio(selectedBitmap!!, 1280, 720)
-                /* 画像合成 */
-                val resizedFrame = BitmapFactory.decodeResource(resources, set.targetImageTemplateResId)
-                    .scale(resizedBitmap.width, resizedBitmap.height)
-                val canvas = Canvas(resizedBitmap)
-                canvas.drawBitmap(resizedFrame, 0f, 0f, null)
-                /* キャッシュ領域にBitmapを保存 */
-                val savedUri = Utils.saveBitmapToCacheAndGetUri(requireContext(), resizedBitmap, "${set.targetName}_marker.png")
-                _viewModel.mutableMarkerVideoSet.value = _viewModel.mutableMarkerVideoSet.value.copy(
-                    targetImageUri = savedUri   /* Uriだけ更新 */
-                )
-            }
-        }
-        val gestureDetectorForMarker = GestureDetector(requireContext(), object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDoubleTap(e: MotionEvent): Boolean {
-                setMarker(item)
-                return true
-            }
-        })
-//        @Suppress("ClickableViewAccessibility")
-//        binding.igvMarkerpreview.setOnTouchListener {
-//            v, event ->
-//                gestureDetectorForMarker.onTouchEvent(event)
-//                if (event.action == MotionEvent.ACTION_UP)
-//                    v.performClick()
-//                true
-//        }
         binding.igvMarkerpreview.setOnClickListener {
-            ImagePickBottomDialogFragment().show(parentFragmentManager, "ImagePickBottomSheetDialog")
+            val exisistingDialog = parentFragmentManager.findFragmentByTag("ImagePickBottomSheetDialog")
+            if (exisistingDialog == null || !exisistingDialog.isAdded)
+                ImagePickBottomDialogFragment().show(parentFragmentManager, "ImagePickBottomSheetDialog")
         }
 
         /* 再生動画設定 */
         fun setVideoAndGet3Thumbnail(set: MarkerVideoSet) {
             lifecycleScope.launch {
-                val (uri, errCode) = pickFileAndWaitForUri("video/*", set)
+                val (uri, errCode) = Utils.pickFileAndWaitForUri("video/*", set, _pickFileLauncher)
                 if(errCode != 0) {
                     /* 再生不可 */
                     AlertDialog.Builder(requireContext())
@@ -219,7 +158,9 @@ class LinkingSettingsDialog: DialogFragment() {
                     }
                     /* Videoセット */
                     lifecycleScope.launch {
-                        binding.pyvVideoThumbnail2.setVideoUri(uri,true, false, true)
+                        _viewModel.mutableMarkerVideoSet.value.copy(
+                            videoUri = uri
+                        )
                         _viewModel.mutableIsEnable.value = true
                     }
                     /* 動画から中盤/終盤のサムネイルを取得 */
@@ -278,7 +219,7 @@ class LinkingSettingsDialog: DialogFragment() {
     }
 
     /* Flashアニメ → Image縮小 → BottomSheetDialogFragment表示 */
-    private fun showFlashAnimation(binding: DialogMarkerVideoBinding, thumbnail: android.graphics.Bitmap?) {
+    private fun showFlashAnimation(binding: DialogMarkerVideoBinding, thumbnail: Bitmap?) {
         val container = binding.dialogTopView
 //        /* すでに"FlashView" が存在していれば何も */
 //        if ((0 until container.childCount).any {

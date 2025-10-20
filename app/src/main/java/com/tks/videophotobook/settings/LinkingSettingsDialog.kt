@@ -158,7 +158,7 @@ class LinkingSettingsDialog: DialogFragment() {
                     }
                     /* Videoセット */
                     lifecycleScope.launch {
-                        _viewModel.mutableMarkerVideoSet.value.copy(
+                        _viewModel.mutableMarkerVideoSet.value = _viewModel.mutableMarkerVideoSet.value.copy(
                             videoUri = uri
                         )
                         _viewModel.mutableIsEnable.value = true
@@ -236,10 +236,10 @@ class LinkingSettingsDialog: DialogFragment() {
             endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
         }
 
-        val blackView = View(container.context).apply {
-            setBackgroundColor(Color.BLACK)
-            layoutParams = params
-        }
+//        val blackView = View(container.context).apply {
+//            setBackgroundColor(Color.BLACK)
+//            layoutParams = params
+//        }
 
         val imageView = ImageView(container.context).apply {
             setImageBitmap(thumbnail)
@@ -260,7 +260,7 @@ class LinkingSettingsDialog: DialogFragment() {
             isFocusable = true
         }
 
-        container.addView(blackView)
+//        container.addView(blackView)
         container.addView(imageView)
         container.addView(flashView)
         container.addView(touchBlocker)
@@ -315,7 +315,7 @@ class LinkingSettingsDialog: DialogFragment() {
                     lifecycleScope.launch {
                         /* 200ms待ってから */
                         delay(2000)
-                        container.removeView(blackView)
+//                        container.removeView(blackView)
                         container.removeView(imageView)
                         container.removeView(touchBlocker)
                     }

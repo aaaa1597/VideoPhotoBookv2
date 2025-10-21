@@ -208,6 +208,14 @@
             android:text="@string/save"
             android:textColor="@android:color/white" />
     </LinearLayout>
+    <com.tks.videophotobook.DoubleTapGuideView
+        android:id="@+id/viw_double_tap_saveguide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-40dp"
+        android:layout_marginEnd="-20dp"
+        app:layout_constraintTop_toTopOf="@id/buttonRow"
+        app:layout_constraintEnd_toEndOf="@id/buttonRow" />
 
     <View
         android:id="@+id/touch_blocker"

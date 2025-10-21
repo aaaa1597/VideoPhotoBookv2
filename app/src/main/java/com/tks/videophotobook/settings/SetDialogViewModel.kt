@@ -12,6 +12,9 @@ class SetDialogViewModel: ViewModel() {
     val mutableIsVisibilityMarker = MutableStateFlow(false)
     val isVisibilityMarker: StateFlow<Boolean> get() = mutableIsVisibilityMarker
 
+    val mutableIsVisibilitySave = MutableStateFlow(false)
+    val isVisibilitySave: StateFlow<Boolean> get() = mutableIsVisibilitySave
+
     lateinit var mutableMarkerVideoSet: MutableStateFlow<MarkerVideoSet>
     val markerVideoSet: StateFlow<MarkerVideoSet> get() = mutableMarkerVideoSet
 

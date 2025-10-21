@@ -90,6 +90,7 @@ class LinkingSettingsDialog: DialogFragment() {
         collectMarkerVideoSetFlow(binding)
         collectIsEnableFlow(binding)
         collectIsVisibilityMarkerFlow(binding)
+        collectIsVisibilitySaveFlow(binding)
 
         view.doOnLayout {
             /* touchBlockerの縦サイズを動的に設定(xmlだと期待の高さにならない) */
@@ -197,6 +198,7 @@ class LinkingSettingsDialog: DialogFragment() {
         }
         /* 保存 */
         binding.btnSave.setOnClickListener {
+            _viewModel.mutableIsVisibilitySave.value = false
 //            /* ViewModelのリスト更新 */
 //            targetName.let { targetName ->
 //                val currentList = _settingViewModel.markerVideoSetList.value.toMutableList()
@@ -214,6 +216,7 @@ class LinkingSettingsDialog: DialogFragment() {
 //            /* Uriを返却 */
 //            onFileUrlPicked?.invoke(uri)
 //            onFileUrlPicked = null
+            dismissAllowingStateLoss()
         }
     }
 
@@ -277,7 +280,7 @@ class LinkingSettingsDialog: DialogFragment() {
             val targetX = binding.igvMarkerpreview.left.toFloat()
             val targetY = binding.igvMarkerpreview.top.toFloat()
             val dx = targetX - imageViewStartX
-            val dy = targetY - imageViewStartY - (binding.igvMarkerpreview.height*(1-scale))
+            val dy = targetY - imageViewStartY - (binding.igvMarkerpreview.height*(1-scale)) + binding.txtVideoname.height
             Log.d("aaaaa", "dx=$dx, dy=$dy imageViewStartX=$imageViewStartX, imageViewStartY=$imageViewStartY, targetX=$targetX, targetY=$targetY")
             moveTo(0f, 0f)
             cubicTo(300f, 0f, 300f, dy, dx, dy)
@@ -303,11 +306,9 @@ class LinkingSettingsDialog: DialogFragment() {
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     lifecycleScope.launch {
-                        /* 200ms待ってから */
                         if(thumbnailBitmap != null) {
                             Utils.setTargetImageAndSaveBitmap(requireContext(), thumbnailBitmap, _viewModel)
                         }
-                        delay(2000)
                         container.removeView(imageView)
                         binding.touchBlocker.visibility = View.GONE
                         _viewModel.mutableIsVisibilityMarker.value = true
@@ -371,6 +372,21 @@ class LinkingSettingsDialog: DialogFragment() {
                     when(isVisibility) {
                         true -> binding.viwDoubleTapMarkerguide.visibility = View.VISIBLE
                         false-> binding.viwDoubleTapMarkerguide.visibility = View.GONE
+                    }
+                }
+            }
+        }
+    }
+
+    private fun collectIsVisibilitySaveFlow(binding: DialogMarkerVideoBinding) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                /* ViewModelのStateFlowを収集 */
+                _viewModel.isVisibilitySave.collect { isVisibility ->
+                    /* Flowから新しい値が放出されたら、表示/非表示を切り替え */
+                    when(isVisibility) {
+                        true -> binding.viwDoubleTapSaveguide.visibility = View.VISIBLE
+                        false-> binding.viwDoubleTapSaveguide.visibility = View.GONE
                     }
                 }
             }

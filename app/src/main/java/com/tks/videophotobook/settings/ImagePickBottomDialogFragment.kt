@@ -100,6 +100,7 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
                 /* bitmapをマーカー設定と保存 */
                 setMarkerAndSaveBitmap(_viewModel.t3Thumbnail.value[0]!!)
                 _viewModel.mutableIsVisibilityMarker.value = false
+                _viewModel.mutableIsVisibilitySave.value = true
                 dismissAllowingStateLoss()
             }
         }
@@ -109,6 +110,7 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
                 /* bitmapをマーカー設定と保存 */
                 setMarkerAndSaveBitmap(_viewModel.t3Thumbnail.value[1]!!)
                 _viewModel.mutableIsVisibilityMarker.value = false
+                _viewModel.mutableIsVisibilitySave.value = true
                 dismissAllowingStateLoss()
             }
         }
@@ -118,6 +120,7 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
                 /* bitmapをマーカー設定と保存 */
                 setMarkerAndSaveBitmap(_viewModel.t3Thumbnail.value[2]!!)
                 _viewModel.mutableIsVisibilityMarker.value = false
+                _viewModel.mutableIsVisibilitySave.value = true
                 dismissAllowingStateLoss()
             }
         }
@@ -132,6 +135,7 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
                 /* bitmapをマーカー設定と保存 */
                 setMarkerAndSaveBitmap(selectedBitmap!!)
                 _viewModel.mutableIsVisibilityMarker.value = false
+                _viewModel.mutableIsVisibilitySave.value = true
                 dismissAllowingStateLoss()
             }
         }

@@ -98,6 +98,10 @@ class LinkingSettingsDialog: DialogFragment() {
         collectIsVisibilityMarkerFlow(binding)
 
         view.doOnLayout {
+            /* touchBlockerの縦サイズを動的に設定(xmlだと期待の高さにならない) */
+            val params = binding.touchBlocker.layoutParams
+            params.height = (binding.pyvVideoThumbnail2.top + binding.pyvVideoThumbnail2.height) - binding.igvMarkerpreview.top
+            binding.touchBlocker.layoutParams = params
             Log.d("aaaaa", "     top               X=${it.x}, Y=${it.y}, W=${it.width}, H=${it.height}")
             Log.d("aaaaa", "     txt_toptitle      X=${binding.txtVideotitle.x}, Y=${binding.txtVideotitle.y}, W=${binding.txtVideotitle.width}, H=${binding.txtVideotitle.height}")
             Log.d("aaaaa", "     txt_targettitle   X=${binding.txtTargettitle.x}, Y=${binding.txtTargettitle.y}, W=${binding.txtTargettitle.width}, H=${binding.txtTargettitle.height}")
@@ -237,11 +241,6 @@ class LinkingSettingsDialog: DialogFragment() {
             endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
         }
 
-        val blackView = View(container.context).apply {
-            setBackgroundColor(Color.BLACK)
-            layoutParams = params
-        }
-
         val imageView = ImageView(container.context).apply {
             setImageBitmap(thumbnail)
             layoutParams = params
@@ -254,17 +253,9 @@ class LinkingSettingsDialog: DialogFragment() {
             layoutParams = params
         }
 
-        val touchBlocker = View(container.context).apply {
-            setBackgroundColor(Color.TRANSPARENT)
-            layoutParams = params
-            isClickable = true
-            isFocusable = true
-        }
-
-        container.addView(blackView)
         container.addView(imageView)
         container.addView(flashView)
-        container.addView(touchBlocker)
+        binding.touchBlocker.visibility = View.VISIBLE
 
         /* 一旦真っ白になって徐々に消える */
         flashView.animate()
@@ -316,9 +307,8 @@ class LinkingSettingsDialog: DialogFragment() {
                     lifecycleScope.launch {
                         /* 200ms待ってから */
                         delay(2000)
-                        container.removeView(blackView)
                         container.removeView(imageView)
-                        container.removeView(touchBlocker)
+                        binding.touchBlocker.visibility = View.GONE
                         _viewModel.mutableIsVisibilityMarker.value = true
                     }
                 }

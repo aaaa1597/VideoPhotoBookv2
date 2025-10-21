@@ -209,4 +209,14 @@
             android:textColor="@android:color/white" />
     </LinearLayout>
 
+    <View
+        android:id="@+id/touch_blocker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

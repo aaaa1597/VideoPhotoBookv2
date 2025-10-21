@@ -84,20 +84,9 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
         binding.imvThumbnail3.setImageBitmap(bitmaps[2])
     }
 
-    fun setMarkerAndSaveBitmap(bitmap: Bitmap) {
+    fun setMarkerAndSaveBitmap(thumbnailBitmap: Bitmap) {
         lifecycleScope.launch {
-            val resizedBitmap = Utils.resizeBitmapWithAspectRatio(bitmap, 1280, 720)
-            /* 画像合成 */
-            val set: MarkerVideoSet = _viewModel.markerVideoSet.value
-            val resizedFrame = BitmapFactory.decodeResource(resources, set.targetImageTemplateResId)
-                .scale(resizedBitmap.width, resizedBitmap.height)
-            val canvas = Canvas(resizedBitmap)
-            canvas.drawBitmap(resizedFrame, 0f, 0f, null)
-            /* キャッシュ領域にBitmapを保存 */
-            val savedUri = Utils.saveBitmapToCacheAndGetUri(requireContext(), resizedBitmap, "${set.targetName}_marker.png")
-            _viewModel.mutableMarkerVideoSet.value = _viewModel.mutableMarkerVideoSet.value.copy(
-                targetImageUri = savedUri   /* Uriだけ更新 */
-            )
+            Utils.setTargetImageAndSaveBitmap(requireContext(), thumbnailBitmap, _viewModel)
         }
     }
 

@@ -4,8 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.icu.number.IntegerWidth
 import android.media.MediaMetadataRetriever
+import android.media.ThumbnailUtils
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.MediaStore
@@ -16,12 +18,15 @@ import androidx.core.content.FileProvider
 import java.io.File
 import androidx.core.graphics.scale
 import androidx.core.graphics.createBitmap
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.tks.videophotobook.settings.MarkerVideoSet
+import com.tks.videophotobook.settings.SetDialogViewModel
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.launch
 
 class Utils {
     companion object {
@@ -217,6 +222,21 @@ class Utils {
             launchFilePicker(mimeType, item, pickFileLauncher)
             /* Uriが設定されるまで待つ */
             return deferredUri.await()
+        }
+
+        fun setTargetImageAndSaveBitmap(context: Context, thumbnailBitmap: Bitmap, viewModel: SetDialogViewModel) {
+            val resizedBitmap = resizeBitmapWithAspectRatio(thumbnailBitmap, 1280, 720)
+            /* 画像合成 */
+            val resizedFrame = BitmapFactory.decodeResource(context.resources, viewModel.mutableMarkerVideoSet.value.targetImageTemplateResId)
+                .scale(resizedBitmap.width, resizedBitmap.height)
+            val canvas = Canvas(resizedBitmap)
+            canvas.drawBitmap(resizedFrame, 0f, 0f, null)
+            /* キャッシュ領域にBitmapを保存 */
+            val savedUri = saveBitmapToCacheAndGetUri(context, resizedBitmap, "${viewModel.mutableMarkerVideoSet.value.targetName}_marker.png")
+            /* マーカー表示更新 */
+            viewModel.mutableMarkerVideoSet.value = viewModel.mutableMarkerVideoSet.value.copy(
+                targetImageUri = savedUri   /* Uriだけ更新 */
+            )
         }
     }
 }

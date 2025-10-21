@@ -9,14 +9,10 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Path
 import android.net.Uri
 import android.os.Bundle
-import android.provider.DocumentsContract
-import android.provider.MediaStore
 import android.util.Log
 import android.view.GestureDetector
 import android.view.LayoutInflater
@@ -28,7 +24,6 @@ import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.DialogFragment
@@ -39,7 +34,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.tks.videophotobook.R
 import com.tks.videophotobook.Utils
 import com.tks.videophotobook.databinding.DialogMarkerVideoBinding
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -224,7 +218,11 @@ class LinkingSettingsDialog: DialogFragment() {
     }
 
     /* アニメ → Image縮小 → BottomSheetDialogFragment表示 */
-    private fun showFlashAnimation(binding: DialogMarkerVideoBinding, thumbnail: Bitmap?) {
+    private fun showFlashAnimation(binding: DialogMarkerVideoBinding, thumbnailBitmap: Bitmap?) {
+        _viewModel.mutableMarkerVideoSet.value = _viewModel.mutableMarkerVideoSet.value.copy(
+            targetImageUri = Uri.EMPTY
+        )
+
         val container = binding.dialogTopView
 //        /* すでに"FlashView" が存在していれば何も */
 //        if ((0 until container.childCount).any {
@@ -242,7 +240,7 @@ class LinkingSettingsDialog: DialogFragment() {
         }
 
         val imageView = ImageView(container.context).apply {
-            setImageBitmap(thumbnail)
+            setImageBitmap(thumbnailBitmap)
             layoutParams = params
         }
 
@@ -260,7 +258,7 @@ class LinkingSettingsDialog: DialogFragment() {
         /* 一旦真っ白になって徐々に消える */
         flashView.animate()
             .alpha(0f)
-            .setDuration(600)
+            .setDuration(1500)
             .withEndAction {
                 container.removeView(flashView)
             }
@@ -306,6 +304,9 @@ class LinkingSettingsDialog: DialogFragment() {
                 override fun onAnimationEnd(animation: Animator) {
                     lifecycleScope.launch {
                         /* 200ms待ってから */
+                        if(thumbnailBitmap != null) {
+                            Utils.setTargetImageAndSaveBitmap(requireContext(), thumbnailBitmap, _viewModel)
+                        }
                         delay(2000)
                         container.removeView(imageView)
                         binding.touchBlocker.visibility = View.GONE

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -95,6 +96,8 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
 
         binding.imvThumbnail1.setOnClickListener {
             if(_viewModel.t3Thumbnail.value[0] != null) {
+                _viewModel.mutableMarkerVideoSet.value = _viewModel.mutableMarkerVideoSet.value.copy( targetImageUri = Uri.EMPTY )
+                /* bitmapをマーカー設定と保存 */
                 setMarkerAndSaveBitmap(_viewModel.t3Thumbnail.value[0]!!)
                 _viewModel.mutableIsVisibilityMarker.value = false
                 dismissAllowingStateLoss()
@@ -102,6 +105,8 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
         }
         binding.imvThumbnail2.setOnClickListener {
             if(_viewModel.t3Thumbnail.value[1] != null) {
+                _viewModel.mutableMarkerVideoSet.value = _viewModel.mutableMarkerVideoSet.value.copy( targetImageUri = Uri.EMPTY )
+                /* bitmapをマーカー設定と保存 */
                 setMarkerAndSaveBitmap(_viewModel.t3Thumbnail.value[1]!!)
                 _viewModel.mutableIsVisibilityMarker.value = false
                 dismissAllowingStateLoss()
@@ -109,6 +114,8 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
         }
         binding.imvThumbnail3.setOnClickListener {
             if(_viewModel.t3Thumbnail.value[2] != null) {
+                _viewModel.mutableMarkerVideoSet.value = _viewModel.mutableMarkerVideoSet.value.copy( targetImageUri = Uri.EMPTY )
+                /* bitmapをマーカー設定と保存 */
                 setMarkerAndSaveBitmap(_viewModel.t3Thumbnail.value[2]!!)
                 _viewModel.mutableIsVisibilityMarker.value = false
                 dismissAllowingStateLoss()
@@ -121,6 +128,7 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
                 Log.d("aaaaa", "OK!!! Maker URI: $uri")
                 /* 取得UriからBitmap生成 */
                 val selectedBitmap = Utils.decodeBitmapFromUri(requireContext(), uri)
+                _viewModel.mutableMarkerVideoSet.value = _viewModel.mutableMarkerVideoSet.value.copy( targetImageUri = Uri.EMPTY )
                 /* bitmapをマーカー設定と保存 */
                 setMarkerAndSaveBitmap(selectedBitmap!!)
                 _viewModel.mutableIsVisibilityMarker.value = false

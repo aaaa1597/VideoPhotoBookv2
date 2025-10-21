@@ -104,19 +104,25 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
         bindData(binding, bitmaps)
 
         binding.imvThumbnail1.setOnClickListener {
-            if(_viewModel.t3Thumbnail.value[0] != null)
+            if(_viewModel.t3Thumbnail.value[0] != null) {
                 setMarkerAndSaveBitmap(_viewModel.t3Thumbnail.value[0]!!)
-            dismissAllowingStateLoss()
+                _viewModel.mutableIsVisibilityMarker.value = false
+                dismissAllowingStateLoss()
+            }
         }
         binding.imvThumbnail2.setOnClickListener {
-            if(_viewModel.t3Thumbnail.value[1] != null)
+            if(_viewModel.t3Thumbnail.value[1] != null) {
                 setMarkerAndSaveBitmap(_viewModel.t3Thumbnail.value[1]!!)
-            dismissAllowingStateLoss()
+                _viewModel.mutableIsVisibilityMarker.value = false
+                dismissAllowingStateLoss()
+            }
         }
         binding.imvThumbnail3.setOnClickListener {
-            if(_viewModel.t3Thumbnail.value[2] != null)
+            if(_viewModel.t3Thumbnail.value[2] != null) {
                 setMarkerAndSaveBitmap(_viewModel.t3Thumbnail.value[2]!!)
-            dismissAllowingStateLoss()
+                _viewModel.mutableIsVisibilityMarker.value = false
+                dismissAllowingStateLoss()
+            }
         }
         binding.imvAdd.setOnClickListener {
             lifecycleScope.launch {
@@ -127,6 +133,7 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
                 val selectedBitmap = Utils.decodeBitmapFromUri(requireContext(), uri)
                 /* bitmapをマーカー設定と保存 */
                 setMarkerAndSaveBitmap(selectedBitmap!!)
+                _viewModel.mutableIsVisibilityMarker.value = false
                 dismissAllowingStateLoss()
             }
         }

@@ -95,6 +95,7 @@ class LinkingSettingsDialog: DialogFragment() {
         bindInfoToDialog(requireContext(), binding, _viewModel.mutableMarkerVideoSet.value)
         collectMarkerVideoSetFlow(binding)
         collectIsEnableFlow(binding)
+        collectIsVisibilityMarkerFlow(binding)
 
         view.doOnLayout {
             Log.d("aaaaa", "     top               X=${it.x}, Y=${it.y}, W=${it.width}, H=${it.height}")
@@ -218,7 +219,7 @@ class LinkingSettingsDialog: DialogFragment() {
         }
     }
 
-    /* Flashアニメ → Image縮小 → BottomSheetDialogFragment表示 */
+    /* アニメ → Image縮小 → BottomSheetDialogFragment表示 */
     private fun showFlashAnimation(binding: DialogMarkerVideoBinding, thumbnail: Bitmap?) {
         val container = binding.dialogTopView
 //        /* すでに"FlashView" が存在していれば何も */
@@ -236,10 +237,10 @@ class LinkingSettingsDialog: DialogFragment() {
             endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
         }
 
-//        val blackView = View(container.context).apply {
-//            setBackgroundColor(Color.BLACK)
-//            layoutParams = params
-//        }
+        val blackView = View(container.context).apply {
+            setBackgroundColor(Color.BLACK)
+            layoutParams = params
+        }
 
         val imageView = ImageView(container.context).apply {
             setImageBitmap(thumbnail)
@@ -260,7 +261,7 @@ class LinkingSettingsDialog: DialogFragment() {
             isFocusable = true
         }
 
-//        container.addView(blackView)
+        container.addView(blackView)
         container.addView(imageView)
         container.addView(flashView)
         container.addView(touchBlocker)
@@ -315,9 +316,10 @@ class LinkingSettingsDialog: DialogFragment() {
                     lifecycleScope.launch {
                         /* 200ms待ってから */
                         delay(2000)
-//                        container.removeView(blackView)
+                        container.removeView(blackView)
                         container.removeView(imageView)
                         container.removeView(touchBlocker)
+                        _viewModel.mutableIsVisibilityMarker.value = true
                     }
                 }
             })
@@ -364,6 +366,21 @@ class LinkingSettingsDialog: DialogFragment() {
                     binding.igvMarkerpreview.alpha = alpha
                     binding.etvComment.      alpha = alpha
                     binding.btnSave.         alpha = alpha
+                }
+            }
+        }
+    }
+
+    private fun collectIsVisibilityMarkerFlow(binding: DialogMarkerVideoBinding) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                /* ViewModelのStateFlowを収集 */
+                _viewModel.isVisibilityMarker.collect { isVisibility ->
+                    /* Flowから新しい値が放出されたら、表示/非表示を切り替え */
+                    when(isVisibility) {
+                        true -> binding.viwDoubleTapMarkerguide.visibility = View.VISIBLE
+                        false-> binding.viwDoubleTapMarkerguide.visibility = View.GONE
+                    }
                 }
             }
         }

@@ -27,6 +27,7 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
     private var _binding: FragmentImagePickBottomDialogBinding? = null
     private val binding get() = _binding!!
     private val _viewModel: SetDialogViewModel by activityViewModels()
+    /* ファイル選択ランチャー */
     private val _pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         /* ファイルリストの戻り */
         result ->
@@ -87,7 +88,7 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
         lifecycleScope.launch {
             val resizedBitmap = Utils.resizeBitmapWithAspectRatio(bitmap, 1280, 720)
             /* 画像合成 */
-            val set: MarkerVideoSet = _viewModel.mutableMarkerVideoSet.value
+            val set: MarkerVideoSet = _viewModel.markerVideoSet.value
             val resizedFrame = BitmapFactory.decodeResource(resources, set.targetImageTemplateResId)
                 .scale(resizedBitmap.width, resizedBitmap.height)
             val canvas = Canvas(resizedBitmap)

@@ -5,28 +5,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="8dp"
-    android:layout_marginStart="4dp"
-    android:layout_marginEnd="4dp"
-    app:cardCornerRadius="8dp"
+    android:layout_margin="5dp"
+    app:cardCornerRadius="15dp"
     app:cardElevation="4dp">
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:padding="8dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp">
+        <!-- マーカー画像 -->
         <FrameLayout
             android:id="@+id/fly_targetinfo"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <ImageView
-                android:id="@+id/imv_targetImage"
-                android:layout_width="80dp"
-                android:layout_height="45dp"
-                android:layout_marginStart="20dp"
-                android:src="@drawable/m000_star4"/>
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/fly_videoInfo"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_chainStyle="spread" >
             <TextView
                 android:id="@+id/txt_targetname"
                 android:layout_width="wrap_content"
@@ -35,25 +31,27 @@
                 android:layout_marginTop="2dp"
                 android:layout_marginStart="2dp"
                 android:ellipsize="end"
-                android:singleLine="true"
+                android:maxLines="1"
                 android:text="m000"/>
+            <ImageView
+                android:id="@+id/imv_targetImage"
+                android:layout_width="112dp"
+                android:layout_height="63dp"
+                android:layout_marginTop="25dp"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/m000_star4"/>
         </FrameLayout>
 
+        <!-- 再生動画 -->
         <FrameLayout
             android:id="@+id/fly_videoInfo"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <com.tks.videophotobook.settings.VideoThumbnailPlayerView
-                android:id="@+id/pyv_video_thumbnail"
-                android:layout_width="80dp"
-                android:layout_height="45dp"
-                android:layout_marginStart="50dp"/>
-            <ImageView
-                android:id="@+id/imv_video_thumbnail"
-                android:layout_width="80dp"
-                android:layout_height="45dp"
-                android:layout_marginStart="50dp"
-                android:src="@drawable/videofilenotfound"/>
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/fly_targetinfo"
+            app:layout_constraintEnd_toStartOf="@id/txt_comment"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" >
+
             <TextView
                 android:id="@+id/txt_videoname"
                 android:layout_width="wrap_content"
@@ -62,31 +60,41 @@
                 android:layout_marginTop="2dp"
                 android:layout_marginStart="5dp"
                 android:ellipsize="end"
-                android:singleLine="true"
+                android:maxLines="1"
                 android:text="000_marker"/>
+            <com.tks.videophotobook.settings.VideoThumbnailPlayerView
+                android:id="@+id/pyv_video_thumbnail"
+                android:layout_width="112dp"
+                android:layout_height="63dp"
+                android:layout_marginTop="25dp"
+                android:layout_marginStart="20dp" />
+            <ImageView
+                android:id="@+id/imv_video_thumbnail"
+                android:layout_width="112dp"
+                android:layout_height="63dp"
+                android:layout_marginTop="25dp"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/videofilenotfound"/>
         </FrameLayout>
 
+        <!-- コメント -->
         <TextView
             android:id="@+id/txt_comment"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="20dp"
             android:layout_gravity="center"
             android:ellipsize="marquee"
-            android:text="aaaaa" />
+            android:text="aaaaa"
+            app:layout_constraintStart_toEndOf="@id/fly_videoInfo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <ImageButton
-            android:id="@+id/imv_delete"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center"
-            android:contentDescription="@string/delete_setting"
-            android:src="@android:drawable/ic_delete"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
+        android:id="@+id/txt_inputblocker"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"

@@ -44,6 +44,7 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
     private var _binding: DialogMarkerVideoBinding? = null
     private val binding get() = _binding!!
     private val _viewModel: SetDialogViewModel by activityViewModels()
+    private val _settingViewModel: SettingViewModel by activityViewModels()
     /* ファイル選択ランチャー */
     private val _pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         /* ファイルリストの戻り */
@@ -201,23 +202,17 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
         /* 保存 */
         binding.btnSave.setOnClickListener {
             _viewModel.mutableIsVisibilitySave.value = false
-//            /* ViewModelのリスト更新 */
-//            targetName.let { targetName ->
-//                val currentList = _settingViewModel.markerVideoSetList.value.toMutableList()
-//                val index = currentList.indexOfFirst { it.targetName == targetName }
-//                if (index == -1) return@let
-//
-////                /* targetImageUri を更新 */ ← 保存押下ですればよくって、ここでは実行する必要がない。
-////                val updatedItem = when {
-////                    mimeType.startsWith("image") -> currentList[index].copy(targetImageUri = uri)
-////                    mimeType.startsWith("video") -> currentList[index].copy(videoUri = uri)
-////                    else -> throw RuntimeException("Unknown mimeType: $mimeType")
-////                }
-////                currentList[index] = updatedItem
-////                _viewModel.updateMarkerVideoSetList(currentList)
-//            /* Uriを返却 */
-//            onFileUrlPicked?.invoke(uri)
-//            onFileUrlPicked = null
+            /* Saveボタン用ダブルタップガイドを消す */
+            _viewModel.mutableIsVisibilitySave.value = false
+            /* リスト内の該当データを更新 */
+            val newSet = _viewModel.mutableMarkerVideoSet.value
+            val newList = _settingViewModel.markerVideoSetList.value.toMutableList().apply {
+                val index = indexOfFirst { it.targetName == newSet.targetName }
+                if (index != -1) {
+                    this[index] = newSet
+                }
+            }
+            _settingViewModel.mutableMarkerVideoSetList.value = newList
             dismissAllowingStateLoss()
         }
     }

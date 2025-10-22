@@ -117,11 +117,11 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemDoub
         private val topCdv: CardView = itemView.findViewById(R.id.cdv_top)
         private val targetNameTxt: TextView = itemView.findViewById(R.id.txt_targetname)
         private val targetImageImv: ImageView = itemView.findViewById(R.id.imv_targetImage)
-        private val videoInfoFly: FrameLayout = itemView.findViewById(R.id.fly_videoInfo)
         private val videoName: TextView = itemView.findViewById(R.id.txt_videoname)
         private val videothumbnailPyv: VideoThumbnailPlayerView = itemView.findViewById(R.id.pyv_video_thumbnail)
         private val videothumbnailImv: ImageView = itemView.findViewById(R.id.imv_video_thumbnail)
         private val commentTxt: TextView = itemView.findViewById(R.id.txt_comment)
+        private val inputBlocker: TextView = itemView.findViewById(R.id.txt_inputblocker)
 
         fun bind(context: Context, item: MarkerVideoSet, onItemDoubleTap: (MarkerVideoSet) -> Unit) {
             /* ARマーカーID */
@@ -149,6 +149,8 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemDoub
             }
 
             commentTxt.text = item.comment
+
+            inputBlocker.visibility = if(item.targetImageUri==Uri.EMPTY||item.videoUri==Uri.EMPTY) View.VISIBLE else View.GONE
 
             val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
                 override fun onDoubleTap(e: MotionEvent): Boolean {

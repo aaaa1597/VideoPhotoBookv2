@@ -18,15 +18,15 @@ const val PREFS = "PREFS"
 const val CURRENT_INDEX = "CURRENT_INDEX"
 const val MARKER_VIDEO_MAP_JSON = "marker_video_map.json"
 class SettingViewModel(application: Application) : AndroidViewModel(application) {
-    private val _markerVideoSetList = MutableStateFlow<List<MarkerVideoSet>>(emptyList())
-    val markerVideoSetList: StateFlow<List<MarkerVideoSet>> = _markerVideoSetList
+    val mutableMarkerVideoSetList = MutableStateFlow<List<MarkerVideoSet>>(emptyList())
+    val markerVideoSetList: StateFlow<List<MarkerVideoSet>> = mutableMarkerVideoSetList
     fun initMarkerVideoSetList() {
         val file = File(getApplication<Application>().externalCacheDir, MARKER_VIDEO_MAP_JSON)
         var list = MarkerVideoSet.loadFromJsonFile(application, file)
         if(list.isEmpty()) {
             /* assets配下のVideoPhotoBook.xmlのImageTargetタグのname属性一覧を取得 */
             val targetNames = loadImageTargetNamesFromAssets(application)
-            val plesechoose = application.getString(R.string.please_choose)
+            val plesechoose = ""
             list = listOf(
                 MarkerVideoSet(targetNames[0], R.drawable.m000_star4, Uri.EMPTY, Uri.EMPTY, plesechoose),
                 MarkerVideoSet(targetNames[1], R.drawable.m001_star5, Uri.EMPTY, Uri.EMPTY, plesechoose),
@@ -40,19 +40,19 @@ class SettingViewModel(application: Application) : AndroidViewModel(application)
                 MarkerVideoSet(targetNames[9], R.drawable.m009_star5, Uri.EMPTY, Uri.EMPTY, plesechoose),
             )
         }
-        _markerVideoSetList.value = list
+        mutableMarkerVideoSetList.value = list
     }
 
     fun updateMarkerVideoSetList(newList: List<MarkerVideoSet>) {
-        _markerVideoSetList.value = newList
+        mutableMarkerVideoSetList.value = newList
     }
 
-    val isVisibleDoubleTapGuideView: StateFlow<Boolean> = _markerVideoSetList
+    val isVisibleDoubleTapGuideView: StateFlow<Boolean> = mutableMarkerVideoSetList
         .map { list -> list.all { it.videoUri == Uri.EMPTY } }
         .stateIn(
             scope = viewModelScope,             /* ScopはviewModelScopeで */
             started = SharingStarted.Eagerly,   /* すぐに開始 */
-            initialValue = _markerVideoSetList.value.all { it.videoUri == Uri.EMPTY } /* 初期値 */
+            initialValue = mutableMarkerVideoSetList.value.all { it.videoUri == Uri.EMPTY } /* 初期値 */
         )
 
 }

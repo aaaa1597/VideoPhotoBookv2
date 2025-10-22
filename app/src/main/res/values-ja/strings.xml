@@ -28,4 +28,6 @@
     <string name="settings_disp_title">設定一覧</string>
     <string name="delete_setting">delete setting</string>
     <string name="armarker_image_pick_title">マーカー選択</string>
+    <string name="goback">← Back</string>
+    <string name="share">Share</string>
 </resources>

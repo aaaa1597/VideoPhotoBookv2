@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class SetDialogViewModel: ViewModel() {
-    val mutableIsEnable = MutableStateFlow(true)
-    val isEnable: StateFlow<Boolean> get() = mutableIsEnable
+    val mutableIsBlockedInput = MutableStateFlow(true)
+    val isBlockedInput: StateFlow<Boolean> get() = mutableIsBlockedInput
 
     val mutableIsVisibilityMarker = MutableStateFlow(false)
     val isVisibilityMarker: StateFlow<Boolean> get() = mutableIsVisibilityMarker

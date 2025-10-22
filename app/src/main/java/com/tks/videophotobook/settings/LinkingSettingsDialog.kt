@@ -35,13 +35,12 @@ import com.tks.videophotobook.R
 import com.tks.videophotobook.Utils
 import com.tks.videophotobook.databinding.DialogMarkerVideoBinding
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlin.getValue
 
 const val ARG_SET = "arg_set"
-class LinkingSettingsDialog: DialogFragment() {
+class LinkingSettingsDialog private constructor(): DialogFragment() {
     private var _binding: DialogMarkerVideoBinding? = null
     private val binding get() = _binding!!
     private val _viewModel: SetDialogViewModel by activityViewModels()
@@ -75,7 +74,10 @@ class LinkingSettingsDialog: DialogFragment() {
         if(savedInstanceState == null) {
             val set = requireArguments().getParcelable(ARG_SET, MarkerVideoSet::class.java)!!
             _viewModel.mutableMarkerVideoSet = MutableStateFlow(set)
-            _viewModel.mutableIsEnable.value = (set.videoUri != Uri.EMPTY)
+            _viewModel.mutableIsBlockedInput.value = (set.videoUri != Uri.EMPTY)
+            _viewModel.mutableIsVisibilityMarker.value = false
+            _viewModel.mutableIsVisibilitySave.value = false
+            _viewModel.mutable3Thumbnail.value = arrayOfNulls(3)
         }
     }
 
@@ -88,7 +90,7 @@ class LinkingSettingsDialog: DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         bindInfoToDialog(requireContext(), binding, _viewModel.mutableMarkerVideoSet.value)
         collectMarkerVideoSetFlow(binding)
-        collectIsEnableFlow(binding)
+        collectIsBlockedInputFlow(binding)
         collectIsVisibilityMarkerFlow(binding)
         collectIsVisibilitySaveFlow(binding)
 
@@ -161,7 +163,7 @@ class LinkingSettingsDialog: DialogFragment() {
                         _viewModel.mutableMarkerVideoSet.value = _viewModel.mutableMarkerVideoSet.value.copy(
                             videoUri = uri
                         )
-                        _viewModel.mutableIsEnable.value = true
+                        _viewModel.mutableIsBlockedInput.value = true
                     }
                     /* 動画から中盤/終盤のサムネイルを取得 */
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -331,11 +333,11 @@ class LinkingSettingsDialog: DialogFragment() {
         }
     }
 
-    private fun collectIsEnableFlow(binding: DialogMarkerVideoBinding) {
+    private fun collectIsBlockedInputFlow(binding: DialogMarkerVideoBinding) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 /* ViewModelのStateFlowを収集 */
-                _viewModel.isEnable.collect { isEnable ->
+                _viewModel.isBlockedInput.collect { isEnable ->
                     /* Flowから新しい値が放出されたら、UIの有効/無効を切り替え */
                     binding.txtTargetname.   isEnabled = isEnable
                     binding.igvMarkerpreview.isEnabled = isEnable

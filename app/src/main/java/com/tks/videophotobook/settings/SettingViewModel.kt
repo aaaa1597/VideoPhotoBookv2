@@ -43,6 +43,10 @@ class SettingViewModel(application: Application) : AndroidViewModel(application)
         mutableMarkerVideoSetList.value = list
     }
 
+    fun getMakerUriArrayList(): ArrayList<Uri> {
+        return mutableMarkerVideoSetList.value.filter { it.targetImageUri != Uri.EMPTY }.map{ it.targetImageUri }.toCollection(ArrayList())
+    }
+
     fun updateMarkerVideoSetList(newList: List<MarkerVideoSet>) {
         mutableMarkerVideoSetList.value = newList
     }

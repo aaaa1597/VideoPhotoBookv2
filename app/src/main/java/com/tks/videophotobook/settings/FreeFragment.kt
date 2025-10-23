@@ -1,5 +1,6 @@
 package com.tks.videophotobook.settings
 
+import android.app.AlertDialog
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -65,6 +66,31 @@ class FreeFragment : Fragment() {
         collectMarkerVideoSetListFlow()
         /* DoubleTapGuideView表示/非表示用Flow収集 */
         collectVisibleDoubleTapGuideViewFlow()
+
+        /* 戻るボタン押下 */
+        binding.btnBack.setOnClickListener {
+            /* markerVideoSetListをキャッシュ領域にjson出力 */
+//            _settingViewModel.saveMarkerVideoSetListToCacheJsonFile()
+            /* 画面を閉じる */
+            requireActivity().supportFragmentManager.popBackStack()
+        }
+        /* 共有ボタン押下 */
+        binding.btnShare.setOnClickListener {
+            /* 共有用画像Uriリストを取得 */
+            val uriList = _settingViewModel.getMakerUriArrayList()
+            if(uriList.isEmpty()) {
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.no_data)
+                    .setMessage(R.string.no_create_bind_data)
+                    .setPositiveButton(R.string.ok) { dialog, which -> dialog.dismiss() }
+                    .show()
+            }
+            else {
+                /* 共有ダイアログ表示 */
+                val dialog = SendImageDialogFragment.newInstance(uriList)
+                dialog.show(parentFragmentManager, "SendImageDialogFragment")
+            }
+        }
     }
 
     private fun collectMarkerVideoSetListFlow() {

@@ -30,6 +30,20 @@ data class MarkerVideoSet(
     @Serializable(with = UriSerializer::class) var videoUri: Uri,
     var comment: String
 ): Parcelable {
+
+    fun toJson(): String {
+        return """
+        {
+            "targetName": "${targetName}",
+            "targetImageTemplateResId": $targetImageTemplateResId,
+            "targetImageUri": "${targetImageUri}",
+            "videoUri": "${videoUri}",
+            "comment": "${comment}"
+        }
+        """.trimIndent()
+    }
+
+
     companion object {
         fun loadFromJsonFile(context: Context, file: File): List<MarkerVideoSet> {
             /* ファイルが存在しない場合、空リストを返す */

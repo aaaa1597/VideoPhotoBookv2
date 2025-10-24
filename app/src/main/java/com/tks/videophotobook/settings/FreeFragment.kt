@@ -70,7 +70,7 @@ class FreeFragment : Fragment() {
         /* 戻るボタン押下 */
         binding.btnBack.setOnClickListener {
             /* markerVideoSetListをキャッシュ領域にjson出力 */
-//            _settingViewModel.saveMarkerVideoSetListToCacheJsonFile()
+            _settingViewModel.saveMarkerVideoSetListToCacheJsonFile()
             /* 画面を閉じる */
             requireActivity().supportFragmentManager.popBackStack()
         }

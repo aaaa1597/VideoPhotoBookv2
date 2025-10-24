@@ -2,6 +2,7 @@ package com.tks.videophotobook.settings
 
 import android.app.Application
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
 import com.tks.videophotobook.R
@@ -49,6 +50,13 @@ class SettingViewModel(application: Application) : AndroidViewModel(application)
 
     fun updateMarkerVideoSetList(newList: List<MarkerVideoSet>) {
         mutableMarkerVideoSetList.value = newList
+    }
+
+    fun saveMarkerVideoSetListToCacheJsonFile() {
+        val file = File(getApplication<Application>().externalCacheDir, MARKER_VIDEO_MAP_JSON)
+        val jsonList = mutableMarkerVideoSetList.value.joinToString(prefix="[", postfix="]") { it.toJson() }
+        file.writeText(jsonList)
+        Log.d("aaaaa", "Saved jsonList= ${jsonList}")
     }
 
     val isVisibleDoubleTapGuideView: StateFlow<Boolean> = mutableMarkerVideoSetList

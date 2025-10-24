@@ -1,6 +1,5 @@
 package com.tks.videophotobook
 
-import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,10 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.tks.videophotobook.databinding.FragmentEntryBinding
 import com.tks.videophotobook.settings.MARKER_VIDEO_MAP_JSON
-import com.tks.videophotobook.settings.CURRENT_INDEX
-import com.tks.videophotobook.settings.PREFS
 import java.io.File
-import androidx.core.content.edit
 
 class EntryFragment : Fragment() {
     private var _binding: FragmentEntryBinding? = null

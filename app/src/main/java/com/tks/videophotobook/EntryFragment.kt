@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.fragment.findNavController
 import com.tks.videophotobook.databinding.FragmentEntryBinding
 import com.tks.videophotobook.settings.MARKER_VIDEO_MAP_JSON
 import java.io.File
@@ -26,6 +27,10 @@ class EntryFragment : Fragment() {
         if ( !file.exists()) {
             /* 存在しない場合、SettingFragmentを表示(マーカー/動画紐付け情報を生成する)*/
             GuidedDialog().show(parentFragmentManager, "GuidedDialog")
+        }
+
+        binding.imvMenu.setOnClickListener {
+            findNavController().navigate(R.id.action_mainFragment_to_settingFragment_slide)
         }
 
 //        val prefs = requireContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE)

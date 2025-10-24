@@ -284,16 +284,16 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
         }
 
         val pathAnim = ObjectAnimator.ofFloat(imageView, View.TRANSLATION_X, View.TRANSLATION_Y, path).apply {
-            duration = 1500
+            duration = 700
             interpolator = DecelerateInterpolator()
         }
 
         val scaleXAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_X, 1f, 1.3f, scale).apply {
-            duration = 1500
+            duration = 700
             interpolator = DecelerateInterpolator()
         }
         val scaleYAnim = ObjectAnimator.ofFloat(imageView, View.SCALE_Y, 1f, 1.3f, scale).apply {
-            duration = 1500
+            duration = 700
             interpolator = DecelerateInterpolator()
         }
 

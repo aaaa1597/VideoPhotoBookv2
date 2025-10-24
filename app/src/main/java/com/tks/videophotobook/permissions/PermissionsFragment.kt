@@ -25,10 +25,6 @@ class PermissionsFragment : Fragment() {
     private lateinit var _binding: FragmentPermissionsBinding
     private var hasRequestedPermissions = false
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentPermissionsBinding.inflate(inflater, container, false)
         return _binding.root
@@ -59,7 +55,7 @@ class PermissionsFragment : Fragment() {
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             isGranted: Map<String, Boolean> ->
         /* 権限チェック */
-        if (isGranted.isNotEmpty() && isGranted.all({it.value == true})) {
+        if (isGranted.isNotEmpty() && isGranted.all {it.value == true}) {
             /* 権限承認済ならメイン処理のFragmentへ(移行このFragmentには戻らない) */
             findNavController().navigate(R.id.action_permissionsFragment_to_mainFragment_fade1, null,
                 NavOptions.Builder().setPopUpTo(R.id.permissionsFragment, true).build()/* 戻る必要がない */)

@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
@@ -164,7 +163,7 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemDoub
                 videoName.text = Utils.getFileNameFromUri(context, item.videoUri)
                 videothumbnailImv.visibility = View.GONE
                 videothumbnailPyv.visibility = View.VISIBLE
-                videothumbnailPyv.setVideoUri(item.videoUri, true, true, false)
+                videothumbnailPyv.setVideoUri(item.videoUri, useControllerz = true, isPlay = true, isVolume = false)
             }
             else {
                 item.videoUri = Uri.EMPTY

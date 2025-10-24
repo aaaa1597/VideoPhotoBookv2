@@ -4,8 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
-import android.view.SurfaceView
-import android.view.TextureView
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -14,8 +12,6 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-//import androidx.media3.datasource.DefaultDataSource
-//import androidx.media3.exoplayer.source.ProgressiveMediaSource
 
 class VideoThumbnailPlayerView @JvmOverloads constructor(
     context: Context,
@@ -52,11 +48,7 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
             exoPlayer.repeatMode = Player.REPEAT_MODE_ONE
             exoPlayer.setMediaItem(mediaItem)
             exoPlayer.prepare()
-
-            if(isPlay)
-                exoPlayer.playWhenReady = true
-            else
-                exoPlayer.playWhenReady = false
+            exoPlayer.playWhenReady = isPlay
             exoPlayer.addListener(object : Player.Listener {
                 override fun onPlayerError(e: PlaybackException) {
                     e.printStackTrace()
@@ -77,30 +69,10 @@ class VideoThumbnailPlayerView @JvmOverloads constructor(
         }
     }
 
-    fun togglePlayPause() {
-        player?.let {
-            if (it.isPlaying)    it.pause()
-            else if (isPrepared) it.play()
-        }
-    }
-
     fun releasePlayer() {
         player?.release()
         player = null
         isPrepared = false
-    }
-
-    fun pauseAndSeekTo(positionMs: Long) {
-        player?.pause()
-        player?.seekTo(positionMs)
-    }
-
-    fun play() {
-        if (isPrepared) player?.play()
-    }
-
-    fun pause() {
-        player?.pause()
     }
 
     override fun performClick(): Boolean {

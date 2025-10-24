@@ -1,11 +1,8 @@
 package com.tks.videophotobook.settings
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -13,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.graphics.scale
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -65,7 +61,7 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         collect3ThumbnailFlow(binding)
-        bindInfoToDialog(requireContext(), binding, _viewModel.t3Thumbnail.value)
+        bindInfoToDialog(binding, _viewModel.t3Thumbnail.value)
     }
 
     private fun collect3ThumbnailFlow(binding: FragmentImagePickBottomDialogBinding) {
@@ -91,7 +87,7 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun bindInfoToDialog(context: Context, binding: FragmentImagePickBottomDialogBinding, bitmaps: Array<Bitmap?>) {
+    private fun bindInfoToDialog(binding: FragmentImagePickBottomDialogBinding, bitmaps: Array<Bitmap?>) {
         bindData(binding, bitmaps)
 
         binding.imvThumbnail1.setOnClickListener {

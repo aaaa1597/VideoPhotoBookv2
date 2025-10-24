@@ -18,6 +18,6 @@ class SetDialogViewModel: ViewModel() {
     lateinit var mutableMarkerVideoSet: MutableStateFlow<MarkerVideoSet>
     val markerVideoSet: StateFlow<MarkerVideoSet> get() = mutableMarkerVideoSet
 
-    var mutable3Thumbnail: MutableStateFlow<Array<Bitmap?>> = MutableStateFlow(arrayOfNulls<Bitmap>(3))
+    var mutable3Thumbnail: MutableStateFlow<Array<Bitmap?>> = MutableStateFlow(arrayOfNulls(3))
     val t3Thumbnail: StateFlow<Array<Bitmap?>> get() = mutable3Thumbnail
 }

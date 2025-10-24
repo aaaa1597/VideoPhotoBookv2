@@ -37,7 +37,7 @@ class Utils {
                     context.contentResolver.openInputStream(uri)?.close()
                     true
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 false
             }
         }
@@ -86,7 +86,7 @@ class Utils {
             val scaledBitmap = src.scale(newWidth, newHeight)
             /* 最終的な指定サイズのBitmapを作成し中央に配置 */
             val outputBitmap = createBitmap(targetWidth, targetHeight)
-            val canvas = android.graphics.Canvas(outputBitmap)
+            val canvas = Canvas(outputBitmap)
             /* 背景を白で塗りつぶす */
             canvas.drawColor(android.graphics.Color.WHITE)
             /* 中央に配置 */
@@ -162,7 +162,7 @@ class Utils {
             val targetUs50: Long =  (durationMs * 1000) / 2
             val targetUs90: Long = ((durationMs * 1000) * 0.9 ).toLong()
 
-            val bitmapArray = Array<Bitmap?>(2) { idx ->
+            val bitmapArray = Array(2) { idx ->
                 val timeUs: Long = when(idx) {0 -> targetUs50 ; else -> targetUs90}
                 val retbitmap: Bitmap? = getThumbnail(context, uri, timeUs)
                 retbitmap

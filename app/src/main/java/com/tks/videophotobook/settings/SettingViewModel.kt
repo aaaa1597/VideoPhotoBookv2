@@ -15,15 +15,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-const val PREFS = "PREFS"
-const val CURRENT_INDEX = "CURRENT_INDEX"
 const val MARKER_VIDEO_MAP_JSON = "marker_video_map.json"
 class SettingViewModel(application: Application) : AndroidViewModel(application) {
     val mutableMarkerVideoSetList = MutableStateFlow<List<MarkerVideoSet>>(emptyList())
     val markerVideoSetList: StateFlow<List<MarkerVideoSet>> = mutableMarkerVideoSetList
     fun initMarkerVideoSetList() {
         val file = File(getApplication<Application>().externalCacheDir, MARKER_VIDEO_MAP_JSON)
-        var list = MarkerVideoSet.loadFromJsonFile(application, file)
+        var list = MarkerVideoSet.loadFromJsonFile(file)
         if(list.isEmpty()) {
             /* assets配下のVideoPhotoBook.xmlのImageTargetタグのname属性一覧を取得 */
             val targetNames = loadImageTargetNamesFromAssets(application)
@@ -48,15 +46,11 @@ class SettingViewModel(application: Application) : AndroidViewModel(application)
         return mutableMarkerVideoSetList.value.filter { it.targetImageUri != Uri.EMPTY }.map{ it.targetImageUri }.toCollection(ArrayList())
     }
 
-    fun updateMarkerVideoSetList(newList: List<MarkerVideoSet>) {
-        mutableMarkerVideoSetList.value = newList
-    }
-
     fun saveMarkerVideoSetListToCacheJsonFile() {
         val file = File(getApplication<Application>().externalCacheDir, MARKER_VIDEO_MAP_JSON)
         val jsonList = mutableMarkerVideoSetList.value.joinToString(prefix="[", postfix="]") { it.toJson() }
         file.writeText(jsonList)
-        Log.d("aaaaa", "Saved jsonList= ${jsonList}")
+        Log.d("aaaaa", "Saved jsonList= $jsonList")
     }
 
     val isVisibleDoubleTapGuideView: StateFlow<Boolean> = mutableMarkerVideoSetList

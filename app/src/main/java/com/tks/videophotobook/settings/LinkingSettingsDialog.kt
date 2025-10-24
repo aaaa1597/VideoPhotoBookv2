@@ -119,12 +119,12 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
         /* 動画名/動画ファイル */
         if(Utils.isUriValid(context, item.videoUri)) {
             binding.txtVideoname.text = Utils.getFileNameFromUri(context, item.videoUri)
-            binding.pyvVideoThumbnail2.setVideoUri(item.videoUri, true, false, true)
+            binding.pyvVideoThumbnail2.setVideoUri(item.videoUri, useControllerz = true, isPlay = false, isVolume = true)
         }
         else {
             binding.txtVideoname.text = context.getString(R.string.video_none)
             val uri = "android.resource://${context.packageName}/${R.raw.double_tap_to_choose_a_video}".toUri()
-            binding.pyvVideoThumbnail2.setVideoUri(uri, false, false, true)
+            binding.pyvVideoThumbnail2.setVideoUri(uri, useControllerz = false, isPlay = false, isVolume = true)
         }
         binding.etvComment.setText(item.comment)
     }

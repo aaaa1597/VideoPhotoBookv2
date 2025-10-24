@@ -11,9 +11,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tks.videophotobook.R
-import com.tks.videophotobook.databinding.FragmentImagePickBottomDialogBinding
 import com.tks.videophotobook.databinding.FragmentSendImageDialogBinding
-import com.tks.videophotobook.settings.MarkerVideoSetAdapter.MarkerVideoSetViewHolder
 
 private const val ARG_URILIST = "ARG_URILIST"
 class SendImageDialogFragment : DialogFragment() {

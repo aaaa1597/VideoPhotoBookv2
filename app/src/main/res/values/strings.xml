@@ -33,4 +33,6 @@
     <string name="send_images">Sending the images bellow</string>
     <string name="no_create_bind_data">Please create the data linking markers and videos</string>
     <string name="send_image_via">Sending the images</string>
+    <string name="_000_marker">000_marker</string>
+    <string name="m000">m000</string>
 </resources>

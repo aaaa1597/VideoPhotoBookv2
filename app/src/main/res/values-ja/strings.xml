@@ -33,4 +33,6 @@
     <string name="send_images">下記の画像を送信します。</string>
     <string name="no_create_bind_data">Markerと動画の紐付けデータを作成してください。</string>
     <string name="send_image_via">画像を送信</string>
+    <string name="_000_marker">000_marker</string>
+    <string name="m000">m000</string>
 </resources>

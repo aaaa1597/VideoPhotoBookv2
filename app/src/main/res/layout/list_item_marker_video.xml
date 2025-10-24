@@ -32,13 +32,14 @@
                 android:layout_marginStart="2dp"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:text="m000"/>
+                android:text="@string/m000"/>
             <ImageView
                 android:id="@+id/imv_targetImage"
                 android:layout_width="112dp"
                 android:layout_height="63dp"
                 android:layout_marginTop="25dp"
                 android:layout_marginStart="20dp"
+                android:contentDescription="@string/app_name"
                 android:src="@drawable/m000_star4"/>
         </FrameLayout>
 
@@ -61,7 +62,7 @@
                 android:layout_marginStart="5dp"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:text="000_marker"/>
+                android:text="@string/_000_marker"/>
             <com.tks.videophotobook.settings.VideoThumbnailPlayerView
                 android:id="@+id/pyv_video_thumbnail"
                 android:layout_width="112dp"
@@ -74,6 +75,7 @@
                 android:layout_height="63dp"
                 android:layout_marginTop="25dp"
                 android:layout_marginStart="20dp"
+                android:contentDescription="@string/app_name"
                 android:src="@drawable/videofilenotfound"/>
         </FrameLayout>
 
@@ -85,7 +87,7 @@
             android:layout_marginStart="20dp"
             android:layout_gravity="center"
             android:ellipsize="marquee"
-            android:text="aaaaa"
+            android:text="@string/video_none"
             app:layout_constraintStart_toEndOf="@id/fly_videoInfo"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"

@@ -6,7 +6,6 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -33,15 +32,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.tks.videophotobook.R
 import com.tks.videophotobook.Utils
-import com.tks.videophotobook.databinding.DialogMarkerVideoBinding
+import com.tks.videophotobook.databinding.FragmentLinkingSettingsDialogBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlin.getValue
 
 const val ARG_SET = "arg_set"
 class LinkingSettingsDialog private constructor(): DialogFragment() {
-    private var _binding: DialogMarkerVideoBinding? = null
+    private var _binding: FragmentLinkingSettingsDialogBinding? = null
     private val binding get() = _binding!!
     private val _viewModel: SetDialogViewModel by activityViewModels()
     private val _settingViewModel: SettingViewModel by activityViewModels()
@@ -83,7 +81,7 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        _binding = DialogMarkerVideoBinding.inflate(layoutInflater)
+        _binding = FragmentLinkingSettingsDialogBinding.inflate(layoutInflater)
         return binding.root
     }
 
@@ -107,7 +105,7 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
         }
     }
 
-    private fun bindData(context: Context, binding: DialogMarkerVideoBinding, item: MarkerVideoSet) {
+    private fun bindData(context: Context, binding: FragmentLinkingSettingsDialogBinding, item: MarkerVideoSet) {
         /* ARマーカーID */
         binding.txtTargetname.text = item.targetName
         /* ARマーカー画像 */
@@ -129,7 +127,7 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
         binding.etvComment.setText(item.comment)
     }
 
-    private fun bindInfoToDialog(context: Context, binding: DialogMarkerVideoBinding, item: MarkerVideoSet) {
+    private fun bindInfoToDialog(context: Context, binding: FragmentLinkingSettingsDialogBinding, item: MarkerVideoSet) {
         /* データ紐付け */
         bindData(context, binding, item)
 
@@ -218,7 +216,7 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
     }
 
     /* アニメ → Image縮小 → BottomSheetDialogFragment表示 */
-    private fun showFlashAnimation(binding: DialogMarkerVideoBinding, thumbnailBitmap: Bitmap?) {
+    private fun showFlashAnimation(binding: FragmentLinkingSettingsDialogBinding, thumbnailBitmap: Bitmap?) {
         _viewModel.mutableMarkerVideoSet.value = _viewModel.mutableMarkerVideoSet.value.copy(
             targetImageUri = Uri.EMPTY
         )
@@ -317,7 +315,7 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
     }
 
     /* ViewModelのisEnableを収集してUIの有効/無効を切り替え */
-    private fun collectMarkerVideoSetFlow(binding: DialogMarkerVideoBinding) {
+    private fun collectMarkerVideoSetFlow(binding: FragmentLinkingSettingsDialogBinding) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 /* mutableMarkerVideoSetを収集 */
@@ -328,7 +326,7 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
         }
     }
 
-    private fun collectIsBlockedInputFlow(binding: DialogMarkerVideoBinding) {
+    private fun collectIsBlockedInputFlow(binding: FragmentLinkingSettingsDialogBinding) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 /* ViewModelのStateFlowを収集 */
@@ -360,7 +358,7 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
         }
     }
 
-    private fun collectIsVisibilityMarkerFlow(binding: DialogMarkerVideoBinding) {
+    private fun collectIsVisibilityMarkerFlow(binding: FragmentLinkingSettingsDialogBinding) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 /* ViewModelのStateFlowを収集 */
@@ -375,7 +373,7 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
         }
     }
 
-    private fun collectIsVisibilitySaveFlow(binding: DialogMarkerVideoBinding) {
+    private fun collectIsVisibilitySaveFlow(binding: FragmentLinkingSettingsDialogBinding) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 /* ViewModelのStateFlowを収集 */
@@ -390,16 +388,12 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
         }
     }
 
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        // TODO ViewModel 更新はここで。
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         binding.pyvVideoThumbnail2.releasePlayer()
         _binding = null
     }
+
     companion object {
         fun newInstance(set: MarkerVideoSet): LinkingSettingsDialog {
             return LinkingSettingsDialog().apply {

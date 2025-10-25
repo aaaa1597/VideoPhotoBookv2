@@ -2,11 +2,12 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/dialogTopView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/white"
-    android:padding="20dp">
+    android:padding="20dp"
+    tools:context=".settings.LinkingSettingsDialog">
 
     <!-- タイトル -->
     <TextView
@@ -16,7 +17,6 @@
         android:text="@string/marker_video_binding_settings"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="#000000"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -35,10 +35,9 @@
         android:layout_marginStart="20dp"
         android:paddingStart="5dp"
         android:paddingEnd="5dp"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:text="@string/marker_settings"
         android:textSize="15sp"
-        android:textColor="#000000"
         app:layout_constraintTop_toBottomOf="@id/txt_toptitle"
         app:layout_constraintStart_toStartOf="parent"/>
     <ImageView
@@ -66,7 +65,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:text="@string/video_none"
         android:textSize="15sp"
         android:textColor="#000000"
@@ -94,10 +93,9 @@
         android:layout_marginStart="20dp"
         android:paddingStart="5dp"
         android:paddingEnd="5dp"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:text="@string/video_settings"
         android:textSize="15sp"
-        android:textColor="#000000"
         app:layout_constraintTop_toBottomOf="@id/igv_markerpreview"
         app:layout_constraintStart_toStartOf="parent"/>
     <TextView
@@ -105,10 +103,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:text="@string/please_choose"
         android:textSize="15sp"
-        android:textColor="#000000"
         android:maxLines="1"
         android:ellipsize="end"
         app:layout_constraintTop_toBottomOf="@id/txt_videotitle"
@@ -143,10 +140,9 @@
         android:layout_marginStart="20dp"
         android:paddingStart="5dp"
         android:paddingEnd="5dp"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:text="@string/comment"
         android:textSize="15sp"
-        android:textColor="#000000"
         app:layout_constraintTop_toBottomOf="@id/pyv_video_thumbnail2"
         app:layout_constraintStart_toStartOf="parent"/>
     <EditText
@@ -158,9 +154,8 @@
         android:inputType="textImeMultiLine"
         android:lines="2"
         android:gravity="top"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:textSize="15sp"
-        android:textColor="#000000"
         app:layout_constraintTop_toBottomOf="@id/txt_commenttitle"
         app:layout_constraintStart_toStartOf="parent"/>
     <View
@@ -172,7 +167,6 @@
         app:layout_constraintTop_toTopOf="@id/etv_comment"
         app:layout_constraintBottom_toBottomOf="@id/etv_comment"/>
 
-
     <!-- ボタン群 -->
     <com.google.android.material.divider.MaterialDivider
         android:id="@+id/dvd_divider2"
@@ -182,7 +176,6 @@
         app:layout_constraintTop_toBottomOf="@id/etv_comment"/>
     <LinearLayout
         android:id="@+id/buttonRow"
-        style="?android:attr/buttonBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"

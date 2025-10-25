@@ -1,6 +1,5 @@
 package com.tks.videophotobook.settings
 
-import android.app.AlertDialog
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -12,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.Fragment
@@ -26,7 +26,6 @@ import com.tks.videophotobook.databinding.FragmentFreeBinding
 import com.tks.videophotobook.R
 import com.tks.videophotobook.Utils
 import kotlinx.coroutines.launch
-import kotlin.getValue
 
 class FreeFragment : Fragment() {
     private var _binding: FragmentFreeBinding? = null

@@ -13,7 +13,7 @@
 
         <action
             android:id="@+id/action_permissionsFragment_to_mainFragment_fade1"
-            app:destination="@id/mainFragment"
+            app:destination="@id/gatherPointFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
@@ -22,18 +22,26 @@
     </fragment>
 
     <fragment
-        android:id="@+id/mainFragment"
+        android:id="@+id/gatherPointFragment"
         android:name="com.tks.videophotobook.GatherPointFragment"
         android:label="fragment_main"
         tools:layout="@layout/fragment_gatherpoint">
 
         <action
-            android:id="@+id/action_mainFragment_to_settingFragment_slide"
+            android:id="@+id/action_gatherPointFragment_to_settingFragment_slide"
             app:destination="@id/settingFragment"
             app:enterAnim="@anim/nav_slide_enter_anim"
             app:exitAnim="@anim/nav_slide_exit_anim"
             app:popEnterAnim="@anim/nav_slide_pop_enter_anim"
             app:popExitAnim="@anim/nav_slide_pop_exit_anim"/>
+
+        <action
+            android:id="@+id/action_gatherPointFragment_to_stagingFragment_zoom"
+            app:destination="@id/stagingFragment"
+            app:enterAnim="@anim/nav_zoom_enter_anim"
+            app:exitAnim="@anim/nav_zoom_exit_anim"
+            app:popEnterAnim="@anim/nav_zoom_pop_enter_anim"
+            app:popExitAnim="@anim/nav_zoom_pop_exit_anim"/>
 
     </fragment>
 
@@ -44,5 +52,11 @@
         tools:layout="@layout/fragment_settings">
 
     </fragment>
+
+    <fragment
+        android:id="@+id/stagingFragment"
+        android:name="com.tks.videophotobook.staging.StagingFragment"
+        android:label="fragment_staging"
+        tools:layout="@layout/fragment_staging" />
 
 </navigation>

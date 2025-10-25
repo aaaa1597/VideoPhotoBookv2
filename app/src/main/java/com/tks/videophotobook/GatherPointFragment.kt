@@ -25,11 +25,11 @@ class GatherPointFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.imvMenu.setOnClickListener {
-            findNavController().navigate(R.id.action_mainFragment_to_settingFragment_slide)
+            findNavController().navigate(R.id.action_gatherPointFragment_to_settingFragment_slide)
         }
 
         binding.btnStart.setOnClickListener {
-//            findNavController().navigate(R.id.action_gatherPointFragment_to_stagingFragment)
+            findNavController().navigate(R.id.action_gatherPointFragment_to_stagingFragment_zoom)
         }
     }
 

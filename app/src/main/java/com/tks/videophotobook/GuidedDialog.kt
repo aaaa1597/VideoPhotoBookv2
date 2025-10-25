@@ -21,7 +21,7 @@ class GuidedDialog : DialogFragment() {
 
         binding.buttonPositive.setOnClickListener {
             dismiss()
-            findNavController().navigate(R.id.action_mainFragment_to_settingFragment_slide)
+            findNavController().navigate(R.id.action_gatherPointFragment_to_settingFragment_slide)
         }
         binding.buttonNegative.visibility = View.GONE
 

@@ -18,7 +18,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.tks.videophotobook.Utils
 import com.tks.videophotobook.databinding.FragmentImagePickBottomDialogBinding
 import kotlinx.coroutines.launch
-import kotlin.getValue
 
 class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
     private var _binding: FragmentImagePickBottomDialogBinding? = null
@@ -47,10 +46,6 @@ class ImagePickBottomDialogFragment : BottomSheetDialogFragment() {
             else
                 Utils.onFileUrlPicked!!(uri, 0)
             Utils.onFileUrlPicked = null
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(inflater: LayoutInflater,container: ViewGroup?,savedInstanceState: Bundle?): View? {

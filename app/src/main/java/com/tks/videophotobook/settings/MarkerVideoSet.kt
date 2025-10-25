@@ -6,28 +6,20 @@ import android.os.Parcelable
 import android.util.Xml
 import androidx.annotation.DrawableRes
 import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Serializable
 import org.xmlpull.v1.XmlPullParser
 import java.io.File
 import java.io.InputStream
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import androidx.core.net.toUri
+import org.json.JSONArray
 
 @Parcelize
-@Serializable
 data class MarkerVideoSet(
     /* ARマーカー系定義 */
     var targetName: String = "",
     @DrawableRes var targetImageTemplateResId: Int,
-    @Serializable(with = UriSerializer::class) var targetImageUri: Uri,
+    var targetImageUri: Uri,
     /* Video系定義 */
-    @Serializable(with = UriSerializer::class) var videoUri: Uri,
+    var videoUri: Uri,
     var comment: String
 ): Parcelable {
 
@@ -51,13 +43,23 @@ data class MarkerVideoSet(
                 return emptyList()
 
             return try {
-                /* 2. ファイルの内容を文字列として全て読み込む */
                 val jsonString = file.readText()
+                val jsonArray = JSONArray(jsonString)
+                val result = mutableListOf<MarkerVideoSet>()
 
-                /* 3. Kotlinx.serializationのJsonパーサーを使用してデシリアライズする */
-                /*    List<MarkerVideoSet> 型へ変換する */
-                Json.decodeFromString<List<MarkerVideoSet>>(jsonString)
-            }
+                for (idx in 0 until jsonArray.length()) {
+                    val obj = jsonArray.getJSONObject(idx)
+                    result.add(
+                        MarkerVideoSet(
+                            targetName = obj.optString("targetName", ""),
+                            targetImageTemplateResId = obj.optInt("targetImageTemplateResId", 0),
+                            targetImageUri = obj.optString("targetImageUri", "").toUri(),
+                            videoUri = obj.optString("videoUri", "").toUri(),
+                            comment = obj.optString("comment", "")
+                        )
+                    )
+                }
+                result            }
             catch (e: Exception) {
                 // ファイル読み込みやJSONパースに失敗した場合のエラー処理
                 e.printStackTrace()
@@ -66,6 +68,7 @@ data class MarkerVideoSet(
             }
         }
 
+        /** assets/VideoPhotoBook.xml から ImageTarget name を読み込む */
         fun loadImageTargetNamesFromAssets(context: Context): List<String> {
             val targetNames = mutableListOf<String>()
 
@@ -83,15 +86,12 @@ data class MarkerVideoSet(
 
                 /* 3. XMLをイベント駆動でパース */
                 while (eventType != XmlPullParser.END_DOCUMENT) {
-                    if (eventType == XmlPullParser.START_TAG) {
-                        /* 開始タグの名前が "ImageTarget" の場合 */
-                        if (parser.name == "ImageTarget") {
-                            /* 属性を走査して "name" 属性の値を取得 */
-                            val name = parser.getAttributeValue(null, "name")
-                            if (name != null) {
-                                targetNames.add(name)
-                            }
-                        }
+                    /* 開始タグの名前が "ImageTarget" の場合 */
+                    if (eventType == XmlPullParser.START_TAG && parser.name == "ImageTarget") {
+                        /* 属性を走査して "name" 属性の値を取得 */
+                        val name = parser.getAttributeValue(null, "name")
+                        if (name != null)
+                            targetNames.add(name)
                     }
                     /* 次のイベントへ */
                     eventType = parser.next()
@@ -108,17 +108,5 @@ data class MarkerVideoSet(
 
             return targetNames
         }
-    }
-}
-
-object UriSerializer : KSerializer<Uri> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Uri", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: Uri) {
-        encoder.encodeString(value.toString())
-    }
-
-    override fun deserialize(decoder: Decoder): Uri {
-        return decoder.decodeString().toUri()
     }
 }

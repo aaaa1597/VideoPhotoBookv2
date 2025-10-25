@@ -6,16 +6,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
-import com.tks.videophotobook.databinding.FragmentEntryBinding
+import com.tks.videophotobook.databinding.FragmentStagingBinding
 import com.tks.videophotobook.settings.MARKER_VIDEO_MAP_JSON
 import java.io.File
 
-class EntryFragment : Fragment() {
-    private var _binding: FragmentEntryBinding? = null
+class StagingFragment : Fragment() {
+    private var _binding: FragmentStagingBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
-        _binding = FragmentEntryBinding.inflate(inflater, container, false)
+        _binding = FragmentStagingBinding.inflate(inflater, container, false)
         return binding.root
     }
 

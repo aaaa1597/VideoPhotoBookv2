@@ -1,5 +1,6 @@
 package com.tks.videophotobook
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,6 +9,7 @@ import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import com.tks.videophotobook.databinding.FragmentGatherpointBinding
 import com.tks.videophotobook.settings.MARKER_VIDEO_MAP_JSON
+import com.tks.videophotobook.settings.MarkerVideoSet
 import java.io.File
 
 class GatherPointFragment : Fragment() {
@@ -26,39 +28,38 @@ class GatherPointFragment : Fragment() {
             findNavController().navigate(R.id.action_mainFragment_to_settingFragment_slide)
         }
 
+        binding.btnStart.setOnClickListener {
+//            findNavController().navigate(R.id.action_gatherPointFragment_to_stagingFragment)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
         /* marker_video_map.json(=マーカー/動画紐付け情報)の存在チェック */
         val file = File(requireContext().externalCacheDir, MARKER_VIDEO_MAP_JSON)
         if ( !file.exists()) {
-            /* 存在しない場合、SettingFragmentを表示(マーカー/動画紐付け情報を生成する)*/
+            /* ファイルが存在しない → SettingFragmentを表示(マーカー/動画紐付け情報を生成する)*/
             GuidedDialog().show(parentFragmentManager, "GuidedDialog")
-        }
-        else {
-            /* 存在する場合、MainFragmentを表示 */
-//            findNavController().navigate(R.id.action_stagingFragment_to_mainFragment)
+            return
         }
 
-//        val prefs = requireContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-//        val currentidxstr = prefs.getString(CURRENT_INDEX, "0000")
-//        /* CURRENT_INDEXデータ存在チェック */
-//        val dir = requireContext().getExternalFilesDir(currentidxstr)
-//        if (dir != null && !dir.exists()) {
-//            /* CURRENT_INDEXフォルダが存在しない場合は、"0000"フォルダに遷移 */
-//            val currentidxstr0000 = "0000"
-//            prefs.edit { putString(CURRENT_INDEX, currentidxstr0000) }
-//            val dir0000 = requireContext().getExternalFilesDir(currentidxstr0000)
-//            /* "0000"フォルダが存在しない場合は、システム不整合なので全データ削除 */
-//            if (dir0000 != null && !dir0000.exists()) {
-//                val targetDir = requireContext().getExternalFilesDir(null)
-//                targetDir?.listFiles()?.forEach { child ->
-//                    Utils.deleteRecursively(child)
-//                }
-//            }
-//            /*  */
-//            dir?.mkdirs()
-//            /* 存在しない場合、SettingFragmentを表示(マーカー/動画紐付け情報を生成する)*/
-//            GuidedDialog().show(parentFragmentManager, "GuidedDialog")
-//        }
-//        val file = File(requireContext().getExternalFilesDir(currentidxstr), MARKER_VIDEO_MAP_JSON)
+        val jsonList = file.readText()
+        if (jsonList.isEmpty() || jsonList == "[]") {
+            /* データ空 → SettingFragmentを表示(マーカー/動画紐付け情報を生成する)*/
+            GuidedDialog().show(parentFragmentManager, "GuidedDialog")
+            return
+        }
+
+        val markerVideoSetList = MarkerVideoSet.loadFromJsonFile(file)
+        val allEmpty = markerVideoSetList.all { it.videoUri == Uri.EMPTY }
+        /* 何も設定されてない → SettingFragmentを表示(マーカー/動画紐付け情報を生成する)*/
+        if(allEmpty) {
+            GuidedDialog().show(parentFragmentManager, "GuidedDialog")
+            return
+        }
+
+        /* 設定されてる → プログレス消去 */
+        binding.pgbLoading.visibility = View.GONE
     }
 
     override fun onDestroyView() {

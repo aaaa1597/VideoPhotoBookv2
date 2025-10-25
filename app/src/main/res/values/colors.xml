@@ -2,4 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gray_100">#F5F5F5</color> <!-- 明るいグレー（背景用） -->
+    <color name="gray_300">#E0E0E0</color> <!-- 中間グレー（ボーダーなど） -->
+    <color name="gray_500">#9E9E9E</color> <!-- 標準グレー（テキストなど） -->
+    <color name="gray_700">#616161</color> <!-- 濃いグレー（強調テキストなど） -->
 </resources>

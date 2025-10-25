@@ -23,9 +23,9 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.tks.videophotobook.StagingFragment"
+        android:name="com.tks.videophotobook.GatherPointFragment"
         android:label="fragment_main"
-        tools:layout="@layout/fragment_staging">
+        tools:layout="@layout/fragment_gatherpoint">
 
         <action
             android:id="@+id/action_mainFragment_to_settingFragment_slide"

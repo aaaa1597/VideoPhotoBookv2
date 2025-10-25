@@ -6,21 +6,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
-import com.tks.videophotobook.databinding.FragmentStagingBinding
+import com.tks.videophotobook.databinding.FragmentGatherpointBinding
 import com.tks.videophotobook.settings.MARKER_VIDEO_MAP_JSON
 import java.io.File
 
-class StagingFragment : Fragment() {
-    private var _binding: FragmentStagingBinding? = null
+class GatherPointFragment : Fragment() {
+    private var _binding: FragmentGatherpointBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
-        _binding = FragmentStagingBinding.inflate(inflater, container, false)
+        _binding = FragmentGatherpointBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.imvMenu.setOnClickListener {
+            findNavController().navigate(R.id.action_mainFragment_to_settingFragment_slide)
+        }
 
         /* marker_video_map.json(=マーカー/動画紐付け情報)の存在チェック */
         val file = File(requireContext().externalCacheDir, MARKER_VIDEO_MAP_JSON)
@@ -28,9 +32,9 @@ class StagingFragment : Fragment() {
             /* 存在しない場合、SettingFragmentを表示(マーカー/動画紐付け情報を生成する)*/
             GuidedDialog().show(parentFragmentManager, "GuidedDialog")
         }
-
-        binding.imvMenu.setOnClickListener {
-            findNavController().navigate(R.id.action_mainFragment_to_settingFragment_slide)
+        else {
+            /* 存在する場合、MainFragmentを表示 */
+//            findNavController().navigate(R.id.action_stagingFragment_to_mainFragment)
         }
 
 //        val prefs = requireContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE)

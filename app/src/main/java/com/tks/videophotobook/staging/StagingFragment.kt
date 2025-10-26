@@ -48,13 +48,11 @@ class StagingFragment : Fragment() {
                 /* Fragment起動アニメーション開始で呼ばれる */
                 view.postOnAnimation {
                     Log.d("aaaaa", "アニメーション開始！")
-                    _viewModel.addItem("アニメーション開始！")
+                    _viewModel.addLogStr("アニメーション開始！")
                     /* 設定時間と同じ時間を設定する。 */
                     view.postDelayed({
                         Log.d("aaaaa", "アニメーション完了！")
-                        _viewModel.addItem("アニメーション完了！")
-                        _viewModel.addItem("アニメーション完了！22")
-                        _viewModel.addItem("アニメーション完了！33")
+                        _viewModel.addLogStr("アニメーション完了！")
                         binding.viwTop.background = null
                     }, resources.getInteger(R.integer.config_navAnimTime400).toLong())
                 }
@@ -66,8 +64,8 @@ class StagingFragment : Fragment() {
             withContext(Dispatchers.Default) {
                 initAR(requireActivity())
             }
-            // この時点で UI スレッドに戻る
-            println("処理終わった")
+            Log.d("aaaaa", "Vuforia 初期化完了!!")
+            _viewModel.addLogStr("Vuforia 初期化完了!!")
         }
 
     }

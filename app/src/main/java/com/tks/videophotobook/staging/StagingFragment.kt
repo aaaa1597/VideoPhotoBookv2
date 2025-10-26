@@ -16,7 +16,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.RecyclerView
 import com.tks.videophotobook.R
 import com.tks.videophotobook.databinding.FragmentStagingBinding
+import com.tks.videophotobook.main.initAR
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class StagingFragment : Fragment() {
     private var _binding: FragmentStagingBinding? = null
@@ -58,6 +61,14 @@ class StagingFragment : Fragment() {
                 return true
             }
         })
+
+        lifecycleScope.launch {
+            withContext(Dispatchers.Default) {
+                initAR(requireActivity())
+            }
+            // この時点で UI スレッドに戻る
+            println("処理終わった")
+        }
 
     }
 

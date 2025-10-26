@@ -50,6 +50,8 @@ class StagingFragment : Fragment() {
                     view.postDelayed({
                         Log.d("aaaaa", "アニメーション完了！")
                         _viewModel.addItem("アニメーション完了！")
+                        _viewModel.addItem("アニメーション完了！22")
+                        _viewModel.addItem("アニメーション完了！33")
                         binding.viwTop.background = null
                     }, resources.getInteger(R.integer.config_navAnimTime400).toLong())
                 }
@@ -69,7 +71,7 @@ class StagingFragment : Fragment() {
                         /* 初回描画 */
                         prevList.isEmpty() && newList.isNotEmpty() -> {
                             adapter.notifyDataSetChanged()
-                            binding.rcvLog.scrollToPosition(newList.size - 1)
+                            binding.rcvLog.smoothScrollToPosition(newList.size - 1)
                         }
                         /* 全削除 */
                         newList.isEmpty() -> {
@@ -79,19 +81,19 @@ class StagingFragment : Fragment() {
                         newList.size == prevList.size + 1 &&
                                 newList.dropLast(1) == prevList -> {
                             adapter.notifyItemInserted(newList.lastIndex)
-                            binding.rcvLog.scrollToPosition(newList.lastIndex)
+                            binding.rcvLog.smoothScrollToPosition(newList.lastIndex)
                         }
                         /* 古い削除 + 1件追加(500件上限時など) */
                         newList.size == prevList.size &&
                                 newList.dropLast(1) == prevList.drop(1) -> {
                             adapter.notifyItemRemoved(0)    /* 先頭を消す */
                             adapter.notifyItemInserted(newList.lastIndex) /* 新しい行を追加 */
-                            binding.rcvLog.scrollToPosition(newList.lastIndex)
+                            binding.rcvLog.smoothScrollToPosition(newList.lastIndex)
                         }
                         /* それ以外は大きく変化(clearやbulk変更など) */
                         else -> {
                             adapter.notifyDataSetChanged()
-                            binding.rcvLog.scrollToPosition(newList.size - 1)
+                            binding.rcvLog.smoothScrollToPosition(newList.size - 1)
                         }
                     }
                     prevList = newList

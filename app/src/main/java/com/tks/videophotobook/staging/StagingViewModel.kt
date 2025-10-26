@@ -16,7 +16,7 @@ class StagingViewModel : ViewModel() {
         mutableList.add(item)
         if(mutableList.size > MAX_LOG_COUNT) {
             val over = mutableList.size - MAX_LOG_COUNT
-            repeat(over) { mutableList.removeAt(0) }
+            mutableList.subList(0, over).clear()
         }
         _logListFlow.value = mutableList
     }

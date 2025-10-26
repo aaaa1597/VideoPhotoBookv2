@@ -9,13 +9,16 @@
     android:background="@drawable/double_rectangle"
     tools:context=".staging.StagingFragment">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rcv_log"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="50dp"
+        app:layout_constraintWidth_percent="0.6"
+        app:layout_constraintHeight_percent="0.6"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        tools:listitem="@layout/list_item_logtxt"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

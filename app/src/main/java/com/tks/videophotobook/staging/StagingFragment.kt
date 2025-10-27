@@ -48,11 +48,11 @@ class StagingFragment : Fragment() {
                 /* Fragment起動アニメーション開始で呼ばれる */
                 view.postOnAnimation {
                     Log.d("aaaaa", "アニメーション開始！")
-                    _viewModel.addLogStr("アニメーション開始！")
+                    _viewModel.addLogStr(resources.getString(R.string.animation_s))
                     /* 設定時間と同じ時間を設定する。 */
                     view.postDelayed({
                         Log.d("aaaaa", "アニメーション完了！")
-                        _viewModel.addLogStr("アニメーション完了！")
+                        _viewModel.addLogStr(resources.getString(R.string.animation_e))
                         binding.viwTop.background = null
                     }, resources.getInteger(R.integer.config_navAnimTime400).toLong())
                 }
@@ -60,14 +60,14 @@ class StagingFragment : Fragment() {
             }
         })
 
+        /* vuforia初期化 */
         lifecycleScope.launch {
             withContext(Dispatchers.Default) {
+                _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
                 initAR(requireActivity())
+                _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
             }
-            Log.d("aaaaa", "Vuforia 初期化完了!!")
-            _viewModel.addLogStr("Vuforia 初期化完了!!")
         }
-
     }
 
     @SuppressLint("NotifyDataSetChanged")

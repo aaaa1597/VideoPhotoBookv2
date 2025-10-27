@@ -36,4 +36,10 @@
     <string name="_000_marker">000_marker</string>
     <string name="m000">m000</string>
     <string name="start">開始</string>
+    <string name="init_glsurfaceview_s">GLSurfaceView初期化 開始</string>
+    <string name="init_glsurfaceview_e">GLSurfaceView初期化 終了</string>
+    <string name="animation_s">アニメーション 開始</string>
+    <string name="animation_e">アニメーション 終了</string>
+    <string name="init_vuforia_s">initialize Vuforia 開始</string>
+    <string name="init_vuforia_e">initialize Vuforia 完了!!</string>
 </resources>

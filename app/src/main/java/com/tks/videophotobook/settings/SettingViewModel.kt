@@ -53,6 +53,10 @@ class SettingViewModel(application: Application) : AndroidViewModel(application)
         Log.d("aaaaa", "Saved jsonList= $jsonList")
     }
 
+    fun getVideoUri(target: String): Uri? {
+        return mutableMarkerVideoSetList.value.find { it.targetName == target }?.videoUri
+    }
+
     val isVisibleDoubleTapGuideView: StateFlow<Boolean> = mutableMarkerVideoSetList
         .map { list -> list.all { it.videoUri == Uri.EMPTY } }
         .stateIn(

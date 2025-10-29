@@ -1,9 +1,35 @@
 #include <jni.h>
 #include <string>
+#include <android/log.h>
+#include <assert.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+JNIEXPORT jint JNICALL
+JNI_OnLoad(JavaVM* vm, void* reserved) {
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "JNI_OnLoad");
+
+    if (vm == nullptr) {
+        __android_log_print(ANDROID_LOG_FATAL, "JNI", "JavaVM pointer is null in JNI_OnLoad");
+        assert(false); // もしくは return -1;
+    }
+
+    JNIEnv* env;
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK)
+    {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to get JNI environment from JavaVM");
+        return -1;
+    }
+
+    // Cache Java VM
+//    javaVM = vm;
+//    gWrapperData.vm = vm;
+
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Retrieved and stored JavaVM");
+    return JNI_VERSION_1_6;
+}
 
 JNIEXPORT void JNICALL
 Java_com_tks_videophotobook_JniKt_initRendering(JNIEnv *env, jclass clazz) {

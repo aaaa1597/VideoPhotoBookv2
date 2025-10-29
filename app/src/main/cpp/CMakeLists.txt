@@ -7,7 +7,6 @@ set_target_properties(VUFORIA_LIBRARY PROPERTIES IMPORTED_LOCATION
         ${CMAKE_CURRENT_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libVuforiaEngine.so)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
-        native-lib.cpp
         Jni.cpp)
 
 target_link_libraries(${CMAKE_PROJECT_NAME}

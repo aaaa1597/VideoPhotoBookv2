@@ -115,6 +115,12 @@ class StagingFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+    companion object {
+        init {
+            System.loadLibrary("videophotobook")
+        }
+    }
 }
 
 class StagingLogAdapter(

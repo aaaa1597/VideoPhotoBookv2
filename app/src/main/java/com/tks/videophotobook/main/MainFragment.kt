@@ -21,9 +21,17 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.tks.videophotobook.R
+import com.tks.videophotobook.cameraPerformAutoFocus
+import com.tks.videophotobook.cameraRestoreAutoFocus
+import com.tks.videophotobook.checkHit
 import com.tks.videophotobook.databinding.FragmentMainBinding
+import com.tks.videophotobook.deinitAR
+import com.tks.videophotobook.deinitRendering
+import com.tks.videophotobook.initRendering
+import com.tks.videophotobook.setFullScreenMode
 import com.tks.videophotobook.settings.SettingViewModel
 import com.tks.videophotobook.staging.StagingViewModel
+import com.tks.videophotobook.stopAR
 import java.util.Timer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10

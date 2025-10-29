@@ -16,6 +16,15 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        ndk { /* Default ABI list for this app, can be overridden by providing an abiList property */
+            val abiList = (project.findProperty("abiList") as? String ?: "arm64-v8a")
+            abiFilters += abiList.split(Regex(",\\s*"))
+        }
+        externalNativeBuild {
+            cmake {
+                cppFlags += "-std=c++17"
+            }
+        }
     }
 
     buildTypes {
@@ -34,13 +43,19 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
     buildFeatures {
         viewBinding = true
     }
 }
 
 dependencies {
-
+    implementation(files("libs/VuforiaEngine.jar"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

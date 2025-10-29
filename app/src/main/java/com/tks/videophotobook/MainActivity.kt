@@ -1,6 +1,7 @@
 package com.tks.videophotobook
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -21,6 +22,22 @@ class MainActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        // Example of a call to a native method
+        Log.d("aaaaa", stringFromJNI())
+    }
+
+    /**
+     * A native method that is implemented by the 'videophotobook' native library,
+     * which is packaged with this application.
+     */
+    external fun stringFromJNI(): String
+
+    companion object {
+        // Used to load the 'videophotobook' library on application startup.
+        init {
+            System.loadLibrary("videophotobook")
         }
     }
 }

@@ -16,7 +16,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.RecyclerView
 import com.tks.videophotobook.R
 import com.tks.videophotobook.databinding.FragmentStagingBinding
-import com.tks.videophotobook.main.initAR
+import com.tks.videophotobook.initAR
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

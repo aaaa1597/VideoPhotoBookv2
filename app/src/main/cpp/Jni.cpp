@@ -169,6 +169,7 @@ void garnishLog(const std::string &logstr) {
     env->CallVoidMethod(g_bridge, methodId, jLogStr);
     /* jLogStrを解放 */
     env->DeleteLocalRef(jLogStr);
+    env->DeleteLocalRef(bridgeClass);
     /* スレッドデタッチ(必要な時だけ) */
     if (needDetach)
         g_vm->DetachCurrentThread();

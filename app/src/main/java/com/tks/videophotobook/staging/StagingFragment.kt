@@ -28,18 +28,29 @@ class StagingFragment : Fragment() {
     private lateinit var _adapter: StagingLogAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        _viewModel.addLogStr("onCreateView start.")
         _binding = FragmentStagingBinding.inflate(inflater, container, false)
+        _viewModel.addLogStr("onCreateView end.")
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _viewModel.addLogStr("onViewCreated start.")
 
+        _viewModel.addLogStr("setting RecyclerView layout start.")
         binding.rcvLog.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        _viewModel.addLogStr("setting RecyclerView layout end.")
         /* アダプター定義 */
+        _viewModel.addLogStr("set RecyclerView adapter start.")
         _adapter = StagingLogAdapter(_viewModel)
+        _viewModel.addLogStr("set RecyclerView adapter end.")
+        _viewModel.addLogStr("set RecyclerView adapter start.")
         binding.rcvLog.adapter = _adapter
+        _viewModel.addLogStr("set RecyclerView adapter end.")
+        _viewModel.addLogStr("collect Log start.")
         collectLogListFlow(binding, _adapter)
+        _viewModel.addLogStr("collect Log end.")
 
         view.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
             override fun onPreDraw(): Boolean {
@@ -61,7 +72,9 @@ class StagingFragment : Fragment() {
         })
 
         /* C++ Callbackの設定 */
+        _viewModel.addLogStr("set C++ garnishLog start.")
         _viewModel.passToNativeBridge()
+        _viewModel.addLogStr("set C++ garnishLog end.")
 
         /* vuforia初期化 */
         lifecycleScope.launch {
@@ -71,6 +84,7 @@ class StagingFragment : Fragment() {
                 _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
             }
         }
+        _viewModel.addLogStr("onViewCreated end.")
     }
 
     @SuppressLint("NotifyDataSetChanged")

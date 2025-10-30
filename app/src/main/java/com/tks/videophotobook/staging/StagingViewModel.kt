@@ -1,6 +1,8 @@
 package com.tks.videophotobook.staging
 
 import androidx.lifecycle.ViewModel
+import com.tks.videophotobook.ViewModelBridge
+import com.tks.videophotobook.passToNative
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -29,5 +31,9 @@ class StagingViewModel : ViewModel() {
 
     fun clearLogs() {
         _logListFlow.value = emptyList()
+    }
+
+    fun passToNativeBridge() {
+        passToNative(ViewModelBridge(this))
     }
 }

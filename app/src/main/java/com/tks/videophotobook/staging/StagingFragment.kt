@@ -60,6 +60,9 @@ class StagingFragment : Fragment() {
             }
         })
 
+        /* C++ Callbackの設定 */
+        _viewModel.passToNativeBridge()
+
         /* vuforia初期化 */
         lifecycleScope.launch {
             withContext(Dispatchers.Default) {

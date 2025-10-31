@@ -1,7 +1,19 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-parcelize")
+}
+
+fun getLicenseKey(): String {
+    val props = Properties()
+    val localPropsFile = rootProject.file("local.properties")
+    if (localPropsFile.exists()) {
+        props.load(FileInputStream(localPropsFile))
+    }
+    return props.getProperty("license.key") ?: ""
 }
 
 android {
@@ -25,6 +37,7 @@ android {
                 cppFlags += "-std=c++17"
             }
         }
+        buildConfigField("String", "LICENSE_KEY", "\"${getLicenseKey()}\"")
     }
 
     buildTypes {
@@ -51,6 +64,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 

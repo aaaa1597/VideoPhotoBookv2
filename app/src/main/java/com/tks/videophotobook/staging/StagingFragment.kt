@@ -14,6 +14,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.RecyclerView
+import com.tks.videophotobook.BuildConfig
 import com.tks.videophotobook.R
 import com.tks.videophotobook.databinding.FragmentStagingBinding
 import com.tks.videophotobook.initAR
@@ -80,7 +81,7 @@ class StagingFragment : Fragment() {
         lifecycleScope.launch {
             withContext(Dispatchers.Default) {
                 _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
-                initAR(requireActivity())
+                initAR(requireActivity(), BuildConfig.LICENSE_KEY)
                 _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
             }
         }

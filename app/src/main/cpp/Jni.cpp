@@ -11,17 +11,6 @@ void garnishLog(const std::string &logstr);
 extern "C" {
 #endif
 
-JNIEXPORT void JNICALL
-Java_com_tks_videophotobook_JniKt_initAR(JNIEnv *env, jclass clazz, jobject activity) {
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
-    // TODO: implement initAR()
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end");
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end");
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end");
-}
-
 JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM* vm, void* reserved) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "JNI_OnLoad");
@@ -45,22 +34,35 @@ JNI_OnLoad(JavaVM* vm, void* reserved) {
 }
 
 JNIEXPORT void JNICALL
+Java_com_tks_videophotobook_JniKt_initAR(JNIEnv *env, jclass clazz, jobject activity, jstring jlicensekey) {
+    const char *license_key = env->GetStringUTFChars(jlicensekey, nullptr);
+    std::string licenseKey(license_key);
+    env->ReleaseStringUTFChars(jlicensekey, license_key);
+
+    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
+    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
+    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
+    // TODO: implement initAR()
+    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end");
+    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end");
+    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end");
+}
+
+JNIEXPORT void JNICALL
 Java_com_tks_videophotobook_JniKt_initRendering(JNIEnv *env, jclass clazz) {
     // TODO: implement initRendering()
 }
 
 JNIEXPORT void JNICALL
-Java_com_tks_videophotobook_JniKt_setTextures(JNIEnv *env, jclass clazz, jint astronaut_width,
-                                              jint astronaut_height, jobject astronaut_bytes,
-                                              jint pause_width, jint pause_height,
-                                              jobject pause_bytes) {
+Java_com_tks_videophotobook_JniKt_setTextures(JNIEnv *env, jclass clazz,
+                               jint astronaut_width, jint astronaut_height, jobject astronaut_bytes,
+                               jint pause_width, jint pause_height, jobject pause_bytes) {
     // TODO: implement setTextures()
 }
 
 
 JNIEXPORT jboolean JNICALL
-Java_com_tks_videophotobook_JniKt_configureRendering(JNIEnv *env, jclass clazz, jint width,
-                                                     jint height, jint orientation, jint rotation) {
+Java_com_tks_videophotobook_JniKt_configureRendering(JNIEnv *env, jclass clazz, jint width, jint height, jint orientation, jint rotation) {
     // TODO: implement configureRendering()
 }
 
@@ -100,8 +102,7 @@ Java_com_tks_videophotobook_JniKt_cameraRestoreAutoFocus(JNIEnv *env, jclass cla
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_tks_videophotobook_JniKt_checkHit(JNIEnv *env, jclass clazz, jfloat x, jfloat y,
-                                           jfloat screen_w, jfloat screen_h) {
+Java_com_tks_videophotobook_JniKt_checkHit(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jfloat screen_w, jfloat screen_h) {
     // TODO: implement checkHit()
 }
 
@@ -111,20 +112,17 @@ Java_com_tks_videophotobook_JniKt_initVideoTexture(JNIEnv *env, jclass clazz) {
 }
 
 JNIEXPORT void JNICALL
-Java_com_tks_videophotobook_JniKt_nativeOnSurfaceChanged(JNIEnv *env, jclass clazz, jint width,
-                                                         jint height) {
+Java_com_tks_videophotobook_JniKt_nativeOnSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint height) {
     // TODO: implement nativeOnSurfaceChanged()
 }
 
 JNIEXPORT void JNICALL
-Java_com_tks_videophotobook_JniKt_nativeSetVideoSize(JNIEnv *env, jclass clazz, jint width,
-                                                     jint height) {
+Java_com_tks_videophotobook_JniKt_nativeSetVideoSize(JNIEnv *env, jclass clazz, jint width, jint height) {
     // TODO: implement nativeSetVideoSize()
 }
 
 JNIEXPORT void JNICALL
-Java_com_tks_videophotobook_JniKt_setFullScreenMode(JNIEnv *env, jclass clazz,
-                                                    jboolean is_full_screen_mode) {
+Java_com_tks_videophotobook_JniKt_setFullScreenMode(JNIEnv *env, jclass clazz, jboolean is_full_screen_mode) {
     // TODO: implement setFullScreenMode()
 }
 

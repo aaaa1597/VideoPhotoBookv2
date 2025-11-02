@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -16,6 +17,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.RecyclerView
 import com.tks.videophotobook.BuildConfig
 import com.tks.videophotobook.R
+import com.tks.videophotobook.Utils
 import com.tks.videophotobook.databinding.FragmentStagingBinding
 import com.tks.videophotobook.initAR
 import kotlinx.coroutines.Dispatchers
@@ -79,10 +81,25 @@ class StagingFragment : Fragment() {
 
         /* vuforia初期化 */
         lifecycleScope.launch {
-            withContext(Dispatchers.Default) {
+            val ret = withContext(Dispatchers.Default) {
                 _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
-                initAR(requireActivity(), BuildConfig.LICENSE_KEY)
+                val retErr = initAR(requireActivity(), BuildConfig.LICENSE_KEY)
                 _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
+                retErr
+            }
+            if(ret != 0) {
+                val titlestr:String = resources.getString(R.string.init_vuforia_err)
+                val errstr:String = Utils.getErrorMessage(requireContext(),ret)
+                _viewModel.addLogStr(errstr)
+                AlertDialog.Builder(requireContext())
+                    .setTitle(titlestr)
+                    .setMessage(errstr)
+                    .setPositiveButton(R.string.ok) {
+                        dialog, which ->
+                            dialog.dismiss();
+                            requireActivity().finish()
+                    }
+                    .show()
             }
         }
         _viewModel.addLogStr("onViewCreated end.")

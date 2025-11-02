@@ -234,5 +234,30 @@ class Utils {
                 targetImageUri = savedUri   /* Uriだけ更新 */
             )
         }
+
+        fun getErrorMessage(context: Context, errcode: Int): String {
+            return when(errcode) {
+                0     -> context.getString(R.string.no_error)
+                0x100 -> context.getString(R.string.vu_engine_creation_error_driver_config_load_error)
+                0x101 -> context.getString(R.string.vu_engine_creation_error_device_not_supported)
+                0x200 -> context.getString(R.string.vu_engine_creation_error_license_config_missing_key)
+                0x201 -> context.getString(R.string.vu_engine_creation_error_license_config_invalid_key)
+                0x202 -> context.getString(R.string.vu_engine_creation_error_license_config_no_network_permanent)
+                0x203 -> context.getString(R.string.vu_engine_creation_error_license_config_no_network_transient)
+                0x204 -> context.getString(R.string.vu_engine_creation_error_license_config_bad_request)
+                0x205 -> context.getString(R.string.vu_engine_creation_error_license_config_key_canceled)
+                0x206 -> context.getString(R.string.vu_engine_creation_error_license_config_product_type_mismatch)
+                0x207 -> context.getString(R.string.vu_engine_creation_error_license_config_unknown)
+                0x300 -> context.getString(R.string.vu_engine_creation_error_render_config_unsupported_backend)
+                0x301 -> context.getString(R.string.vu_engine_creation_error_render_config_failed_to_set_video_bg_viewport)
+                0x510 -> context.getString(R.string.vu_engine_creation_error_platform_android_config_initialization_error)
+                0x511 -> context.getString(R.string.vu_engine_creation_error_platform_android_config_invalid_activity)
+                0x512 -> context.getString(R.string.vu_engine_creation_error_platform_android_config_invalid_java_vm)
+                0x600 -> context.getString(R.string.vu_engine_error_invalid_license)
+                0x601 -> context.getString(R.string.vu_engine_error_camera_device_lost)
+                0x602 -> context.getString(R.string.vu_engine_error_platform_fusion_provider_info_invalidated)
+                else  -> throw RuntimeException(context.getString(R.string.not_yet_implemented, errcode))
+            }
+        }
     }
 }

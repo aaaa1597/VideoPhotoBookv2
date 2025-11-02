@@ -238,6 +238,10 @@ class Utils {
         fun getErrorMessage(context: Context, errcode: Int): String {
             return when(errcode) {
                 0     -> context.getString(R.string.no_error)
+                1     -> context.getString(R.string.vu_engine_creation_error_device_not_supported)
+                2     -> context.getString(R.string.vu_engine_creation_error_permission_error)
+                3     -> context.getString(R.string.vu_engine_creation_error_license_error)
+                4     -> context.getString(R.string.vu_engine_creation_error_initialization)
                 0x100 -> context.getString(R.string.vu_engine_creation_error_driver_config_load_error)
                 0x101 -> context.getString(R.string.vu_engine_creation_error_device_not_supported)
                 0x200 -> context.getString(R.string.vu_engine_creation_error_license_config_missing_key)
@@ -256,7 +260,12 @@ class Utils {
                 0x600 -> context.getString(R.string.vu_engine_error_invalid_license)
                 0x601 -> context.getString(R.string.vu_engine_error_camera_device_lost)
                 0x602 -> context.getString(R.string.vu_engine_error_platform_fusion_provider_info_invalidated)
-                else  -> throw RuntimeException(context.getString(R.string.not_yet_implemented, errcode))
+                0x1001-> context.getString(R.string.error_instance_already_exists)
+                0x1002-> context.getString(R.string.could_not_apply_platform_specific_configuration)
+                0x1003-> context.getString(R.string.could_not_configure_rendering)
+                0x1004-> context.getString(R.string.error_handler_data_could_not_be_added_to_configuration)
+                0x1005-> context.getString(R.string.error_setting_clipping_planes_for_projection)
+                else  -> context.getString(R.string.vu_engine_creation_error_initialization)
             }
         }
     }

@@ -75,9 +75,9 @@ class StagingFragment : Fragment() {
         })
 
         /* C++ Callbackの設定 */
-        _viewModel.addLogStr("set C++ garnishLog start.")
+        _viewModel.addLogStr("set C++ _garnishLog start.")
         _viewModel.passToNativeBridge()
-        _viewModel.addLogStr("set C++ garnishLog end.")
+        _viewModel.addLogStr("set C++ _garnishLog end.")
 
         /* vuforia初期化 */
         lifecycleScope.launch {

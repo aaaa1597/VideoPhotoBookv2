@@ -10,7 +10,7 @@
 
 jobject g_bridge = nullptr;
 JavaVM *g_vm = nullptr;
-void garnishLog(const std::string &logstr);
+void _garnishLog(const std::string &logstr);
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,9 +44,10 @@ Java_com_tks_videophotobook_JniKt_initAR(JNIEnv *env, jclass clazz, jobject acti
     std::string licenseKey(license_key);
     env->ReleaseStringUTFChars(jlicensekey, license_key);
 
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
+    _garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
     ErrorCode ret = VuforiaController::initAR(licenseKey);
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end(err=" + std::to_string(static_cast<int>(ret)) + ")");
+    _garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end(err=" +
+                std::to_string(static_cast<int>(ret)) + ")");
     return static_cast<jint>(ret);
 }
 
@@ -137,7 +138,7 @@ Java_com_tks_videophotobook_JniKt_passToNative(JNIEnv *env, jclass clazz, jobjec
 }
 #endif
 
-void garnishLog(const std::string &logstr) {
+void _garnishLog(const std::string &logstr) {
     /* detach要求フラグ */
     bool needDetach = false;
     /* JNIEnvのインスタンス取得(C++側でのスレッド跨ぎを考慮して毎回取得する) */

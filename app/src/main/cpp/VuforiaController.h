@@ -10,6 +10,10 @@
 
 enum class ErrorCode : int32_t {
     None = 0,
+    VU_ENGINE_CREATION_ERROR_DEVICE_NOT_SUPPORTED   = 0x1,///< The device is not supported
+    VU_ENGINE_CREATION_ERROR_PERMISSION_ERROR       = 0x2,///< One or more permissions required by Vuforia Engine are missing or not granted by user (e.g. the user may have denied camera access to the App)
+    VU_ENGINE_CREATION_ERROR_LICENSE_ERROR          = 0x3,///< A valid license configuration is required
+    VU_ENGINE_CREATION_ERROR_INITIALIZATION         = 0x4,///< An error occurred during initialization of the Vuforia Engine instance (e.g. an instance already exists)
     VU_ENGINE_CREATION_ERROR_DRIVER_CONFIG_LOAD_ERROR           = 0x100,///< An error occurred while loading the driver (library not found or could not be loaded due to missing entry points, incompatible ABI format, etc.)
     VU_ENGINE_CREATION_ERROR_DRIVER_CONFIG_FEATURE_NOT_SUPPORTED= 0x101,///< Vuforia Driver is not supported by the current license
     VU_ENGINE_CREATION_ERROR_LICENSE_CONFIG_MISSING_KEY             = 0x200,///< License key is missing
@@ -40,18 +44,29 @@ enum class ErrorCode : int32_t {
                                                                         ///< \note All the ARCore entities previously created by using these
                                                                         ///< pointers directly (such as anchors, planes) will also become
                                                                         ///< invalid and so must be created again.
+    ERROR_INSTANCE_ALREADY_EXISTS                           = 0x1001,/** Failed to initialize Vuforia as a valid engine instance already exists */
+    ERROR_COULD_NOT_APPLY_PLATFORM_SPECIFIC_CONFIGURATION   = 0x1002,/** Vuforia failed to initialize, could not apply platform-specific configuration. */
+    ERROR_COULD_NOT_CONFIGURE_RENDERING                     = 0x1003,/** Failed to init Vuforia, could not configure rendering. */
+    ERROR_HANDLER_DATA_COULD_NOT_BE_ADDED_TO_CONFIGURATION  = 0x1004,/** Failed to init Vuforia, error handler data could not be added to configuration */
+    ERROR_SETTING_CLIPPING_PLANES_FOR_PROJECTION            = 0x1005,/** Error setting clipping planes for projection */
 };
 
 class VuforiaController {
 public:
-    VuforiaController &getIns() {
+    static VuforiaController &getIns() {
         static VuforiaController instance;
         return instance;
     }
     static ErrorCode initAR(const std::string &licensekey);
 
 private:
+    /** Vuforia Engine instance */
     VuEngine* mEngine{ nullptr };
+    /** Vuforia render controller object */
+    VuController* mRenderController{ nullptr };
+    /** Vuforia platform controller object */
+    VuController* mPlatformController{ nullptr };
+    static ErrorCode initVuforiaInternal(const std::string &licensekey);
 };
 
 #endif //VIDEOPHOTOBOOKV2_VUFORIACONTROLLER_H

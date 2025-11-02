@@ -49,6 +49,7 @@
     <string name="vu_engine_creation_error_device_not_supported">Vuforia の初期化に失敗しました。このデバイスはサポートされていません。</string>
     <string name="vu_engine_creation_error_permission_error">ほとんどのプラットフォームでは、ユーザーがカメラアクセス（およびその他の必要な権限）を明示的に許可する必要があります。いずれかの必須権限が拒否された場合、このコードが返されます。Vuforia はカメラへのアクセスが拒否されたため初期化できません。</string>
     <string name="vu_engine_creation_error_license_error">Vuforia は有効なライセンス構成が必要なため、初期化できません。</string>
+    <string name="vu_engine_creation_error_initialization">Vuforia初期化失敗!!</string>
     <string name="vu_engine_creation_error_license_config_missing_key">Vuforia の初期化に失敗しました。ライセンスキーが見つかりません。</string>
     <string name="vu_engine_creation_error_license_config_invalid_key">Vuforia の初期化に失敗しました。ライセンスキーが無効です。</string>
     <string name="vu_engine_creation_error_license_config_no_network_permanent">Vuforia の初期化に失敗しました。ライセンスチェック中に恒久的なネットワークエラーが発生しました。</string>
@@ -59,7 +60,6 @@
     <string name="vu_engine_creation_error_license_config_unknown">Vuforia の初期化に失敗しました。ライセンスチェック中に不明なエラーが発生しました。</string>
     <string name="vu_engine_creation_error_render_config_unsupported_backend">Vuforia の初期化に失敗しました。要求されたレンダリングバックエンドはこのプラットフォームまたはデバイスではサポートされていません。</string>
     <string name="vu_engine_creation_error_render_config_failed_to_set_video_bg_viewport">Vuforia の初期化に失敗しました。要求されたビデオ背景ビューポートを設定できませんでした。</string>
-    <string name="vu_engine_creation_error_initialization">Vuforia初期化失敗!!</string>
     <string name="not_yet_implemented">未実装エラー!! 開発元へ連絡します。 errcode=%1$d</string>
     <string name="vu_engine_creation_error_platform_android_config_initialization_error">プラットフォームの初期化中にエラーが発生しました。</string>
     <string name="vu_engine_creation_error_platform_android_config_invalid_activity">構成に渡された Android Activity の jobject が無効です。</string>
@@ -67,4 +67,9 @@
     <string name="vu_engine_error_invalid_license">ライセンスキーの検証に失敗したため、エンジンは停止しました。</string>
     <string name="vu_engine_error_camera_device_lost">オペレーティングシステムから、カメラデバイスが Vuforia に対して利用できなくなったと報告されました。そのため、エンジンは停止しました。これは、デバイスのエラーや他のアプリ、ユーザーの操作によって、オペレーティングシステムがエンジンのカメラ接続を終了した可能性があります。</string>
     <string name="vu_engine_error_platform_fusion_provider_info_invalidated">このエラーは、ARCore を使用している Android でのみ発生します。\n以前に vuPlatformControllerGetARCoreInfo を使用して取得した ARCore Fusion Provider 情報は、コールバックが返された後に無効化され（すべてのプラットフォームポインタを含む）、それ以降はアクセスすべきではありません（アクセスすると未定義の動作につながる可能性があります）。情報は再取得する必要があります。\nこれらのポインタを直接使用して作成されたすべての ARCore エンティティ（アンカー、平面など）も無効となるため、再作成する必要があります。</string>
+    <string name="error_instance_already_exists">すでに有効なエンジンインスタンスが存在しています。</string>
+    <string name="could_not_apply_platform_specific_configuration">Vuforia の初期化に失敗しました。プラットフォーム固有の設定を適用できませんでした。</string>
+    <string name="could_not_configure_rendering">Vuforia の初期化に失敗しました。レンダリングの設定ができませんでした。</string>
+    <string name="error_handler_data_could_not_be_added_to_configuration">Vuforia の初期化に失敗しました。エラーハンドラーのデータを設定に追加できませんでした。</string>
+    <string name="error_setting_clipping_planes_for_projection">投影のクリッピング平面の設定中にエラーが発生しました。</string>
 </resources>

@@ -49,6 +49,7 @@
     <string name="vu_engine_creation_error_device_not_supported">Vuforia failed to initialize because the device is not supported.</string>
     <string name="vu_engine_creation_error_permission_error">On most platforms the user must explicitly grant camera access (along with other required permissions). If the access request is denied to any of the required permissions, this code is returned. Vuforia cannot initialize because access to the camera was denied.</string>
     <string name="vu_engine_creation_error_license_error">Vuforia cannot initialize because a valid license configuration is required.</string>
+    <string name="vu_engine_creation_error_initialization">Vuforia initialization failed</string>
     <string name="vu_engine_creation_error_license_config_missing_key">Vuforia failed to initialize because the license key is missing.</string>
     <string name="vu_engine_creation_error_license_config_invalid_key">Vuforia failed to initialize because the license key is invalid.</string>
     <string name="vu_engine_creation_error_license_config_no_network_permanent">Vuforia failed to initialize because the license check encountered a permanent network error.</string>
@@ -59,7 +60,6 @@
     <string name="vu_engine_creation_error_license_config_unknown">Vuforia failed to initialize because the license check encountered an unknown error.</string>
     <string name="vu_engine_creation_error_render_config_unsupported_backend">Vuforia failed to initialize because the requested rendering backend is not supported on this platform or device.</string>
     <string name="vu_engine_creation_error_render_config_failed_to_set_video_bg_viewport">Vuforia failed to initialize because the requested videobackground viewport could not be set.</string>
-    <string name="vu_engine_creation_error_initialization">Vuforia initialization failed</string>
     <string name="not_yet_implemented">not yet implemented!! errcode=%1$d</string>
     <string name="vu_engine_creation_error_platform_android_config_initialization_error">An error occurred during initialization of the platform</string>
     <string name="vu_engine_creation_error_platform_android_config_invalid_activity">Invalid Android Activity jobject passed to the configuration</string>
@@ -67,4 +67,9 @@
     <string name="vu_engine_error_invalid_license">License key validation has failed, Engine has stopped</string>
     <string name="vu_engine_error_camera_device_lost">The operating system has reported that the camera device has become unavailable to Vuforia and therefore Engine has stopped. This may be because of a device error or another App or user action has caused the operating system to close Engine\'s connection to the camera.</string>
     <string name="vu_engine_error_platform_fusion_provider_info_invalidated">This error can only happen on Android when using ARCore.\nIf ARCore Fusion Provider info was retrieved previously via\n#ref vuPlatformControllerGetARCoreInfo, this will be invalidated (including all platform pointers) after the callback has returned and should not be accessed any more after that (as this might lead to undefined behavior). The info must be retrieved again.\n#note All the ARCore entities previously created by using these pointers directly (such as anchors, planes) will also become invalid and so must be created again.</string>
+    <string name="error_instance_already_exists">Failed to initialize Vuforia as a valid engine instance already exists.</string>
+    <string name="could_not_apply_platform_specific_configuration">Vuforia failed to initialize, could not apply platform-specific configuration.</string>
+    <string name="could_not_configure_rendering">Failed to init Vuforia, could not configure rendering.</string>
+    <string name="error_handler_data_could_not_be_added_to_configuration">Failed to init Vuforia, error handler data could not be added to configuration.</string>
+    <string name="error_setting_clipping_planes_for_projection">Error setting clipping planes for projection.</string>
 </resources>

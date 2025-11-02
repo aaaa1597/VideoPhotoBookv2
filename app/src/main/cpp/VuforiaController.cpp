@@ -18,14 +18,14 @@ inline void REQUIRE_SUCCESS(VuResult result, const char* file, int line) {
     }
 }
 
-ErrorCode VuforiaController::initAR(const std::string &licensekey) {
+ErrorCode VuforiaController::initAR(JavaVM *pvm, jobject pjobject, const std::string &licensekey) {
     _garnishLog(std::format("VuforiaController::initAR() start{}", "."));
-    ErrorCode errcode = initVuforiaInternal(licensekey);
+    ErrorCode errcode = initVuforiaInternal(pvm, pjobject, licensekey);
     _garnishLog(std::format("VuforiaController::initAR() end{}", "."));
     return errcode;
 }
 
-ErrorCode VuforiaController::initVuforiaInternal(const std::string &licensekey) {
+ErrorCode VuforiaController::initVuforiaInternal(JavaVM *pvm, jobject pjobject, const std::string &licensekey) {
     _garnishLog(std::format("VuforiaController::initVuforiaInternal() start{}", "."));
 
 using E = ErrorCode;
@@ -51,8 +51,8 @@ using E = ErrorCode;
     _garnishLog(std::format("Add platform(Android) configuration{}", "."));
     /* Set Android Activity owning the Vuforia Engine in platform-specific configuration */
     VuPlatformAndroidConfig vuPlatformConfig_Android = vuPlatformAndroidConfigDefault();
-    vuPlatformConfig_Android.activity = nullptr;
-    vuPlatformConfig_Android.javaVM = nullptr;
+    vuPlatformConfig_Android.activity = pjobject;
+    vuPlatformConfig_Android.javaVM = pvm;
     /* Add platform-specific configuration to engine configuration set */
     VuResult platformConfigResult = vuEngineConfigSetAddPlatformAndroidConfig(configSet, &vuPlatformConfig_Android);
     if (platformConfigResult != VU_SUCCESS) {

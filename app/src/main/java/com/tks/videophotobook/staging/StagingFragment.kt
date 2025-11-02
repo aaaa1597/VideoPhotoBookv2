@@ -21,6 +21,7 @@ import com.tks.videophotobook.Utils
 import com.tks.videophotobook.databinding.FragmentStagingBinding
 import com.tks.videophotobook.initAR
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -82,6 +83,7 @@ class StagingFragment : Fragment() {
         /* vuforia初期化 */
         lifecycleScope.launch {
             val ret = withContext(Dispatchers.Default) {
+                delay(1000)
                 _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
                 val retErr = initAR(requireActivity(), BuildConfig.LICENSE_KEY)
                 _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))

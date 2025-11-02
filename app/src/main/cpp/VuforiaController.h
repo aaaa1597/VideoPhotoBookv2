@@ -6,6 +6,8 @@
 #include <string>
 /* 3.他の外部ライブラリのヘッダ */
 #include <VuforiaEngine/VuforiaEngine.h>
+#include <jni.h>
+
 /* 4.プロジェクト内(ローカル)ヘッダ */
 
 enum class ErrorCode : int32_t {
@@ -57,7 +59,7 @@ public:
         static VuforiaController instance;
         return instance;
     }
-    static ErrorCode initAR(const std::string &licensekey);
+    static ErrorCode initAR(JavaVM *pvm, jobject pjobject, const std::string &licensekey);
 
 private:
     /** Vuforia Engine instance */
@@ -66,7 +68,7 @@ private:
     VuController* mRenderController{ nullptr };
     /** Vuforia platform controller object */
     VuController* mPlatformController{ nullptr };
-    static ErrorCode initVuforiaInternal(const std::string &licensekey);
+    static ErrorCode initVuforiaInternal(JavaVM *pvm, jobject pjobject, const std::string &licensekey);
 };
 
 #endif //VIDEOPHOTOBOOKV2_VUFORIACONTROLLER_H

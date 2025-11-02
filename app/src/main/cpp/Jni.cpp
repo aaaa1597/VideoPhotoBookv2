@@ -8,8 +8,8 @@
 /* 4.プロジェクト内(ローカル)ヘッダ */
 #include "VuforiaController.h"
 
-jobject g_bridge = nullptr;
-JavaVM *g_vm = nullptr;
+jobject g_pbridge = nullptr;
+JavaVM *g_pvm = nullptr;
 void _garnishLog(const std::string &logstr);
 
 #ifdef __cplusplus
@@ -32,7 +32,7 @@ JNI_OnLoad(JavaVM* vm, void* reserved) {
         return -1;
     }
 
-    g_vm = vm;
+    g_pvm = vm;
 
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Retrieved and stored JavaVM");
     return JNI_VERSION_1_6;
@@ -45,9 +45,8 @@ Java_com_tks_videophotobook_JniKt_initAR(JNIEnv *env, jclass clazz, jobject acti
     env->ReleaseStringUTFChars(jlicensekey, license_key);
 
     _garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
-    ErrorCode ret = VuforiaController::initAR(licenseKey);
-    _garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end(err=" +
-                std::to_string(static_cast<int>(ret)) + ")");
+    ErrorCode ret = VuforiaController::initAR(g_pvm, activity, licenseKey);
+    _garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end(err=" + std::to_string((int)(ret)) + ")");
     return static_cast<jint>(ret);
 }
 
@@ -131,7 +130,7 @@ Java_com_tks_videophotobook_JniKt_setFullScreenMode(JNIEnv *env, jclass clazz, j
 
 JNIEXPORT void JNICALL
 Java_com_tks_videophotobook_JniKt_passToNative(JNIEnv *env, jclass clazz, jobject bridge) {
-    g_bridge = env->NewGlobalRef(bridge);
+    g_pbridge = env->NewGlobalRef(bridge);
 }
 
 #ifdef __cplusplus
@@ -143,10 +142,10 @@ void _garnishLog(const std::string &logstr) {
     bool needDetach = false;
     /* JNIEnvのインスタンス取得(C++側でのスレッド跨ぎを考慮して毎回取得する) */
     JNIEnv* env = nullptr;
-    int getEnvStat = g_vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    int getEnvStat = g_pvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
     if (getEnvStat == JNI_EDETACHED) {
         /* Kotlin側スレッドにアタッチ */
-        if (g_vm->AttachCurrentThread(&env, nullptr) != JNI_OK) {
+        if (g_pvm->AttachCurrentThread(&env, nullptr) != JNI_OK) {
             __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to attach current thread");
             return;
         }
@@ -161,19 +160,19 @@ void _garnishLog(const std::string &logstr) {
         return;
     }
     /* ViewModelBridgeクラスのインスタンス取得 */
-    jclass bridgeClass = env->GetObjectClass(g_bridge);
+    jclass bridgeClass = env->GetObjectClass(g_pbridge);
     /* ViewModelBridgeクラスの関数を取得 */
     jmethodID methodId = env->GetMethodID(bridgeClass, "garnishLogFromNative", "(Ljava/lang/String;)V");
     /* 引数のstringをkotlinのString型に変換 */
     jstring jLogStr = env->NewStringUTF(logstr.c_str());
     /* やっとkotlin関数(ViewModelBridge::garnishLogFromNative)呼び出し */
-    env->CallVoidMethod(g_bridge, methodId, jLogStr);
+    env->CallVoidMethod(g_pbridge, methodId, jLogStr);
     /* jLogStrを解放 */
     env->DeleteLocalRef(jLogStr);
     env->DeleteLocalRef(bridgeClass);
     /* スレッドデタッチ(必要な時だけ) */
     if (needDetach)
-        g_vm->DetachCurrentThread();
+        g_pvm->DetachCurrentThread();
 
     return;
 }

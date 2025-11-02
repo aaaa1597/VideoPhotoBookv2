@@ -4,7 +4,7 @@ import android.app.Activity
 import com.tks.videophotobook.staging.StagingViewModel
 import java.nio.ByteBuffer
 
-external fun initAR(activity: Activity, licensekey: String)
+external fun initAR(activity: Activity, licensekey: String): Int
 
 // ----------------------------------------
 external fun initRendering()

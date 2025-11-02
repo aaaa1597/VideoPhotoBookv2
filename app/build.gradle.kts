@@ -34,7 +34,7 @@ android {
         }
         externalNativeBuild {
             cmake {
-                cppFlags += "-std=c++17"
+                cppFlags += "-std=c++20"    /* std::format有効化 */
             }
         }
         buildConfigField("String", "LICENSE_KEY", "\"${getLicenseKey()}\"")

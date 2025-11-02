@@ -1,7 +1,12 @@
-#include <jni.h>
+/* 1.対応ヘッダ(同名ヘッダ) */
+/* 2.C++ 標準ライブラリのヘッダ */
 #include <string>
-#include <android/log.h>
 #include <cassert>
+/* 3.他の外部ライブラリのヘッダ */
+#include <android/log.h>
+#include <jni.h>
+/* 4.プロジェクト内(ローカル)ヘッダ */
+#include "VuforiaController.h"
 
 jobject g_bridge = nullptr;
 JavaVM *g_vm = nullptr;
@@ -33,19 +38,16 @@ JNI_OnLoad(JavaVM* vm, void* reserved) {
     return JNI_VERSION_1_6;
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jint JNICALL
 Java_com_tks_videophotobook_JniKt_initAR(JNIEnv *env, jclass clazz, jobject activity, jstring jlicensekey) {
     const char *license_key = env->GetStringUTFChars(jlicensekey, nullptr);
     std::string licenseKey(license_key);
     env->ReleaseStringUTFChars(jlicensekey, license_key);
 
     garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
-    // TODO: implement initAR()
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end");
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end");
-    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end");
+    ErrorCode ret = VuforiaController::initAR(licenseKey);
+    garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end(err=" + std::to_string(static_cast<int>(ret)) + ")");
+    return static_cast<jint>(ret);
 }
 
 JNIEXPORT void JNICALL

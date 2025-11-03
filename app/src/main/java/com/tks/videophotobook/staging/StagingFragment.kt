@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -29,9 +28,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.nio.ByteBuffer
-import java.util.concurrent.CountDownLatch
 
 class StagingFragment : Fragment() {
     private var _binding: FragmentStagingBinding? = null
@@ -151,7 +148,7 @@ class StagingFragment : Fragment() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 var prevList: List<String> = emptyList()
-                _viewModel.logListFlow.collect { newList ->
+                _viewModel.garnishLogListFlow.collect { newList ->
                     when {
                         /* 初回描画 */
                         prevList.isEmpty() && newList.isNotEmpty() -> {
@@ -211,9 +208,9 @@ class StagingLogAdapter(
     }
 
     override fun onBindViewHolder(holder: StagingLogViewHolder, position: Int) {
-        holder.textView.text = _viewModel.logListFlow.value[position]
+        holder.textView.text = _viewModel.garnishLogListFlow.value[position]
     }
 
-    override fun getItemCount(): Int = _viewModel.logListFlow.value.size
+    override fun getItemCount(): Int = _viewModel.garnishLogListFlow.value.size
 }
 

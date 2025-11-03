@@ -12,31 +12,31 @@ import java.nio.ByteBuffer
 
 private const val MAX_LOG_COUNT = 500
 class StagingViewModel : ViewModel() {
-    private val _logListFlow = MutableStateFlow<List<String>>(emptyList())
-    val logListFlow = _logListFlow.asStateFlow()
+    private val _garnishLogListFlow = MutableStateFlow<List<String>>(emptyList())
+    val garnishLogListFlow = _garnishLogListFlow.asStateFlow()
 
     fun addLogStr(item: String) {
         viewModelScope.launch(Dispatchers.Main) {
-            val mutableList = _logListFlow.value.toMutableList()
+            val mutableList = _garnishLogListFlow.value.toMutableList()
             mutableList.add(item)
             if(mutableList.size > MAX_LOG_COUNT) {
                 val over = mutableList.size - MAX_LOG_COUNT
                 mutableList.subList(0, over).clear()
             }
-            _logListFlow.value = mutableList
+            _garnishLogListFlow.value = mutableList
         }
     }
 
     fun removeLogStr(position: Int) {
-        val list = _logListFlow.value.toMutableList()
+        val list = _garnishLogListFlow.value.toMutableList()
         if (position in list.indices) {
             list.removeAt(position)
-            _logListFlow.value = list
+            _garnishLogListFlow.value = list
         }
     }
 
     fun clearLogs() {
-        _logListFlow.value = emptyList()
+        _garnishLogListFlow.value = emptyList()
     }
 
     fun passToNativeBridge() {

@@ -60,6 +60,13 @@ public:
         return instance;
     }
     static ErrorCode initAR(JavaVM *pvm, jobject pjobject, const std::string &licensekey);
+    /* Screen size and video size */
+    float _vVideoWidth = 0.0f;
+    float _vVideoHeight = 0.0f;
+    float _screenWidth  = 0.0f;
+    float _screenHeight = 0.0f;
+    /** Configure Vuforia rendering. */
+    bool configureRendering(jint width, jint height, int *pOrientation);
 
 private:
     /** Vuforia Engine instance */

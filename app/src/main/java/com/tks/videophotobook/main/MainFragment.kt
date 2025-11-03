@@ -24,6 +24,7 @@ import com.tks.videophotobook.R
 import com.tks.videophotobook.cameraPerformAutoFocus
 import com.tks.videophotobook.cameraRestoreAutoFocus
 import com.tks.videophotobook.checkHit
+import com.tks.videophotobook.configureRendering
 import com.tks.videophotobook.databinding.FragmentMainBinding
 import com.tks.videophotobook.deinitAR
 import com.tks.videophotobook.deinitRendering
@@ -142,7 +143,8 @@ class MainFragment : Fragment() {
                 initRendering()
             }
             override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
-                TODO("Not yet implemented")
+                /* Pass rendering parameters to Vuforia Engine */
+                configureRendering(width, height, resources.configuration.orientation, requireActivity().display.rotation)
             }
             override fun onDrawFrame(gl: GL10) {
                 TODO("Not yet implemented")

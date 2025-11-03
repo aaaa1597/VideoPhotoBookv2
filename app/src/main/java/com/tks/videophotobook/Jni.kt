@@ -5,11 +5,11 @@ import com.tks.videophotobook.staging.StagingViewModel
 import java.nio.ByteBuffer
 
 external fun initAR(activity: Activity, licensekey: String): Int
+external fun initRendering()
+external fun configureRendering(width: Int, height: Int, orientation: Int, rotation: Int) : Boolean
 
 // ----------------------------------------
-external fun initRendering()
 external fun setTextures(astronautWidth: Int, astronautHeight: Int, astronautBytes: ByteBuffer, pauseWidth: Int, pauseHeight: Int, pauseBytes: ByteBuffer)
-external fun configureRendering(width: Int, height: Int, orientation: Int, rotation: Int) : Boolean
 external fun renderFrame(nowTargetName: String) : String
 external fun deinitRendering()
 external fun deinitAR()

@@ -2,6 +2,7 @@
 /* 2.C++ 標準ライブラリのヘッダ */
 #include <string>
 #include <cassert>
+#include <vector>
 /* 3.他の外部ライブラリのヘッダ */
 #include <android/log.h>
 #include <jni.h>
@@ -11,7 +12,9 @@
 
 jobject g_pbridge = nullptr;
 JavaVM *g_pvm = nullptr;
-void _garnishLog(const std::string &logstr);
+namespace l {
+    void garnishLog(const std::string &logstr);
+}
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,15 +48,28 @@ Java_com_tks_videophotobook_JniKt_initAR(JNIEnv *env, jclass clazz, jobject acti
     std::string licenseKey(license_key);
     env->ReleaseStringUTFChars(jlicensekey, license_key);
 
-    _garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
+    l::garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
     ErrorCode ret = VuforiaController::initAR(g_pvm, activity, licenseKey);
-    _garnishLog("Java_com_tks_videophotobook_JniKt_initAR() end(err=" + std::to_string((int)(ret)) + ")");
+    l::garnishLog(
+            "Java_com_tks_videophotobook_JniKt_initAR() end(err=" + std::to_string((int) (ret)) +
+            ")");
     return static_cast<jint>(ret);
 }
 
 JNIEXPORT void JNICALL
 Java_com_tks_videophotobook_JniKt_initRendering(JNIEnv *env, jclass clazz) {
-    GLESRenderer::getIns().init();
+    bool ret = GLESRenderer::getIns().init();
+    if(!ret)
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error initialising renderer");
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_tks_videophotobook_JniKt_configureRendering(JNIEnv *env, jclass clazz, jint width, jint height, jint orientation, jint rotation) {
+using VuC = VuforiaController;
+    std::vector<int> androidOrientation{ orientation, rotation };
+    VuC::getIns()._screenWidth = width;
+    VuC::getIns()._screenHeight= height;
+    return VuC::getIns().configureRendering(width, height, androidOrientation.data()) ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT void JNICALL
@@ -63,11 +79,6 @@ Java_com_tks_videophotobook_JniKt_setTextures(JNIEnv *env, jclass clazz,
     // TODO: implement setTextures()
 }
 
-
-JNIEXPORT jboolean JNICALL
-Java_com_tks_videophotobook_JniKt_configureRendering(JNIEnv *env, jclass clazz, jint width, jint height, jint orientation, jint rotation) {
-    // TODO: implement configureRendering()
-}
 
 JNIEXPORT jstring JNICALL
 Java_com_tks_videophotobook_JniKt_renderFrame(JNIEnv *env, jclass clazz, jstring now_target_name) {
@@ -138,42 +149,44 @@ Java_com_tks_videophotobook_JniKt_passToNative(JNIEnv *env, jclass clazz, jobjec
 }
 #endif
 
-void _garnishLog(const std::string &logstr) {
-    /* detach要求フラグ */
-    bool needDetach = false;
-    /* JNIEnvのインスタンス取得(C++側でのスレッド跨ぎを考慮して毎回取得する) */
-    JNIEnv* env = nullptr;
-    int getEnvStat = g_pvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
-    if (getEnvStat == JNI_EDETACHED) {
-        /* Kotlin側スレッドにアタッチ */
-        if (g_pvm->AttachCurrentThread(&env, nullptr) != JNI_OK) {
-            __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to attach current thread");
+namespace l {
+    void garnishLog(const std::string &logstr) {
+        /* detach要求フラグ */
+        bool needDetach = false;
+        /* JNIEnvのインスタンス取得(C++側でのスレッド跨ぎを考慮して毎回取得する) */
+        JNIEnv* env = nullptr;
+        int getEnvStat = g_pvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+        if (getEnvStat == JNI_EDETACHED) {
+            /* Kotlin側スレッドにアタッチ */
+            if (g_pvm->AttachCurrentThread(&env, nullptr) != JNI_OK) {
+                __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to attach current thread");
+                return;
+            }
+            needDetach = true;
+        }
+        else if (getEnvStat == JNI_OK) {
+            /* すでにアタッチ済 */
+            needDetach = false;
+        }
+        else {
+            __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to get the environment");
             return;
         }
-        needDetach = true;
-    }
-    else if (getEnvStat == JNI_OK) {
-        /* すでにアタッチ済 */
-        needDetach = false;
-    }
-    else {
-        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to get the environment");
+        /* ViewModelBridgeクラスのインスタンス取得 */
+        jclass bridgeClass = env->GetObjectClass(g_pbridge);
+        /* ViewModelBridgeクラスの関数を取得 */
+        jmethodID methodId = env->GetMethodID(bridgeClass, "garnishLogFromNative", "(Ljava/lang/String;)V");
+        /* 引数のstringをkotlinのString型に変換 */
+        jstring jLogStr = env->NewStringUTF(logstr.c_str());
+        /* やっとkotlin関数(ViewModelBridge::garnishLogFromNative)呼び出し */
+        env->CallVoidMethod(g_pbridge, methodId, jLogStr);
+        /* jLogStrを解放 */
+        env->DeleteLocalRef(jLogStr);
+        env->DeleteLocalRef(bridgeClass);
+        /* スレッドデタッチ(必要な時だけ) */
+        if (needDetach)
+            g_pvm->DetachCurrentThread();
+
         return;
     }
-    /* ViewModelBridgeクラスのインスタンス取得 */
-    jclass bridgeClass = env->GetObjectClass(g_pbridge);
-    /* ViewModelBridgeクラスの関数を取得 */
-    jmethodID methodId = env->GetMethodID(bridgeClass, "garnishLogFromNative", "(Ljava/lang/String;)V");
-    /* 引数のstringをkotlinのString型に変換 */
-    jstring jLogStr = env->NewStringUTF(logstr.c_str());
-    /* やっとkotlin関数(ViewModelBridge::garnishLogFromNative)呼び出し */
-    env->CallVoidMethod(g_pbridge, methodId, jLogStr);
-    /* jLogStrを解放 */
-    env->DeleteLocalRef(jLogStr);
-    env->DeleteLocalRef(bridgeClass);
-    /* スレッドデタッチ(必要な時だけ) */
-    if (needDetach)
-        g_pvm->DetachCurrentThread();
-
-    return;
 }

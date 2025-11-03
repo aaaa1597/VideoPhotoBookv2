@@ -49,48 +49,49 @@ class MainFragment : Fragment() {
     private lateinit var _exoPlayer: ExoPlayer
     private lateinit var _surfaceTexture: SurfaceTexture
     private lateinit var _surface: Surface
+    private val gestureDetector by lazy {
+        GestureDetector(requireContext(), object : GestureDetector.SimpleOnGestureListener() {
+            @UnstableApi
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                val targetName = checkHit(e.x, e.y,binding.viwGlsurface.width.toFloat(), binding.viwGlsurface.height.toFloat())
+                if(targetName != _nowPlayingTarget && targetName != "") {
+                    /* 動画差し替え */
+                    _nowPlayingTarget = targetName
+                    switchMedia(targetName)
+                }
+                else {
+                    /* 再生/停止/早送り/巻戻しコントローラ表示/非表示 */
+                    if( binding.viwPlayerControls.isFullyVisible)
+                        binding.viwPlayerControls.hide()
+                    else
+                        binding.viwPlayerControls.show()
+                }
 
-    private var gestureDetector: GestureDetector = GestureDetector(requireContext(), object : GestureDetector.SimpleOnGestureListener() {
-        @UnstableApi
-        override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-            val targetName = checkHit(e.x, e.y,binding.viwGlsurface.width.toFloat(), binding.viwGlsurface.height.toFloat())
-            if(targetName != _nowPlayingTarget && targetName != "") {
-                /* 動画差し替え */
-                _nowPlayingTarget = targetName
-                switchMedia(targetName)
-            }
-            else {
-                /* 再生/停止/早送り/巻戻しコントローラ表示/非表示 */
-                if( binding.viwPlayerControls.isFullyVisible)
-                    binding.viwPlayerControls.hide()
-                else
-                    binding.viwPlayerControls.show()
+                cameraPerformAutoFocus()
+                Timer("RestoreAutoFocus", false).schedule(2000) {
+                    cameraRestoreAutoFocus()
+                }
+                return true
             }
 
-            cameraPerformAutoFocus()
-            Timer("RestoreAutoFocus", false).schedule(2000) {
-                cameraRestoreAutoFocus()
+            @UnstableApi
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                super.onDoubleTap(e)
+                val targetName = checkHit(e.x, e.y,binding.viwGlsurface.width.toFloat(), binding.viwGlsurface.height.toFloat())
+                if(targetName != _nowPlayingTarget && targetName != "") {
+                    /* 動画差し替え */
+                    _nowPlayingTarget = targetName
+                    switchMedia(targetName)
+                }
+                else {
+                    /* フルスクリーンモード切替 */
+                    isFullScreenMode = !isFullScreenMode
+                    setFullScreenMode(isFullScreenMode)
+                }
+                return true
             }
-            return true
-        }
-
-        @UnstableApi
-        override fun onDoubleTap(e: MotionEvent): Boolean {
-            super.onDoubleTap(e)
-            val targetName = checkHit(e.x, e.y,binding.viwGlsurface.width.toFloat(), binding.viwGlsurface.height.toFloat())
-            if(targetName != _nowPlayingTarget && targetName != "") {
-                /* 動画差し替え */
-                _nowPlayingTarget = targetName
-                switchMedia(targetName)
-            }
-            else {
-                /* フルスクリーンモード切替 */
-                isFullScreenMode = !isFullScreenMode
-                setFullScreenMode(isFullScreenMode)
-            }
-            return true
-        }
-    })
+        })
+    }
 
     /* 指定Target動画に差替え */
     private fun switchMedia(target: String) {

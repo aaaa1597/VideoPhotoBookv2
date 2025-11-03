@@ -10,10 +10,12 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.tks.videophotobook.BuildConfig
 import com.tks.videophotobook.R
@@ -82,6 +84,7 @@ class StagingFragment : Fragment() {
 
         /* vuforia初期化 */
         lifecycleScope.launch {
+            requireActivity().findViewById<ConstraintLayout>(R.id.main).background = null
             val ret = withContext(Dispatchers.Default) {
                 delay(1000)
                 _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
@@ -89,7 +92,13 @@ class StagingFragment : Fragment() {
                 _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
                 retErr
             }
-            if(ret != 0) {
+            /* Vuforia初期化正常完了 */
+            if(ret == 0) {
+//                requireActivity().findViewById<ConstraintLayout>(R.id.main).background = null
+                findNavController().navigate(R.id.action_stagingFragment_to_mainFragment_zoom)
+            }
+            /* Vuforia初期化失敗 */
+            else {
                 val titlestr:String = resources.getString(R.string.init_vuforia_err)
                 val errstr:String = Utils.getErrorMessage(requireContext(),ret)
                 _viewModel.addLogStr(errstr)

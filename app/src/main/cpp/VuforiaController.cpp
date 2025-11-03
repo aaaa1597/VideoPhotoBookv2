@@ -118,5 +118,6 @@ using E = ErrorCode;
 
     _garnishLog(std::format("Successfully initialized Vuforia{}", "."));
     _garnishLog(std::format("VuforiaController::initVuforiaInternal() end{}", "."));
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Successfully initialized Vuforia.");
     return E::None;
 }

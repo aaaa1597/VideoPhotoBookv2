@@ -8,6 +8,8 @@ set_target_properties(VUFORIA_LIBRARY PROPERTIES IMPORTED_LOCATION
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
         VuforiaController.cpp
+        GLESRenderer.cpp
+        GLESUtils.cpp
         Jni.cpp)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC include)

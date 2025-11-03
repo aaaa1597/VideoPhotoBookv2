@@ -6,6 +6,7 @@
 #include <android/log.h>
 #include <jni.h>
 /* 4.プロジェクト内(ローカル)ヘッダ */
+#include "GLESRenderer.h"
 #include "VuforiaController.h"
 
 jobject g_pbridge = nullptr;
@@ -52,7 +53,7 @@ Java_com_tks_videophotobook_JniKt_initAR(JNIEnv *env, jclass clazz, jobject acti
 
 JNIEXPORT void JNICALL
 Java_com_tks_videophotobook_JniKt_initRendering(JNIEnv *env, jclass clazz) {
-    // TODO: implement initRendering()
+    GLESRenderer::getIns().init();
 }
 
 JNIEXPORT void JNICALL

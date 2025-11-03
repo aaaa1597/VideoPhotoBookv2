@@ -1,10 +1,13 @@
 package com.tks.videophotobook.staging
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.tks.videophotobook.ViewModelBridge
 import com.tks.videophotobook.passToNative
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.nio.ByteBuffer
 
 private const val MAX_LOG_COUNT = 500
@@ -13,13 +16,15 @@ class StagingViewModel : ViewModel() {
     val logListFlow = _logListFlow.asStateFlow()
 
     fun addLogStr(item: String) {
-        val mutableList = _logListFlow.value.toMutableList()
-        mutableList.add(item)
-        if(mutableList.size > MAX_LOG_COUNT) {
-            val over = mutableList.size - MAX_LOG_COUNT
-            mutableList.subList(0, over).clear()
+        viewModelScope.launch(Dispatchers.Main) {
+            val mutableList = _logListFlow.value.toMutableList()
+            mutableList.add(item)
+            if(mutableList.size > MAX_LOG_COUNT) {
+                val over = mutableList.size - MAX_LOG_COUNT
+                mutableList.subList(0, over).clear()
+            }
+            _logListFlow.value = mutableList
         }
-        _logListFlow.value = mutableList
     }
 
     fun removeLogStr(position: Int) {

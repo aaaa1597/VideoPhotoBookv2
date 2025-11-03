@@ -5,6 +5,7 @@ import com.tks.videophotobook.ViewModelBridge
 import com.tks.videophotobook.passToNative
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.nio.ByteBuffer
 
 private const val MAX_LOG_COUNT = 500
 class StagingViewModel : ViewModel() {
@@ -35,5 +36,17 @@ class StagingViewModel : ViewModel() {
 
     fun passToNativeBridge() {
         passToNative(ViewModelBridge(this))
+    }
+
+    lateinit var pauseTexture: ByteBuffer
+    var pauseWidth = 0
+    var pauseHeight = 0
+    fun setPauseTexture(apauseTexture: ByteBuffer, width: Int, height: Int) {
+        pauseTexture = apauseTexture
+        pauseWidth = width
+        pauseHeight = height
+    }
+    fun getPauseTexture(): Triple<ByteBuffer, Int, Int> {
+        return Triple(pauseTexture, pauseWidth, pauseHeight)
     }
 }

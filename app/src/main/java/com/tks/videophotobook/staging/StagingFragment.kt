@@ -1,6 +1,7 @@
 package com.tks.videophotobook.staging
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -24,9 +25,13 @@ import com.tks.videophotobook.Utils
 import com.tks.videophotobook.databinding.FragmentStagingBinding
 import com.tks.videophotobook.initAR
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.nio.ByteBuffer
+import java.util.concurrent.CountDownLatch
 
 class StagingFragment : Fragment() {
     private var _binding: FragmentStagingBinding? = null
@@ -83,16 +88,38 @@ class StagingFragment : Fragment() {
         _viewModel.passToNativeBridge()
         _viewModel.addLogStr("set C++ _garnishLog end.")
 
-        /* vuforia初期化 */
         lifecycleScope.launch {
-            val ret = withContext(Dispatchers.Default) {
-                delay(1000)
-                _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
-                val retErr = initAR(requireActivity(), BuildConfig.LICENSE_KEY)
-                _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
-                retErr
-            }
+            val results = listOf(
+                /* vuforia初期化 */
+                async(Dispatchers.Default) {
+                    delay(1000)
+                    _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
+                    val retErr = initAR(requireActivity(), BuildConfig.LICENSE_KEY)
+                    _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
+                    retErr
+                },
+                /* pause.pngテクスチャ読込み */
+                async(Dispatchers.IO) {
+                    delay(500)
+                    _viewModel.addLogStr("read  pause.png texture image start.")
+                    val pausebitmap = BitmapFactory.decodeResource(requireContext().resources, R.drawable.pause)
+                    _viewModel.addLogStr("read pause.png texture image end.")
+                    delay(500)
+                    _viewModel.addLogStr("change bitmap to ByteBuffer start.")
+                    val pauseTexture: ByteBuffer = pausebitmap.let { bitmap ->
+                        ByteBuffer.allocateDirect(bitmap.byteCount).apply {
+                            bitmap.copyPixelsToBuffer(this)
+                            rewind()
+                            _viewModel.addLogStr("change bitmap to ByteBuffer end.")
+                        }
+                    }
+                    _viewModel.setPauseTexture(pauseTexture, pausebitmap.width, pausebitmap.height)
+                },
+            /* 両タスクを待つ */
+            ).awaitAll()
+
             /* Vuforia初期化正常完了 */
+            val ret = results[0] as Int
             if(ret == 0) {
 //                requireActivity().findViewById<ConstraintLayout>(R.id.main).background = null
                 val navOptions = NavOptions.Builder()
@@ -136,14 +163,12 @@ class StagingFragment : Fragment() {
                             adapter.notifyDataSetChanged()
                         }
                         /* 追加だけ(古い削除なし) */
-                        newList.size == prevList.size + 1 &&
-                                newList.dropLast(1) == prevList -> {
+                        newList.size == prevList.size + 1 && newList.dropLast(1) == prevList -> {
                             adapter.notifyItemInserted(newList.lastIndex)
                             binding.rcvLog.smoothScrollToPosition(newList.lastIndex)
                         }
                         /* 古い削除 + 1件追加(500件上限時など) */
-                        newList.size == prevList.size &&
-                                newList.dropLast(1) == prevList.drop(1) -> {
+                        newList.size == prevList.size && newList.dropLast(1) == prevList.drop(1) -> {
                             adapter.notifyItemRemoved(0)    /* 先頭を消す */
                             adapter.notifyItemInserted(newList.lastIndex) /* 新しい行を追加 */
                             binding.rcvLog.smoothScrollToPosition(newList.lastIndex)

@@ -29,6 +29,7 @@ VuController* VuforiaController::mRenderController{ nullptr };
 VuController* VuforiaController::mPlatformController{ nullptr };
 VuObserver* VuforiaController::mDevicePoseObserver{nullptr};
 std::vector<VuObserver*> VuforiaController::mObjectObservers = {};
+VuCameraVideoModePreset VuforiaController::mCameraVideoMode = VuCameraVideoModePreset::VU_CAMERA_VIDEO_MODE_PRESET_DEFAULT;
 
 ErrorCode VuforiaController::initAR(JavaVM *pvm, jobject pjobject, const std::string &licensekey) {
     l::garnishLog(std::format("VuforiaController::initAR() start{}", "."));
@@ -192,10 +193,49 @@ using E = ErrorCode;
     return E::None;
 }
 
-bool VuforiaController::startAR() {
+ErrorCode VuforiaController::startAR() {
     l::garnishLog(std::format("VuforiaController::startAR() start."));
+
+using E = ErrorCode;
+
+    l::garnishLog(std::format("Check mEngine."));
+    /* Bail out early if engine instance has not been created yet */
+    if (mEngine == nullptr) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to start Vuforia as no valid engine instance is available");
+        return E::ERROR_ENGINE_INSTANCE_HAS_NOT_BEEN_CREATED_YET;
+    }
+
+    l::garnishLog(std::format("Check is Running mEngine."));
+    /* Bail out early if engine has already been started */
+    if (vuEngineIsRunning(mEngine)) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to start Vuforia as it is already running");
+        return E::ERROR_ENGINE_HAS_ALREADY_BEEN_STARTED;
+    }
+
+    l::garnishLog(std::format("Get the camera controller to access camera settings."));
+    /* Get the camera controller to access camera settings */
+    VuController* cameraController = nullptr;
+    REQUIRE_SUCCESS(vuEngineGetCameraController(mEngine, &cameraController), __FILE__, __LINE__);
+    /* Select the camera mode to the preferred value before starting engine */
+    if (vuCameraControllerSetActiveVideoMode(cameraController, mCameraVideoMode) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to set active video mode %d for camera device", (int)mCameraVideoMode);
+    }
+
+    // Start engine
+    if (vuEngineStart(mEngine) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to start Vuforia.");
+        return E::ERROR_FAILED_TO_START_VUFORIA;
+    }
+
+    /* Select the camera focus mode to continuous autofocus */
+    if (vuCameraControllerSetFocusMode(cameraController, VU_CAMERA_FOCUS_MODE_CONTINUOUSAUTO) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to select focus mode %d for camera device", (int)VU_CAMERA_FOCUS_MODE_CONTINUOUSAUTO);
+    }
+
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Successfully started Vuforia.");
+    l::garnishLog(std::format("Successfully started Vuforia."));
     l::garnishLog(std::format("VuforiaController::startAR() end."));
-    return false;
+    return E::None;
 }
 
 /** Configure Vuforia rendering. */

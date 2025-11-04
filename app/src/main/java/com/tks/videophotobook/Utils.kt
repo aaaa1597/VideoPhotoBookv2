@@ -267,6 +267,9 @@ class Utils {
                 0x1005-> context.getString(R.string.error_setting_clipping_planes_for_projection)
                 0x1006-> context.getString(R.string.error_creating_device_pose_observer)
                 0x1007-> context.getString(R.string.error_creating_image_target_observer)
+                0x1008-> context.getString(R.string.error_engine_instance_has_not_been_created_yet)
+                0x1009-> context.getString(R.string.error_engine_has_already_been_started)
+                0x100A-> context.getString(R.string.error_failed_to_start_Vuforia)
                 else  -> context.getString(R.string.vu_engine_creation_error_initialization)
             }
         }

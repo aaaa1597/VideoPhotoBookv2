@@ -74,4 +74,7 @@
     <string name="error_setting_clipping_planes_for_projection">Error setting clipping planes for projection.</string>
     <string name="error_creating_device_pose_observer">Error creating device pose observer.</string>
     <string name="error_creating_image_target_observer">Error creating image target observer.</string>
+    <string name="error_engine_instance_has_not_been_created_yet">Error engine instance has not been created yet.</string>
+    <string name="error_engine_has_already_been_started">Error engine has already been started.</string>
+    <string name="error_failed_to_start_Vuforia">Error failed to start Vuforia.</string>
 </resources>

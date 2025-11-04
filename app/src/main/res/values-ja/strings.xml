@@ -74,4 +74,7 @@
     <string name="error_setting_clipping_planes_for_projection">投影のクリッピング平面の設定中にエラーが発生しました。</string>
     <string name="error_creating_device_pose_observer">device pose observer生成時にエラーが発生しました。</string>
     <string name="error_creating_image_target_observer">image target observer生成時にエラーが発生しました。</string>
+    <string name="error_engine_instance_has_not_been_created_yet">Vuforiaエンジンのインスタンスがまだ作成されていません。</string>
+    <string name="error_engine_has_already_been_started">Error Vuforiaエンジンはすでに開始されています。</string>
+    <string name="error_failed_to_start_Vuforia">Vuforia開始に失敗.</string>
 </resources>

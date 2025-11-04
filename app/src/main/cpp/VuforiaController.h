@@ -49,10 +49,13 @@ enum class ErrorCode : int32_t {
     ERROR_INSTANCE_ALREADY_EXISTS                           = 0x1001,/** Failed to initialize Vuforia as a valid engine instance already exists */
     ERROR_COULD_NOT_APPLY_PLATFORM_SPECIFIC_CONFIGURATION   = 0x1002,/** Vuforia failed to initialize, could not apply platform-specific configuration. */
     ERROR_COULD_NOT_CONFIGURE_RENDERING                     = 0x1003,/** Failed to init Vuforia, could not configure rendering. */
-    ERROR_HANDLER_DATA_COULD_NOT_BE_ADDED_TO_CONFIGURATION  = 0x1004,/** Failed to init Vuforia, error handler data could not be added to configuration */
-    ERROR_SETTING_CLIPPING_PLANES_FOR_PROJECTION            = 0x1005,/** Error setting clipping planes for projection */
-    ERROR_CREATING_DEVICE_POSE_OBSERVER                     = 0x1006,/** Error creating device pose observer */
-    ERROR_CREATING_IMAGE_TARGET_OBSERVER                    = 0x1007,/** Error creating image target observer */
+    ERROR_HANDLER_DATA_COULD_NOT_BE_ADDED_TO_CONFIGURATION  = 0x1004,/** Failed to init Vuforia, error handler data could not be added to configuration. */
+    ERROR_SETTING_CLIPPING_PLANES_FOR_PROJECTION            = 0x1005,/** Error setting clipping planes for projection. */
+    ERROR_CREATING_DEVICE_POSE_OBSERVER                     = 0x1006,/** Error creating device pose observer. */
+    ERROR_CREATING_IMAGE_TARGET_OBSERVER                    = 0x1007,/** Error creating image target observer. */
+    ERROR_ENGINE_INSTANCE_HAS_NOT_BEEN_CREATED_YET          = 0x1008,/** engine instance has not been created yet. */
+    ERROR_ENGINE_HAS_ALREADY_BEEN_STARTED                   = 0x1009,/** engine has already been started. */
+    ERROR_FAILED_TO_START_VUFORIA                           = 0x100A,/** failed to start Vuforia. */
 };
 
 class VuforiaController {
@@ -60,7 +63,7 @@ public:
     /** Initialize Vuforia. When the initialization is completed successfully return 0. If initialization fails return the error code.*/
     static ErrorCode initAR(JavaVM *pvm, jobject pjobject, const std::string &licensekey);
     /** Start the AR session. Call this method when the app resumes from paused. */
-    static bool startAR();
+    static ErrorCode startAR();
     /** Configure Vuforia rendering. */
     static bool configureRendering(jint width, jint height, int *pOrientation);
     /* Screen size and video size */
@@ -80,6 +83,8 @@ private:
     static VuObserver* mDevicePoseObserver;
     /** The observer for either the Image or Model target depending on which target was specified */
     static std::vector<VuObserver*> mObjectObservers;
+    /** The Vuforia camera video mode to use, either DEFAULT, SPEED or QUALITY. */
+    static VuCameraVideoModePreset mCameraVideoMode;
     /** Used by initAR to prepare and invoke Vuforia initialization. */
     static ErrorCode initVuforiaInternal(JavaVM *pvm, jobject pjobject, const std::string &licensekey);
     /** Create the set of Vuforia Observers needed in the application */

@@ -55,17 +55,16 @@ Java_com_tks_videophotobook_JniKt_initAR(JNIEnv *env, jclass clazz, jobject acti
     return static_cast<jint>(ret);
 }
 
-JNIEXPORT jboolean JNICALL
+JNIEXPORT jint JNICALL
 Java_com_tks_videophotobook_JniKt_startAR(JNIEnv *env, jclass clazz) {
     l::garnishLog("Java_com_tks_videophotobook_JniKt_startAR() start");
-    if (!VuforiaController::startAR()) {
-        l::garnishLog("Java_com_tks_videophotobook_JniKt_startAR() end(JNI_FALSE)");
+    ErrorCode ret = VuforiaController::startAR();
+    if (ret != ErrorCode::None) {
         __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error startAR()!");
-        return JNI_FALSE;
     }
 
     l::garnishLog("Java_com_tks_videophotobook_JniKt_startAR() end(JNI_TRUE)");
-    return JNI_TRUE;
+    return (jint)ret;
 }
 
 JNIEXPORT void JNICALL

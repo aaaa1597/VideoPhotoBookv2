@@ -5,7 +5,7 @@ import com.tks.videophotobook.staging.StagingViewModel
 import java.nio.ByteBuffer
 
 external fun initAR(activity: Activity, licensekey: String): Int
-external fun startAR() : Boolean
+external fun startAR() : Int
 external fun initRendering()
 external fun configureRendering(width: Int, height: Int, orientation: Int, rotation: Int) : Boolean
 

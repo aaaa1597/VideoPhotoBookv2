@@ -51,31 +51,39 @@ enum class ErrorCode : int32_t {
     ERROR_COULD_NOT_CONFIGURE_RENDERING                     = 0x1003,/** Failed to init Vuforia, could not configure rendering. */
     ERROR_HANDLER_DATA_COULD_NOT_BE_ADDED_TO_CONFIGURATION  = 0x1004,/** Failed to init Vuforia, error handler data could not be added to configuration */
     ERROR_SETTING_CLIPPING_PLANES_FOR_PROJECTION            = 0x1005,/** Error setting clipping planes for projection */
+    ERROR_CREATING_DEVICE_POSE_OBSERVER                     = 0x1006,/** Error creating device pose observer */
+    ERROR_CREATING_IMAGE_TARGET_OBSERVER                    = 0x1007,/** Error creating image target observer */
 };
 
 class VuforiaController {
 public:
-    static VuforiaController &getIns() {
-        static VuforiaController instance;
-        return instance;
-    }
+    /** Initialize Vuforia. When the initialization is completed successfully return 0. If initialization fails return the error code.*/
     static ErrorCode initAR(JavaVM *pvm, jobject pjobject, const std::string &licensekey);
-    /* Screen size and video size */
-    float _vVideoWidth = 0.0f;
-    float _vVideoHeight = 0.0f;
-    float _screenWidth  = 0.0f;
-    float _screenHeight = 0.0f;
+    /** Start the AR session. Call this method when the app resumes from paused. */
+    static bool startAR();
     /** Configure Vuforia rendering. */
-    bool configureRendering(jint width, jint height, int *pOrientation);
+    static bool configureRendering(jint width, jint height, int *pOrientation);
+    /* Screen size and video size */
+    static float _vVideoWidth;
+    static float _vVideoHeight;
+    static float _screenWidth;
+    static float _screenHeight;
 
 private:
     /** Vuforia Engine instance */
-    VuEngine* mEngine{ nullptr };
+    static VuEngine* mEngine;
     /** Vuforia render controller object */
-    VuController* mRenderController{ nullptr };
+    static VuController* mRenderController;
     /** Vuforia platform controller object */
-    VuController* mPlatformController{ nullptr };
+    static VuController* mPlatformController;
+    /** The observer for device poses */
+    static VuObserver* mDevicePoseObserver;
+    /** The observer for either the Image or Model target depending on which target was specified */
+    static std::vector<VuObserver*> mObjectObservers;
+    /** Used by initAR to prepare and invoke Vuforia initialization. */
     static ErrorCode initVuforiaInternal(JavaVM *pvm, jobject pjobject, const std::string &licensekey);
+    /** Create the set of Vuforia Observers needed in the application */
+    static ErrorCode createObservers();
 };
 
 #endif //VIDEOPHOTOBOOKV2_VUFORIACONTROLLER_H

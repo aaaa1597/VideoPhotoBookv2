@@ -23,6 +23,7 @@ import com.tks.videophotobook.R
 import com.tks.videophotobook.Utils
 import com.tks.videophotobook.databinding.FragmentStagingBinding
 import com.tks.videophotobook.initAR
+import com.tks.videophotobook.startAR
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -86,12 +87,37 @@ class StagingFragment : Fragment() {
         _viewModel.addLogStr("set C++ garnishLog end.")
 
         lifecycleScope.launch {
+            /* C++側initAR()を実行 */
+            val retInitAR = async(Dispatchers.Default) {
+                delay(1000)
+                _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
+                val retErr = initAR(requireActivity(), BuildConfig.LICENSE_KEY)
+                _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
+                retErr
+            }.await()
+            /* Vuforia初期化失敗 */
+            if(retInitAR != 0) {
+                val titlestr= resources.getString(R.string.init_vuforia_err)
+                val errstr  = Utils.getErrorMessage(requireContext(),retInitAR)
+                _viewModel.addLogStr(errstr)
+                AlertDialog.Builder(requireContext())
+                    .setTitle(titlestr)
+                    .setMessage(errstr)
+                    .setPositiveButton(R.string.ok) {
+                        dialog, which ->
+                            dialog.dismiss()
+                            throw RuntimeException(errstr)
+//                          requireActivity().finish()
+                    }
+                    .show()
+            }
+            /* Vuforia初期化成功で[startAR(),テクスチャBitmap読込み]実行 */
             val results = listOf(
                 /* vuforia初期化 */
                 async(Dispatchers.Default) {
                     delay(1000)
                     _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
-                    val retErr = initAR(requireActivity(), BuildConfig.LICENSE_KEY)
+                    val retErr = startAR()
                     _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
                     retErr
                 },

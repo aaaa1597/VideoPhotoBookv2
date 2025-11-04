@@ -3,6 +3,7 @@
 #include <string>
 #include <cassert>
 #include <vector>
+#include <format>
 /* 3.他の外部ライブラリのヘッダ */
 #include <android/log.h>
 #include <jni.h>
@@ -50,10 +51,21 @@ Java_com_tks_videophotobook_JniKt_initAR(JNIEnv *env, jclass clazz, jobject acti
 
     l::garnishLog("Java_com_tks_videophotobook_JniKt_initAR() start");
     ErrorCode ret = VuforiaController::initAR(g_pvm, activity, licenseKey);
-    l::garnishLog(
-            "Java_com_tks_videophotobook_JniKt_initAR() end(err=" + std::to_string((int) (ret)) +
-            ")");
+    l::garnishLog(std::format("Java_com_tks_videophotobook_JniKt_initAR() end(err={})", (int)ret));
     return static_cast<jint>(ret);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_tks_videophotobook_JniKt_startAR(JNIEnv *env, jclass clazz) {
+    l::garnishLog("Java_com_tks_videophotobook_JniKt_startAR() start");
+    if (!VuforiaController::startAR()) {
+        l::garnishLog("Java_com_tks_videophotobook_JniKt_startAR() end(JNI_FALSE)");
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error startAR()!");
+        return JNI_FALSE;
+    }
+
+    l::garnishLog("Java_com_tks_videophotobook_JniKt_startAR() end(JNI_TRUE)");
+    return JNI_TRUE;
 }
 
 JNIEXPORT void JNICALL
@@ -67,9 +79,9 @@ JNIEXPORT jboolean JNICALL
 Java_com_tks_videophotobook_JniKt_configureRendering(JNIEnv *env, jclass clazz, jint width, jint height, jint orientation, jint rotation) {
 using VuC = VuforiaController;
     std::vector<int> androidOrientation{ orientation, rotation };
-    VuC::getIns()._screenWidth = width;
-    VuC::getIns()._screenHeight= height;
-    return VuC::getIns().configureRendering(width, height, androidOrientation.data()) ? JNI_TRUE : JNI_FALSE;
+    VuC::_screenWidth = width;
+    VuC::_screenHeight= height;
+    return VuC::configureRendering(width, height, androidOrientation.data()) ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT void JNICALL
@@ -93,11 +105,6 @@ Java_com_tks_videophotobook_JniKt_deinitRendering(JNIEnv *env, jclass clazz) {
 JNIEXPORT void JNICALL
 Java_com_tks_videophotobook_JniKt_deinitAR(JNIEnv *env, jclass clazz) {
     // TODO: implement deinitAR()
-}
-
-JNIEXPORT jboolean JNICALL
-Java_com_tks_videophotobook_JniKt_startAR(JNIEnv *env, jclass clazz) {
-    // TODO: implement startAR()
 }
 
 JNIEXPORT void JNICALL

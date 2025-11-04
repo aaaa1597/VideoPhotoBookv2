@@ -1,11 +1,15 @@
 /* 1.対応ヘッダ(同名ヘッダ) */
 #include "GLESUtils.h"
 /* 2.C++ 標準ライブラリのヘッダ */
+#include <string>
 /* 3.他の外部ライブラリのヘッダ */
 #include <android/log.h>
 #include <malloc.h>
 /* 4.プロジェクト内(ローカル)ヘッダ */
 
+namespace l {
+    extern void garnishLog(const std::string &logstr);
+}
 
 void GLESUtils::checkGlError(const char *operation) {
     if (DEBUG_GL) {
@@ -15,6 +19,7 @@ void GLESUtils::checkGlError(const char *operation) {
 }
 
 GLuint GLESUtils::initShader(GLenum shaderType, const char *source) {
+    l::garnishLog("GLESUtils::initShader start{}");
     GLuint shader = glCreateShader(shaderType);
     if (shader) {
         glShaderSource(shader, 1, &source, nullptr);

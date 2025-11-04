@@ -72,4 +72,6 @@
     <string name="could_not_configure_rendering">Vuforia の初期化に失敗しました。レンダリングの設定ができませんでした。</string>
     <string name="error_handler_data_could_not_be_added_to_configuration">Vuforia の初期化に失敗しました。エラーハンドラーのデータを設定に追加できませんでした。</string>
     <string name="error_setting_clipping_planes_for_projection">投影のクリッピング平面の設定中にエラーが発生しました。</string>
+    <string name="error_creating_device_pose_observer">device pose observer生成時にエラーが発生しました。</string>
+    <string name="error_creating_image_target_observer">image target observer生成時にエラーが発生しました。</string>
 </resources>

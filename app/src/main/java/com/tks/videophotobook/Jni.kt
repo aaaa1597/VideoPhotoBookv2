@@ -5,6 +5,7 @@ import com.tks.videophotobook.staging.StagingViewModel
 import java.nio.ByteBuffer
 
 external fun initAR(activity: Activity, licensekey: String): Int
+external fun startAR() : Boolean
 external fun initRendering()
 external fun configureRendering(width: Int, height: Int, orientation: Int, rotation: Int) : Boolean
 
@@ -13,7 +14,6 @@ external fun setTextures(astronautWidth: Int, astronautHeight: Int, astronautByt
 external fun renderFrame(nowTargetName: String) : String
 external fun deinitRendering()
 external fun deinitAR()
-external fun startAR() : Boolean
 external fun stopAR()
 external fun cameraPerformAutoFocus()
 external fun cameraRestoreAutoFocus()

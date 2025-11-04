@@ -72,4 +72,6 @@
     <string name="could_not_configure_rendering">Failed to init Vuforia, could not configure rendering.</string>
     <string name="error_handler_data_could_not_be_added_to_configuration">Failed to init Vuforia, error handler data could not be added to configuration.</string>
     <string name="error_setting_clipping_planes_for_projection">Error setting clipping planes for projection.</string>
+    <string name="error_creating_device_pose_observer">Error creating device pose observer.</string>
+    <string name="error_creating_image_target_observer">Error creating image target observer.</string>
 </resources>

@@ -265,6 +265,8 @@ class Utils {
                 0x1003-> context.getString(R.string.could_not_configure_rendering)
                 0x1004-> context.getString(R.string.error_handler_data_could_not_be_added_to_configuration)
                 0x1005-> context.getString(R.string.error_setting_clipping_planes_for_projection)
+                0x1006-> context.getString(R.string.error_creating_device_pose_observer)
+                0x1007-> context.getString(R.string.error_creating_image_target_observer)
                 else  -> context.getString(R.string.vu_engine_creation_error_initialization)
             }
         }

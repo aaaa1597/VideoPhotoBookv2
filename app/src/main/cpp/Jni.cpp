@@ -59,9 +59,8 @@ JNIEXPORT jint JNICALL
 Java_com_tks_videophotobook_JniKt_startAR(JNIEnv *env, jclass clazz) {
     l::garnishLog("Java_com_tks_videophotobook_JniKt_startAR() start");
     ErrorCode ret = VuforiaController::startAR();
-    if (ret != ErrorCode::None) {
+    if (ret != ErrorCode::None)
         __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error startAR()!");
-    }
 
     l::garnishLog("Java_com_tks_videophotobook_JniKt_startAR() end(JNI_TRUE)");
     return (jint)ret;
@@ -85,11 +84,30 @@ using VuC = VuforiaController;
 
 JNIEXPORT void JNICALL
 Java_com_tks_videophotobook_JniKt_setTextures(JNIEnv *env, jclass clazz,
-                               jint astronaut_width, jint astronaut_height, jobject astronaut_bytes,
                                jint pause_width, jint pause_height, jobject pause_bytes) {
-    // TODO: implement setTextures()
+    auto pauseBytes = static_cast<unsigned char*>(env->GetDirectBufferAddress(pause_bytes));
+    GLESRenderer::getIns().setPauseTexture(pause_width, pause_height, pauseBytes);
 }
 
+JNIEXPORT jint JNICALL
+Java_com_tks_videophotobook_JniKt_initVideoTexture(JNIEnv *env, jclass clazz) {
+    GLESRenderer::getIns()._vTextureId = -1;
+    glGenTextures(1, &GLESRenderer::getIns()._vTextureId);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, GLESRenderer::getIns()._vTextureId);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+    return static_cast<jint>(GLESRenderer::getIns()._vTextureId);
+}
+
+JNIEXPORT void JNICALL
+Java_com_tks_videophotobook_JniKt_nativeOnSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint height) {
+    glViewport(0, 0, width, height);
+    GLESRenderer::getIns()._screenWidth = static_cast<float>(width);
+    GLESRenderer::getIns()._screenHeight= static_cast<float>(height);
+}
 
 JNIEXPORT jstring JNICALL
 Java_com_tks_videophotobook_JniKt_renderFrame(JNIEnv *env, jclass clazz, jstring now_target_name) {
@@ -124,16 +142,6 @@ Java_com_tks_videophotobook_JniKt_cameraRestoreAutoFocus(JNIEnv *env, jclass cla
 JNIEXPORT jstring JNICALL
 Java_com_tks_videophotobook_JniKt_checkHit(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jfloat screen_w, jfloat screen_h) {
     // TODO: implement checkHit()
-}
-
-JNIEXPORT jint JNICALL
-Java_com_tks_videophotobook_JniKt_initVideoTexture(JNIEnv *env, jclass clazz) {
-    // TODO: implement initVideoTexture()
-}
-
-JNIEXPORT void JNICALL
-Java_com_tks_videophotobook_JniKt_nativeOnSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint height) {
-    // TODO: implement nativeOnSurfaceChanged()
 }
 
 JNIEXPORT void JNICALL

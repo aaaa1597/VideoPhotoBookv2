@@ -20,5 +20,9 @@ public:
     static GLuint initShader(GLenum shaderType, const char* source);
     /** Create a shader program. */
     static GLuint createProgram(const char* vertexShaderBuffer, const char* fragmentShaderBuffer);
+    /** Create a texture from a byte vector */
+    static unsigned int createTexture(int width, int height, const unsigned char* data, GLenum format = GL_RGBA);
+    /** Clean up texture */
+    static bool destroyTexture(GLuint textureId);
 };
 #endif //VIDEOPHOTOBOOKV2_GLESUTILS_H

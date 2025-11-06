@@ -30,6 +30,7 @@ VuController* VuforiaController::mPlatformController{ nullptr };
 VuObserver* VuforiaController::mDevicePoseObserver{nullptr};
 std::vector<VuObserver*> VuforiaController::mObjectObservers = {};
 VuCameraVideoModePreset VuforiaController::mCameraVideoMode = VuCameraVideoModePreset::VU_CAMERA_VIDEO_MODE_PRESET_DEFAULT;
+float VuforiaController::mDisplayAspectRatio = 0.0f;
 
 ErrorCode VuforiaController::initAR(JavaVM *pvm, jobject pjobject, const std::string &licensekey) {
     l::garnishLog(std::format("VuforiaController::initAR() start{}", "."));
@@ -243,5 +244,31 @@ using E = ErrorCode;
 /** This should be called from the Rendering thread. */
 /** The orientation is specified as the platform-specific descriptor, hence the typeless parameter. */
 bool VuforiaController::configureRendering(jint width, jint height, int *pOrientation) {
-    return false;
+    if (width <= 0 || height <= 0) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Invalid screen dimensions");
+        return false;
+    }
+
+    VuViewOrientation vuOrientation;
+    if (vuPlatformControllerConvertPlatformViewOrientation(mPlatformController, pOrientation, &vuOrientation) != VU_SUCCESS){
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Failed to convert the platform-specific orientation descriptor to Vuforia view orientation");
+        return false;
+    }
+
+    if (vuPlatformControllerSetViewOrientation(mPlatformController, vuOrientation) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Failed to set orientation.");
+        return false;
+    }
+
+    mDisplayAspectRatio = (float)width / height;
+
+    /* Set the latest render view configuration in Vuforia */
+    VuRenderViewConfig rvConfig;
+    rvConfig.resolution.data[0] = width;
+    rvConfig.resolution.data[1] = height;
+    if (vuRenderControllerSetRenderViewConfig(mRenderController, &rvConfig) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Failed to set render view configuration.");
+    }
+
+    return true;
 }

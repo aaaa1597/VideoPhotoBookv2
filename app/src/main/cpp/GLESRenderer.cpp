@@ -11,11 +11,31 @@ bool GLESRenderer::init() {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     /* Setup for Camera映像 Background rendering */
-    mCameraShaderProgramID = GLESUtils::createProgram(cameraVertexShaderSrc, cameraFragmentShaderSrc);
-    mCameraVertexPositionHandle = glGetAttribLocation(mCameraShaderProgramID, "cameraVertexPosition");
-    mCameraTextureCoordHandle = glGetAttribLocation(mCameraShaderProgramID, "cameraVertexTextureCoord");
-    mCameraMvpMatrixHandle = glGetUniformLocation(mCameraShaderProgramID, "cameraProjectionMatrix");
-    mCameraTexSampler2DHandle = glGetUniformLocation(mCameraShaderProgramID, "cameraTexSampler2D");
+    _CameraShaderProgramID = GLESUtils::createProgram(cameraVertexShaderSrc, cameraFragmentShaderSrc);
+    _CameraVertexPositionHandle = glGetAttribLocation(_CameraShaderProgramID, "cameraVertexPosition");
+    _CameraTextureCoordHandle = glGetAttribLocation(_CameraShaderProgramID, "cameraVertexTextureCoord");
+    _CameraMvpMatrixHandle = glGetUniformLocation(_CameraShaderProgramID, "cameraProjectionMatrix");
+    _CameraTexSampler2DHandle = glGetUniformLocation(_CameraShaderProgramID, "cameraTexSampler2D");
+
+    /* Setup for Pause.png rendering */
+    _pProgram = GLESUtils::createProgram(VERTEX_SHADER_PAUSE, FRAGMENT_SHADER_PAUSE);
+    _paPositionLoc = glGetAttribLocation(_pProgram, "a_Position");
+    _paTexCoordLoc = glGetAttribLocation(_pProgram, "a_TexCoord");
+    _puProjectionMatrixLoc = glGetUniformLocation(_pProgram, "u_ProjectionMatrix");
+    _puSampler2D = glGetUniformLocation(_pProgram, "u_Sampler2D");
 
     return true;
+}
+
+/** pause.pngのテクスチャデータ設定 */
+void GLESRenderer::setPauseTexture(int width, int height, unsigned char *bytes) {
+    createTexture(width, height, bytes, _pTextureId);
+}
+
+void GLESRenderer::createTexture(int width, int height, const unsigned char *bytes, GLuint& texId) {
+    if (texId != -1) {
+        GLESUtils::destroyTexture(texId);
+        texId = -1;
+    }
+    texId = GLESUtils::createTexture(width, height, bytes);
 }

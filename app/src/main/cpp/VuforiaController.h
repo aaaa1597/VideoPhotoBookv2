@@ -85,6 +85,8 @@ private:
     static std::vector<VuObserver*> mObjectObservers;
     /** The Vuforia camera video mode to use, either DEFAULT, SPEED or QUALITY. */
     static VuCameraVideoModePreset mCameraVideoMode;
+    /** Remember the display aspect ratio for later configuration of Guide View rendering */
+    static float mDisplayAspectRatio;
     /** Used by initAR to prepare and invoke Vuforia initialization. */
     static ErrorCode initVuforiaInternal(JavaVM *pvm, jobject pjobject, const std::string &licensekey);
     /** Create the set of Vuforia Observers needed in the application */

@@ -5,6 +5,7 @@ import android.graphics.PixelFormat
 import android.graphics.SurfaceTexture
 import android.opengl.GLSurfaceView
 import android.os.Bundle
+import android.util.Log
 import android.view.GestureDetector
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -16,8 +17,12 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
+import androidx.annotation.OptIn
 import androidx.fragment.app.activityViewModels
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.tks.videophotobook.R
@@ -29,7 +34,11 @@ import com.tks.videophotobook.databinding.FragmentMainBinding
 import com.tks.videophotobook.deinitAR
 import com.tks.videophotobook.deinitRendering
 import com.tks.videophotobook.initRendering
+import com.tks.videophotobook.initVideoTexture
+import com.tks.videophotobook.nativeOnSurfaceChanged
+import com.tks.videophotobook.nativeSetVideoSize
 import com.tks.videophotobook.setFullScreenMode
+import com.tks.videophotobook.setTextures
 import com.tks.videophotobook.settings.SettingViewModel
 import com.tks.videophotobook.staging.StagingViewModel
 import com.tks.videophotobook.stopAR
@@ -48,6 +57,7 @@ class MainFragment : Fragment() {
     private var _nowPlayingTarget: String = ""
     private var isFullScreenMode = false
     private lateinit var _exoPlayer: ExoPlayer
+    private var _exoPlayer_isPlaying = false
     private lateinit var _surfaceTexture: SurfaceTexture
     private lateinit var _surface: Surface
     private val gestureDetector by lazy {
@@ -133,6 +143,29 @@ class MainFragment : Fragment() {
                 false
         }
 
+        /* Create the ExoPlayer */
+        _exoPlayer = ExoPlayer.Builder(requireContext()).build().apply {
+            repeatMode = Player.REPEAT_MODE_ONE /* Loop Playback. */
+            playWhenReady = false /* Start playback immediately. */
+
+            addListener(object : Player.Listener {
+                override fun onVideoSizeChanged(videoSize: VideoSize) {
+                    /* Pass the video size to the C++ side. */
+                    nativeSetVideoSize(videoSize.width, videoSize.height)
+                }
+
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    super.onIsPlayingChanged(isPlaying)
+                    Log.d("aaaaa", "onIsPlayingChanged isPlaying=$isPlaying")
+                    _exoPlayer_isPlaying = isPlaying
+                }
+
+                override fun onPlayerError(error: PlaybackException) {
+                    Log.e("aaaaa", "erroe!! ExoPlayer error: ${error.errorCodeName}, ${error.errorCode}, ${error.message}")
+                }
+            })
+        }
+
         /* GLSurfaceView初期化 */
         _stagingViewModel.addLogStr(resources.getString(R.string.init_glsurfaceview_s))
         binding.viwGlsurface.setEGLContextClientVersion(3)
@@ -142,12 +175,32 @@ class MainFragment : Fragment() {
             override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
                 initRendering()
             }
+
+            @OptIn(UnstableApi::class)
             override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
                 /* Pass rendering parameters to Vuforia Engine */
                 configureRendering(width, height, resources.configuration.orientation, requireActivity().display.rotation)
+                /* pause.pngテクスチャ設定 */
+                setTextures(_stagingViewModel.pauseWidth, _stagingViewModel.pauseHeight, _stagingViewModel.pauseTexture)
+
+                val textureId = initVideoTexture()
+                if (textureId < 0)
+                    throw RuntimeException("Failed to create native texture")
+
+                /* Initialize the surfaceTexture/Surface */
+                _surfaceTexture = SurfaceTexture(textureId)
+                _surface = Surface(_surfaceTexture)
+                _exoPlayer.setVideoSurface(_surface)
+                binding.viwPlayerControls.player = _exoPlayer
+                binding.viwPlayerControls.bringToFront()
+
+                nativeOnSurfaceChanged(width, height)
             }
+
             override fun onDrawFrame(gl: GL10) {
-                TODO("Not yet implemented")
+                if(_exoPlayer_isPlaying)
+                    _surfaceTexture.updateTexImage()
+
             }
         })
         binding.viwGlsurface.holder.addCallback(object : SurfaceHolder.Callback {

@@ -83,3 +83,33 @@ GLuint GLESUtils::createProgram(const char *vertexShaderBuffer, const char *frag
     }
     return program;
 }
+
+unsigned int GLESUtils::createTexture(int width, int height, const unsigned char *data, GLenum format) {
+    GLuint gl_TextureID = -1;
+    if (data == nullptr) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error: Cannot create a texture from null data");
+        return gl_TextureID;
+    }
+
+    glGenTextures(1, &gl_TextureID);
+
+    glBindTexture(GL_TEXTURE_2D, gl_TextureID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    GLESUtils::checkGlError("Creating texture from image");
+
+    return gl_TextureID;
+}
+
+bool GLESUtils::destroyTexture(GLuint textureId) {
+    glDeleteTextures(1, &textureId);
+    GLESUtils::checkGlError("After glDeleteTextures");
+    return true;
+}

@@ -1,7 +1,7 @@
 package com.tks.videophotobook
 
 import android.app.Activity
-import com.tks.videophotobook.staging.StagingViewModel
+import com.tks.videophotobook.ar.StagingViewModel
 import java.nio.ByteBuffer
 
 external fun initAR(activity: Activity, licensekey: String): Int

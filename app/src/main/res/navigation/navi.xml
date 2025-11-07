@@ -31,13 +31,6 @@
             app:exitAnim="@anim/nav_slide_exit_anim"
             app:popEnterAnim="@anim/nav_slide_pop_enter_anim"
             app:popExitAnim="@anim/nav_slide_pop_exit_anim"/>
-        <action
-            android:id="@+id/action_gatherPointFragment_to_stagingFragment_zoom"
-            app:destination="@id/stagingFragment"
-            app:enterAnim="@anim/nav_zoom_enter_anim"
-            app:exitAnim="@anim/nav_zoom_exit_anim"
-            app:popEnterAnim="@anim/nav_zoom_pop_enter_anim"
-            app:popExitAnim="@anim/nav_zoom_pop_exit_anim"/>
     </fragment>
 
     <fragment
@@ -45,25 +38,5 @@
         android:name="com.tks.videophotobook.settings.SettingsFragment"
         android:label="fragment_setting"
         tools:layout="@layout/fragment_settings" />
-
-    <fragment
-        android:id="@+id/stagingFragment"
-        android:name="com.tks.videophotobook.staging.StagingFragment"
-        android:label="fragment_staging"
-        tools:layout="@layout/fragment_staging">
-        <action
-            android:id="@+id/action_stagingFragment_to_mainFragment_zoom"
-            app:destination="@id/mainFragment"
-            app:enterAnim="@anim/nav_zoom_enter_anim"
-            app:exitAnim="@anim/nav_zoom_exit_anim"
-            app:popEnterAnim="@anim/nav_zoom_pop_enter_anim"
-            app:popExitAnim="@anim/nav_zoom_pop_exit_anim"/>
-    </fragment>
-
-    <fragment
-        android:id="@+id/mainFragment"
-        android:name="com.tks.videophotobook.main.MainFragment"
-        android:label="fragment_main"
-        tools:layout="@layout/fragment_main" />
 
 </navigation>

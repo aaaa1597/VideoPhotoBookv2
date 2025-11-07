@@ -1,4 +1,4 @@
-package com.tks.videophotobook.staging
+package com.tks.videophotobook.ar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

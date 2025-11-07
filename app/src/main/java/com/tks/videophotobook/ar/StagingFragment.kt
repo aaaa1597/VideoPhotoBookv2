@@ -1,4 +1,4 @@
-package com.tks.videophotobook.staging
+package com.tks.videophotobook.ar
 
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
@@ -15,8 +15,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.NavOptions
-import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tks.videophotobook.BuildConfig
 import com.tks.videophotobook.R
@@ -49,7 +48,7 @@ class StagingFragment : Fragment() {
         _viewModel.addLogStr("onViewCreated start.")
 
         _viewModel.addLogStr("setting RecyclerView layout start.")
-        binding.rcvLog.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        binding.rcvLog.layoutManager = LinearLayoutManager(requireContext())
         _viewModel.addLogStr("setting RecyclerView layout end.")
         /* アダプター定義 */
         _viewModel.addLogStr("set RecyclerView adapter start.")
@@ -144,11 +143,10 @@ class StagingFragment : Fragment() {
             /* Vuforia初期化正常完了 */
             val ret = results[0] as Int
             if(ret == 0) {
-//                requireActivity().findViewById<ConstraintLayout>(R.id.main).background = null
-                val navOptions = NavOptions.Builder()
-                    .setPopUpTo(R.id.stagingFragment, true)
-                    .build()
-                findNavController().navigate(R.id.action_stagingFragment_to_mainFragment_zoom, null, navOptions)
+//                val navOptions = NavOptions.Builder()
+//                    .setPopUpTo(R.id.stagingFragment, true)
+//                    .build()
+//                findNavController().navigate(R.id.action_stagingFragment_to_mainFragment_zoom, null, navOptions)
             }
             /* Vuforia初期化失敗 */
             else {

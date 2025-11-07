@@ -1,5 +1,6 @@
 package com.tks.videophotobook
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -7,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
+import com.tks.videophotobook.ar.ArActivity
 import com.tks.videophotobook.databinding.FragmentGatherpointBinding
 import com.tks.videophotobook.settings.MARKER_VIDEO_MAP_JSON
 import com.tks.videophotobook.settings.MarkerVideoSet
@@ -29,7 +31,8 @@ class GatherPointFragment : Fragment() {
         }
 
         binding.btnStart.setOnClickListener {
-            findNavController().navigate(R.id.action_gatherPointFragment_to_stagingFragment_zoom)
+            val intent = Intent(requireContext(), ArActivity::class.java)
+            startActivity(intent)
         }
     }
 

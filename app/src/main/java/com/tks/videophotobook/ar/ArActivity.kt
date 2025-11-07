@@ -1,6 +1,10 @@
 package com.tks.videophotobook.ar
 
+import android.graphics.Color
 import android.os.Bundle
+import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -19,11 +23,19 @@ class ArActivity : AppCompatActivity() {
         _binding = ActivityArBinding.inflate(layoutInflater)
         setContentView(_binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        /* コンテンツをSystemBars（Status/Navigation）下まで広げる */
+        window.setDecorFitsSystemWindows(false)
+        /* ステータスバー透明 */
+        window.statusBarColor = Color.TRANSPARENT
+
+        /* フルスクリーン制御 */
+        val controller = window.insetsController ?: return
+        controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
+        /* ナビゲーションバー非表示 */
+        controller.hide(WindowInsets.Type.navigationBars())
+        /* ステータスバー常時表示＋透明 */
+        controller.show(WindowInsets.Type.statusBars())
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()

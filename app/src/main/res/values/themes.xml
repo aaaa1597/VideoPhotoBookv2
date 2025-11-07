@@ -4,4 +4,15 @@
     </style>
 
     <style name="Theme.VideoPhotoBook" parent="Base.Theme.VideoPhotoBook" />
+
+    <style name="TransparentActivity" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- 背景を完全透明 -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <!-- 背面アクティビティを透過して見せる -->
+        <item name="android:windowIsTranslucent">true</item>
+        <!-- 背景の暗幕を無くす -->
+        <item name="android:backgroundDimEnabled">false</item>
+        <!-- ステータスバー透明化 (好みで) -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
 </resources>

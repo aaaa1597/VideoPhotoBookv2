@@ -6,8 +6,9 @@
     android:id="@+id/viw_top"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/double_rectangle"
+    android:background="#44FF0000"
     tools:context=".ar.StagingFragment">
+<!--    android:background="@drawable/double_rectangle"-->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcv_log"

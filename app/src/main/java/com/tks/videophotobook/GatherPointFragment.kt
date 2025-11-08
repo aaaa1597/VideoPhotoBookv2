@@ -33,6 +33,7 @@ class GatherPointFragment : Fragment() {
         binding.btnStart.setOnClickListener {
             val intent = Intent(requireContext(), ArActivity::class.java)
             startActivity(intent)
+            requireActivity().finish()
         }
     }
 

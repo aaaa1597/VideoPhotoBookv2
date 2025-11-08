@@ -216,8 +216,6 @@ class MainFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        /* 横画面固定 */
-        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         /* ステータスバー非表示 */
         val controller = requireActivity().window.insetsController ?: return
         controller.hide(WindowInsets.Type.statusBars())
@@ -226,7 +224,6 @@ class MainFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         /* Stop Vuforia Engine and call parent to navigate back */
         stopAR()
         /* ステータスバー表示に戻す */

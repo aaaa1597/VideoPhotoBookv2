@@ -143,10 +143,9 @@ class StagingFragment : Fragment() {
             /* Vuforia初期化正常完了 */
             val ret = results[0] as Int
             if(ret == 0) {
-//                val navOptions = NavOptions.Builder()
-//                    .setPopUpTo(R.id.stagingFragment, true)
-//                    .build()
-//                findNavController().navigate(R.id.action_stagingFragment_to_mainFragment_zoom, null, navOptions)
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, MainFragment())
+                    .commit()
             }
             /* Vuforia初期化失敗 */
             else {

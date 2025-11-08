@@ -45,22 +45,22 @@ class StagingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-//        _viewModel.addLogStr("onViewCreated start.")
-//
-//        _viewModel.addLogStr("setting RecyclerView layout start.")
-//        binding.rcvLog.layoutManager = LinearLayoutManager(requireContext())
-//        _viewModel.addLogStr("setting RecyclerView layout end.")
-//        /* アダプター定義 */
-//        _viewModel.addLogStr("set RecyclerView adapter start.")
-//        _adapter = StagingLogAdapter(_viewModel)
-//        _viewModel.addLogStr("set RecyclerView adapter end.")
-//        _viewModel.addLogStr("set RecyclerView adapter start.")
-//        binding.rcvLog.adapter = _adapter
-//        _viewModel.addLogStr("set RecyclerView adapter end.")
-//        _viewModel.addLogStr("collect Log start.")
-//        collectLogListFlow(binding, _adapter)
-//        _viewModel.addLogStr("collect Log end.")
-//
+        _viewModel.addLogStr("onViewCreated start.")
+
+        _viewModel.addLogStr("setting RecyclerView layout start.")
+        binding.rcvLog.layoutManager = LinearLayoutManager(requireContext())
+        _viewModel.addLogStr("setting RecyclerView layout end.")
+        /* アダプター定義 */
+        _viewModel.addLogStr("set RecyclerView adapter start.")
+        _adapter = StagingLogAdapter(_viewModel)
+        _viewModel.addLogStr("set RecyclerView adapter end.")
+        _viewModel.addLogStr("set RecyclerView adapter start.")
+        binding.rcvLog.adapter = _adapter
+        _viewModel.addLogStr("set RecyclerView adapter end.")
+        _viewModel.addLogStr("collect Log start.")
+        collectLogListFlow(binding, _adapter)
+        _viewModel.addLogStr("collect Log end.")
+
 //        view.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
 //            override fun onPreDraw(): Boolean {
 //                view.viewTreeObserver.removeOnPreDrawListener(this)
@@ -79,91 +79,91 @@ class StagingFragment : Fragment() {
 //                return true
 //            }
 //        })
-//
-//        /* C++ Callbackの設定 */
-//        _viewModel.addLogStr("set C++ garnishLog start.")
-//        _viewModel.passToNativeBridge()
-//        _viewModel.addLogStr("set C++ garnishLog end.")
-//
-//        lifecycleScope.launch {
-//            /* C++側initAR()を実行 */
-//            val retInitAR = async(Dispatchers.Default) {
-//                delay(1000)
-//                _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
-//                val retErr = initAR(requireActivity(), BuildConfig.LICENSE_KEY)
-//                _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
-//                retErr
-//            }.await()
-//            /* Vuforia初期化失敗 */
-//            if(retInitAR != 0) {
-//                val titlestr= resources.getString(R.string.init_vuforia_err)
-//                val errstr  = Utils.getErrorMessage(requireContext(),retInitAR)
-//                _viewModel.addLogStr(errstr)
-//                AlertDialog.Builder(requireContext())
-//                    .setTitle(titlestr)
-//                    .setMessage(errstr)
-//                    .setPositiveButton(R.string.ok) {
-//                        dialog, which ->
-//                            dialog.dismiss()
-//                            throw RuntimeException(errstr)
-////                          requireActivity().finish()
-//                    }
-//                    .show()
-//            }
-//            /* Vuforia初期化成功で[startAR(),テクスチャBitmap読込み]実行 */
-//            val results = listOf(
-//                /* vuforia初期化 */
-//                async(Dispatchers.Default) {
-//                    delay(1000)
-//                    _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
-//                    val retErr = startAR()
-//                    _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
-//                    retErr
-//                },
-//                /* pause.pngテクスチャ読込み */
-//                async(Dispatchers.IO) {
-//                    delay(500)
-//                    _viewModel.addLogStr("read  pause.png texture image start.")
-//                    val pausebitmap = BitmapFactory.decodeResource(requireContext().resources, R.drawable.pause)
-//                    _viewModel.addLogStr("read pause.png texture image end.")
-//                    delay(500)
-//                    _viewModel.addLogStr("change bitmap to ByteBuffer start.")
-//                    val pauseTexture: ByteBuffer = pausebitmap.let { bitmap ->
-//                        ByteBuffer.allocateDirect(bitmap.byteCount).apply {
-//                            bitmap.copyPixelsToBuffer(this)
-//                            rewind()
-//                            _viewModel.addLogStr("change bitmap to ByteBuffer end.")
-//                        }
-//                    }
-//                    _viewModel.setPauseTexture(pauseTexture, pausebitmap.width, pausebitmap.height)
-//                },
-//            /* 両タスクを待つ */
-//            ).awaitAll()
-//
-//            /* Vuforia初期化正常完了 */
-//            val ret = results[0] as Int
-//            if(ret == 0) {
-////                val navOptions = NavOptions.Builder()
-////                    .setPopUpTo(R.id.stagingFragment, true)
-////                    .build()
-////                findNavController().navigate(R.id.action_stagingFragment_to_mainFragment_zoom, null, navOptions)
-//            }
-//            /* Vuforia初期化失敗 */
-//            else {
-//                val titlestr:String = resources.getString(R.string.init_vuforia_err)
-//                val errstr:String = Utils.getErrorMessage(requireContext(),ret)
-//                _viewModel.addLogStr(errstr)
-//                AlertDialog.Builder(requireContext())
-//                    .setTitle(titlestr)
-//                    .setMessage(errstr)
-//                    .setPositiveButton(R.string.ok) {
-//                        dialog, which ->
-//                            dialog.dismiss();
-//                            requireActivity().finish()
-//                    }
-//                    .show()
-//            }
-//        }
+
+        /* C++ Callbackの設定 */
+        _viewModel.addLogStr("set C++ garnishLog start.")
+        _viewModel.passToNativeBridge()
+        _viewModel.addLogStr("set C++ garnishLog end.")
+
+        lifecycleScope.launch {
+            /* C++側initAR()を実行 */
+            val retInitAR = async(Dispatchers.Default) {
+                delay(1000)
+                _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
+                val retErr = initAR(requireActivity(), BuildConfig.LICENSE_KEY)
+                _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
+                retErr
+            }.await()
+            /* Vuforia初期化失敗 */
+            if(retInitAR != 0) {
+                val titlestr= resources.getString(R.string.init_vuforia_err)
+                val errstr  = Utils.getErrorMessage(requireContext(),retInitAR)
+                _viewModel.addLogStr(errstr)
+                AlertDialog.Builder(requireContext())
+                    .setTitle(titlestr)
+                    .setMessage(errstr)
+                    .setPositiveButton(R.string.ok) {
+                        dialog, which ->
+                            dialog.dismiss()
+                            throw RuntimeException(errstr)
+//                          requireActivity().finish()
+                    }
+                    .show()
+            }
+            /* Vuforia初期化成功で[startAR(),テクスチャBitmap読込み]実行 */
+            val results = listOf(
+                /* vuforia初期化 */
+                async(Dispatchers.Default) {
+                    delay(1000)
+                    _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
+                    val retErr = startAR()
+                    _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
+                    retErr
+                },
+                /* pause.pngテクスチャ読込み */
+                async(Dispatchers.IO) {
+                    delay(500)
+                    _viewModel.addLogStr("read  pause.png texture image start.")
+                    val pausebitmap = BitmapFactory.decodeResource(requireContext().resources, R.drawable.pause)
+                    _viewModel.addLogStr("read pause.png texture image end.")
+                    delay(500)
+                    _viewModel.addLogStr("change bitmap to ByteBuffer start.")
+                    val pauseTexture: ByteBuffer = pausebitmap.let { bitmap ->
+                        ByteBuffer.allocateDirect(bitmap.byteCount).apply {
+                            bitmap.copyPixelsToBuffer(this)
+                            rewind()
+                            _viewModel.addLogStr("change bitmap to ByteBuffer end.")
+                        }
+                    }
+                    _viewModel.setPauseTexture(pauseTexture, pausebitmap.width, pausebitmap.height)
+                },
+            /* 両タスクを待つ */
+            ).awaitAll()
+
+            /* Vuforia初期化正常完了 */
+            val ret = results[0] as Int
+            if(ret == 0) {
+//                val navOptions = NavOptions.Builder()
+//                    .setPopUpTo(R.id.stagingFragment, true)
+//                    .build()
+//                findNavController().navigate(R.id.action_stagingFragment_to_mainFragment_zoom, null, navOptions)
+            }
+            /* Vuforia初期化失敗 */
+            else {
+                val titlestr:String = resources.getString(R.string.init_vuforia_err)
+                val errstr:String = Utils.getErrorMessage(requireContext(),ret)
+                _viewModel.addLogStr(errstr)
+                AlertDialog.Builder(requireContext())
+                    .setTitle(titlestr)
+                    .setMessage(errstr)
+                    .setPositiveButton(R.string.ok) {
+                        dialog, which ->
+                            dialog.dismiss();
+                            requireActivity().finish()
+                    }
+                    .show()
+            }
+        }
         _viewModel.addLogStr("onViewCreated end.")
     }
 

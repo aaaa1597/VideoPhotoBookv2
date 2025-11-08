@@ -6,7 +6,7 @@
     android:id="@+id/viw_top"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#44FF0000"
+    android:background="#EEDDFFFF"
     tools:context=".ar.StagingFragment">
 <!--    android:background="@drawable/double_rectangle"-->
 
@@ -21,5 +21,17 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:listitem="@layout/list_item_logtxt"/>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/anim_morphing"
+        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        app:lottie_rawRes="@raw/morphing"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

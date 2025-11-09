@@ -27,10 +27,15 @@ float VuforiaController::_screenHeight = 0.0f;
 VuEngine* VuforiaController::mEngine{ nullptr };
 VuController* VuforiaController::mRenderController{ nullptr };
 VuController* VuforiaController::mPlatformController{ nullptr };
-VuObserver* VuforiaController::mDevicePoseObserver{nullptr};
+VuObserver* VuforiaController::mDevicePoseObserver{ nullptr };
+VuState* VuforiaController::mVuforiaState{ nullptr };
+VuRenderState VuforiaController::mCurrentRenderState = {};
 std::vector<VuObserver*> VuforiaController::mObjectObservers = {};
 VuCameraVideoModePreset VuforiaController::mCameraVideoMode = VuCameraVideoModePreset::VU_CAMERA_VIDEO_MODE_PRESET_DEFAULT;
 float VuforiaController::mDisplayAspectRatio = 0.0f;
+DevicePoseData VuforiaController::mLatestDevicePoseData = {};
+bool VuforiaController::mTimingRelocalizingState{ false };
+std::chrono::steady_clock::time_point VuforiaController::mEnteredRelocalizingState={};
 
 ErrorCode VuforiaController::initAR(JavaVM *pvm, jobject pjobject, const std::string &licensekey) {
     l::garnishLog(std::format("VuforiaController::initAR() start{}", "."));
@@ -245,18 +250,20 @@ using E = ErrorCode;
 /** The orientation is specified as the platform-specific descriptor, hence the typeless parameter. */
 bool VuforiaController::configureRendering(jint width, jint height, int *pOrientation) {
     if (width <= 0 || height <= 0) {
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Invalid screen dimensions");
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Invalid screen dimensions");
         return false;
     }
 
+    _screenWidth = width;
+    _screenHeight= height;
     VuViewOrientation vuOrientation;
     if (vuPlatformControllerConvertPlatformViewOrientation(mPlatformController, pOrientation, &vuOrientation) != VU_SUCCESS){
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Failed to convert the platform-specific orientation descriptor to Vuforia view orientation");
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to convert the platform-specific orientation descriptor to Vuforia view orientation");
         return false;
     }
 
     if (vuPlatformControllerSetViewOrientation(mPlatformController, vuOrientation) != VU_SUCCESS) {
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Failed to set orientation.");
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to set orientation.");
         return false;
     }
 
@@ -267,8 +274,249 @@ bool VuforiaController::configureRendering(jint width, jint height, int *pOrient
     rvConfig.resolution.data[0] = width;
     rvConfig.resolution.data[1] = height;
     if (vuRenderControllerSetRenderViewConfig(mRenderController, &rvConfig) != VU_SUCCESS) {
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Failed to set render view configuration.");
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to set render view configuration.");
     }
 
     return true;
+}
+
+bool VuforiaController::prepareToRender(double *viewport, VuRenderVideoBackgroundData *renderData) {
+    if (vuEngineAcquireLatestState(mEngine, &mVuforiaState) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error getting state.");
+        return false;
+    }
+
+    if (vuStateHasCameraFrame(mVuforiaState) != VU_TRUE) {
+        return false;
+    }
+
+    if (vuStateGetRenderState(mVuforiaState, &mCurrentRenderState) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error getting render state.");
+        return false;
+    }
+
+    if (!mCurrentRenderState.vbMesh) {
+        return false;
+    }
+
+    viewport[0] = mCurrentRenderState.viewport.data[0];
+    viewport[1] = mCurrentRenderState.viewport.data[1];
+    viewport[2] = mCurrentRenderState.viewport.data[2];
+    viewport[3] = mCurrentRenderState.viewport.data[3];
+    viewport[4] = 0.0f;
+    viewport[5] = 1.0f;
+
+    if (vuRenderControllerUpdateVideoBackgroundTexture(mRenderController, mVuforiaState, renderData) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error updating video background texture.");
+        return false;
+    }
+
+    updateDevicePose();
+
+    return true;
+}
+
+void VuforiaController::updateDevicePose() {
+    mLatestDevicePoseData.pose = vuIdentityMatrix44F();
+    mLatestDevicePoseData.poseStatus = VU_OBSERVATION_POSE_STATUS_NO_POSE;
+    mLatestDevicePoseData.poseStatusInfo = VU_DEVICE_POSE_OBSERVATION_STATUS_INFO_NORMAL;
+
+    VuObservationList* observationList = nullptr;
+    REQUIRE_SUCCESS(vuObservationListCreate(&observationList), __FILE__, __LINE__);
+
+    if (vuStateGetDevicePoseObservations(mVuforiaState, observationList) == VU_SUCCESS) {
+        int numObservations = 0;
+        REQUIRE_SUCCESS(vuObservationListGetSize(observationList, &numObservations), __FILE__, __LINE__);
+
+        if (numObservations > 0) {
+            VuObservation* observation = nullptr;
+            if (vuObservationListGetElement(observationList, 0, &observation) == VU_SUCCESS) {
+                assert(observation);
+                assert(vuObservationIsType(observation, VU_OBSERVATION_DEVICE_POSE_TYPE) == VU_TRUE);
+                assert(vuObservationHasPoseInfo(observation) == VU_TRUE);
+
+                VuPoseInfo poseInfo;
+                REQUIRE_SUCCESS(vuObservationGetPoseInfo(observation, &poseInfo), __FILE__, __LINE__);
+
+                if (poseInfo.poseStatus != VU_OBSERVATION_POSE_STATUS_NO_POSE) {
+                    // Store latest tracked device pose and pose status
+                    mLatestDevicePoseData.pose = poseInfo.pose;
+                    mLatestDevicePoseData.poseStatus = poseInfo.poseStatus;
+
+                    // Retrieve device pose-specific status information
+                    REQUIRE_SUCCESS(vuDevicePoseObservationGetStatusInfo(observation, &mLatestDevicePoseData.poseStatusInfo), __FILE__, __LINE__);
+                }
+            }
+        }
+    }
+    else {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error getting device pose observations.");
+    }
+
+    REQUIRE_SUCCESS(vuObservationListDestroy(observationList), __FILE__, __LINE__);
+}
+
+bool VuforiaController::stopAR() {
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "AppController::stopAR.");
+
+    /* Bail out early if engine instance has not been created yet */
+    if (mEngine == nullptr) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to stop Vuforia as no valid engine instance is available.");
+        return false;
+    }
+
+    /* Bail out early if engine has not been started yet */
+    if (!vuEngineIsRunning(mEngine)) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to stop Vuforia as it is currently not running.");
+        return false;
+    }
+
+    /* Stop engine */
+    if (vuEngineStop(mEngine) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to stop Vuforia.");
+        return false;
+    }
+
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Successfully stopped Vuforia.");
+    return true;
+}
+
+void VuforiaController::cameraPerformAutoFocus() {
+    VuController* cameraController = nullptr;
+    if (vuEngineGetCameraController(mEngine, &cameraController) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error attempting to perform autofocus, failed to get camera controller.");
+        return;
+    }
+
+    if (vuCameraControllerSetFocusMode(cameraController, VU_CAMERA_FOCUS_MODE_TRIGGERAUTO) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error attempting to perform autofocus, failed to set focus mode.");
+    }
+}
+
+void VuforiaController::cameraRestoreAutoFocus() {
+    VuController* cameraController = nullptr;
+    if (vuEngineGetCameraController(mEngine, &cameraController) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error attempting to perform autofocus, failed to get camera controller.");
+        return;
+    }
+
+    if (vuCameraControllerSetFocusMode(cameraController, VU_CAMERA_FOCUS_MODE_CONTINUOUSAUTO) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error attempting to perform autofocus, failed to set focus mode.");
+    }
+}
+
+std::pair<std::unique_ptr<VuObservationList, decltype(&vuObservationListDestroy)>, int>
+VuforiaController::createImageTargetList() {
+    VuObservationList* observationList = nullptr;
+    REQUIRE_SUCCESS(vuObservationListCreate(&observationList), __FILE__, __LINE__);
+
+    if (vuStateGetImageTargetObservations(mVuforiaState, observationList) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error getting image target observations.");
+        REQUIRE_SUCCESS(vuObservationListDestroy(observationList), __FILE__, __LINE__);
+        std::unique_ptr<VuObservationList, decltype(&vuObservationListDestroy)> _null_ptr_(nullptr, &vuObservationListDestroy);
+        return std::make_pair(std::move(_null_ptr_), 0);
+    }
+
+    int numObservations = 0;
+    REQUIRE_SUCCESS(vuObservationListGetSize(observationList, &numObservations), __FILE__, __LINE__);
+
+    std::unique_ptr<VuObservationList, decltype(&vuObservationListDestroy)> retval(observationList, &vuObservationListDestroy);
+    return std::make_pair(std::move(retval), numObservations);
+}
+
+bool VuforiaController::getImageTargetResult(const VuObservation *observation, const VuVector2F &markerSize,
+                                             VuMatrix44F &projectionMatrix, VuMatrix44F &modelViewMatrix, VuMatrix44F &scaledModelViewMatrix) {
+    VuPoseInfo poseInfo;
+    REQUIRE_SUCCESS(vuObservationGetPoseInfo(observation, &poseInfo), __FILE__, __LINE__);
+
+    if (poseInfo.poseStatus == VU_OBSERVATION_POSE_STATUS_NO_POSE)
+        return false;
+
+    projectionMatrix = mCurrentRenderState.projectionMatrix;
+
+    /* Compute model-view matrix */
+    auto modelMatrix = poseInfo.pose;
+    modelViewMatrix = vuMatrix44FMultiplyMatrix(mCurrentRenderState.viewMatrix, modelMatrix);
+
+    /* Calculate a scaled modelViewMatrix for rendering a unit bounding box z-dimension will be zero for planar target */
+    /* set it here to the larger dimension so that a 3D augmentation can be shown */
+    VuVector3F scale;
+    scale.data[0] = markerSize.data[0];
+    scale.data[1] = markerSize.data[1];
+    scale.data[2] = std::max(scale.data[0], scale.data[1]);
+    scaledModelViewMatrix = vuMatrix44FScale(scale, modelViewMatrix);
+
+    return true;
+}
+
+void VuforiaController::finishRender() {
+    /* Check for device tracker relocalizing for too long and reset if needed */
+    if (mLatestDevicePoseData.poseStatus     == VU_OBSERVATION_POSE_STATUS_LIMITED &&
+        mLatestDevicePoseData.poseStatusInfo == VU_DEVICE_POSE_OBSERVATION_STATUS_INFO_RELOCALIZING) {
+using namespace std::chrono;
+
+        /* Start timing if we have just entered relocalizing state */
+        if (!mTimingRelocalizingState) {
+            mEnteredRelocalizingState = steady_clock::now();
+        }
+        mTimingRelocalizingState = true;
+
+        /* Check whether we have been relocalizing for longer than the threshold */
+        auto relocalizingFor = duration_cast<seconds>(steady_clock::now() - mEnteredRelocalizingState);
+        if (relocalizingFor.count() > MAX_RELOCALIZING_SECONDS) {
+            mTimingRelocalizingState = false;
+            VuResult resetResult = vuEngineResetWorldTracking(mEngine);
+            __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "%s reset world tracking", resetResult == VU_SUCCESS ? "Successfully" : "Failed to");
+        }
+    }
+    else {
+        mTimingRelocalizingState = false;
+    }
+
+    /* Clean up and release the Vuforia state */
+    if (mVuforiaState != nullptr && vuStateRelease(mVuforiaState) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error releasing the Vuforia state.");
+    }
+    mVuforiaState = nullptr;
+}
+
+void VuforiaController::deinitAR() {
+    /* Bail out early if engine instance has not been created yet */
+    if (mEngine == nullptr) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to deinitialize Vuforia as no engine instance is available.");
+        return;
+    }
+
+    stopAR();
+
+    destroyObservers();
+
+    /* Destroy engine instance */
+    if (vuEngineDestroy(mEngine) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed to destroy engine instance.");
+        return;
+    }
+
+    /* Invalidate engine instance */
+    mEngine = nullptr;
+
+    /* Invalidate render and platform controllers */
+    mRenderController = nullptr;
+    mPlatformController = nullptr;
+
+    return;
+}
+
+void VuforiaController::destroyObservers() {
+    for(auto observer : mObjectObservers) {
+        if (observer != nullptr && vuObserverDestroy(observer) != VU_SUCCESS) {
+            __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error destroying object observer.");
+        }
+    }
+    mObjectObservers.clear();
+
+    if (mDevicePoseObserver != nullptr && vuObserverDestroy(mDevicePoseObserver) != VU_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Error destroying object observer.");
+    }
+    mDevicePoseObserver = nullptr;
 }

@@ -1,6 +1,5 @@
 package com.tks.videophotobook.ar
 
-import android.content.pm.ActivityInfo
 import android.graphics.PixelFormat
 import android.graphics.SurfaceTexture
 import android.opengl.GLSurfaceView
@@ -17,6 +16,7 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.annotation.OptIn
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -27,6 +27,7 @@ import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.tks.videophotobook.R
+import com.tks.videophotobook.Utils
 import com.tks.videophotobook.cameraPerformAutoFocus
 import com.tks.videophotobook.cameraRestoreAutoFocus
 import com.tks.videophotobook.checkHit
@@ -35,16 +36,19 @@ import com.tks.videophotobook.databinding.FragmentMainBinding
 import com.tks.videophotobook.deinitAR
 import com.tks.videophotobook.deinitRendering
 import com.tks.videophotobook.initRendering
-import com.tks.videophotobook.initVideoTexture
-import com.tks.videophotobook.nativeOnSurfaceChanged
+import com.tks.videophotobook.setVideoTexture
 import com.tks.videophotobook.nativeSetVideoSize
+import com.tks.videophotobook.renderFrame
 import com.tks.videophotobook.setFullScreenMode
 import com.tks.videophotobook.setTextures
 import com.tks.videophotobook.settings.SettingViewModel
+import com.tks.videophotobook.startAR
 import com.tks.videophotobook.stopAR
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Timer
+import java.util.concurrent.CountDownLatch
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import kotlin.concurrent.schedule
@@ -116,6 +120,7 @@ class MainFragment : Fragment() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.v("aaaaa", "1-1. MainFragment::onCreate()")
         super.onCreate(savedInstanceState)
         /* スクリーンが暗くならないようにフラグを追加 */
         requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -124,11 +129,13 @@ class MainFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        Log.v("aaaaa", "1-2. MainFragment::onCreateView()")
         _binding = FragmentMainBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.v("aaaaa", "1-3. MainFragment::onViewCreated()")
         super.onViewCreated(view, savedInstanceState)
 
         /* タップ/ダブルタップ定義 */
@@ -160,7 +167,7 @@ class MainFragment : Fragment() {
                 }
 
                 override fun onPlayerError(error: PlaybackException) {
-                    Log.e("aaaaa", "erroe!! ExoPlayer error: ${error.errorCodeName}, ${error.errorCode}, ${error.message}")
+                    Log.e("aaaaa", "error!! ExoPlayer error: ${error.errorCodeName}, ${error.errorCode}, ${error.message}")
                 }
             })
         }
@@ -172,17 +179,19 @@ class MainFragment : Fragment() {
         binding.viwGlsurface.setEGLConfigChooser(8,8,8,8,0,0)
         binding.viwGlsurface.setRenderer(object : GLSurfaceView.Renderer {
             override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
+                Log.v("aaaaa", "1-6. MainFragment::GLSurfaceView::onSurfaceCreated()")
                 initRendering()
             }
 
             @OptIn(UnstableApi::class)
             override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
+                Log.v("aaaaa", "1-7. MainFragment::GLSurfaceView::onSurfaceChanged()")
                 /* Pass rendering parameters to Vuforia Engine */
                 configureRendering(width, height, resources.configuration.orientation, requireActivity().display.rotation)
                 /* pause.pngテクスチャ設定 */
                 setTextures(_stagingViewModel.pauseWidth, _stagingViewModel.pauseHeight, _stagingViewModel.pauseTexture)
 
-                val textureId = initVideoTexture()
+                val textureId = setVideoTexture()
                 if (textureId < 0)
                     throw RuntimeException("Failed to create native texture")
 
@@ -194,20 +203,40 @@ class MainFragment : Fragment() {
                     binding.viwPlayerControls.player = _exoPlayer
                     binding.viwPlayerControls.bringToFront()
                 }
-
-                nativeOnSurfaceChanged(width, height)
             }
 
             override fun onDrawFrame(gl: GL10) {
+//                Log.v("aaaaa", "1-8. MainFragment::GLSurfaceView::onDrawFrame()")
                 if(_exoPlayer_isPlaying)
                     _surfaceTexture.updateTexImage()
 
+                /* OpenGL rendering of Video Background and augmentations is implemented in native code */
+                val delectedTarget = renderFrame(_nowPlayingTarget)
+                if(delectedTarget == "waiting...") return
+
+                if(_nowPlayingTarget!="" && delectedTarget!="")
+                    Log.d("aaaaa", "!!! Detected Target Changed !!! targetName=$_nowPlayingTarget -> $delectedTarget")
+
+                if(_nowPlayingTarget!="" && delectedTarget=="") {
+                    _nowPlayingTarget = delectedTarget
+                    CoroutineScope(Dispatchers.Main).launch {
+                        _exoPlayer.pause()
+                    }
+                }
+                else if(_nowPlayingTarget != delectedTarget) {
+                    _nowPlayingTarget = delectedTarget
+                    /* loadingIndicatorは非表示に */
+                    CoroutineScope(Dispatchers.Main).launch {
+                        switchMedia(delectedTarget)
+                    }
+                }
             }
         })
         binding.viwGlsurface.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceCreated(holder: SurfaceHolder) {}
             override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
             override fun surfaceDestroyed(holder: SurfaceHolder) {
+                Log.v("aaaaa", "1-9. MainFragment::GLSurfaceView::surfaceDestroyed()")
                 deinitRendering()
             }
         })
@@ -215,6 +244,7 @@ class MainFragment : Fragment() {
     }
 
     override fun onStart() {
+        Log.v("aaaaa", "1-4. MainFragment::onStart()")
         super.onStart()
         /* ステータスバー非表示 */
         val controller = requireActivity().window.insetsController ?: return
@@ -222,21 +252,50 @@ class MainFragment : Fragment() {
         controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onResume() {
+        Log.v("aaaaa", "1-5. MainFragment::onResume()")
+        super.onResume()
+        /* vuforia開始 */
+        val retErr = startAR()
+        if(retErr != 0) {
+            /* Vuforia初期化失敗 */
+            val titlestr:String = resources.getString(R.string.init_vuforia_err)
+            val errstr:String = Utils.getErrorMessage(requireContext(),retErr)
+            AlertDialog.Builder(requireContext())
+                .setTitle(titlestr)
+                .setMessage(errstr)
+                .setPositiveButton(R.string.ok) {
+                        dialog, which ->
+                    dialog.dismiss();
+                    requireActivity().finish()
+                }
+                .show()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.v("aaaaa", "1-10. MainFragment::onPause()")
         /* Stop Vuforia Engine and call parent to navigate back */
         stopAR()
+    }
+
+    override fun onStop() {
+        Log.v("aaaaa", "1-11. MainFragment::onStop()")
+        super.onStop()
         /* ステータスバー表示に戻す */
         val controller = requireActivity().window.insetsController ?: return
         controller.show(WindowInsets.Type.statusBars())
     }
 
     override fun onDestroyView() {
+        Log.v("aaaaa", "1-11. MainFragment::onDestroyView()")
         super.onDestroyView()
         _binding = null
     }
 
     override fun onDestroy() {
+        Log.v("aaaaa", "1-12. MainFragment::onDestroy()")
         super.onDestroy()
         /* フラグの解除 */
         requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

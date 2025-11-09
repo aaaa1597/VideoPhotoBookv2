@@ -37,6 +37,7 @@ class StagingFragment : Fragment() {
     private lateinit var _adapter: StagingLogAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        Log.d("aaaaa", "0-1. StagingFragment::onCreateView()")
         _viewModel.addLogStr("onCreateView start.")
         _binding = FragmentStagingBinding.inflate(inflater, container, false)
         _viewModel.addLogStr("onCreateView end.")
@@ -44,6 +45,7 @@ class StagingFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.d("aaaaa", "0-2. StagingFragment::onViewCreated()")
         super.onViewCreated(view, savedInstanceState)
         _viewModel.addLogStr("onViewCreated start.")
 
@@ -106,62 +108,31 @@ class StagingFragment : Fragment() {
                         dialog, which ->
                             dialog.dismiss()
                             throw RuntimeException(errstr)
-//                          requireActivity().finish()
                     }
                     .show()
             }
-            /* Vuforia初期化成功で[startAR(),テクスチャBitmap読込み]実行 */
-            val results = listOf(
-                /* vuforia初期化 */
-                async(Dispatchers.Default) {
-                    delay(1000)
-                    _viewModel.addLogStr(resources.getString(R.string.init_vuforia_s))
-                    val retErr = startAR()
-                    _viewModel.addLogStr(resources.getString(R.string.init_vuforia_e))
-                    retErr
-                },
-                /* pause.pngテクスチャ読込み */
-                async(Dispatchers.IO) {
-                    delay(500)
-                    _viewModel.addLogStr("read  pause.png texture image start.")
-                    val pausebitmap = BitmapFactory.decodeResource(requireContext().resources, R.drawable.pause)
-                    _viewModel.addLogStr("read pause.png texture image end.")
-                    delay(500)
-                    _viewModel.addLogStr("change bitmap to ByteBuffer start.")
-                    val pauseTexture: ByteBuffer = pausebitmap.let { bitmap ->
-                        ByteBuffer.allocateDirect(bitmap.byteCount).apply {
-                            bitmap.copyPixelsToBuffer(this)
-                            rewind()
-                            _viewModel.addLogStr("change bitmap to ByteBuffer end.")
-                        }
-                    }
-                    _viewModel.setPauseTexture(pauseTexture, pausebitmap.width, pausebitmap.height)
-                },
-            /* 両タスクを待つ */
-            ).awaitAll()
 
-            /* Vuforia初期化正常完了 */
-            val ret = results[0] as Int
-            if(ret == 0) {
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, MainFragment())
-                    .commit()
-            }
-            /* Vuforia初期化失敗 */
-            else {
-                val titlestr:String = resources.getString(R.string.init_vuforia_err)
-                val errstr:String = Utils.getErrorMessage(requireContext(),ret)
-                _viewModel.addLogStr(errstr)
-                AlertDialog.Builder(requireContext())
-                    .setTitle(titlestr)
-                    .setMessage(errstr)
-                    .setPositiveButton(R.string.ok) {
-                        dialog, which ->
-                            dialog.dismiss();
-                            requireActivity().finish()
+            /* pause.pngテクスチャ読込み */
+            async(Dispatchers.IO) {
+                delay(500)
+                _viewModel.addLogStr("read  pause.png texture image start.")
+                val pausebitmap = BitmapFactory.decodeResource(requireContext().resources, R.drawable.pause)
+                _viewModel.addLogStr("read pause.png texture image end.")
+                delay(500)
+                _viewModel.addLogStr("change bitmap to ByteBuffer start.")
+                val pauseTexture: ByteBuffer = pausebitmap.let { bitmap ->
+                    ByteBuffer.allocateDirect(bitmap.byteCount).apply {
+                        bitmap.copyPixelsToBuffer(this)
+                        rewind()
+                        _viewModel.addLogStr("change bitmap to ByteBuffer end.")
                     }
-                    .show()
-            }
+                }
+                _viewModel.setPauseTexture(pauseTexture, pausebitmap.width, pausebitmap.height)
+            }.await()
+
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, MainFragment())
+                .commit()
         }
         _viewModel.addLogStr("onViewCreated end.")
     }
@@ -206,12 +177,14 @@ class StagingFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        Log.d("aaaaa", "0-3. StagingFragment::onDestroyView()")
         super.onDestroyView()
         _binding = null
     }
 
     companion object {
         init {
+            Log.d("aaaaa", "0-0. StagingFragment::init()")
             System.loadLibrary("videophotobook")
         }
     }

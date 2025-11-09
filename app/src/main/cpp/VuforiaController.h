@@ -58,6 +58,16 @@ enum class ErrorCode : int32_t {
     ERROR_FAILED_TO_START_VUFORIA                           = 0x100A,/** failed to start Vuforia. */
 };
 
+/** Data structure with information about the last known device pose */
+struct DevicePoseData {
+    /** Device pose */
+    VuMatrix44F pose{};
+    /** Device pose status */
+    VuObservationPoseStatus poseStatus{ VU_OBSERVATION_POSE_STATUS_NO_POSE };
+    /** Device pose status info */
+    VuDevicePoseObservationStatusInfo poseStatusInfo{ VU_DEVICE_POSE_OBSERVATION_STATUS_INFO_UNKNOWN };
+};
+
 class VuforiaController {
 public:
     /** Initialize Vuforia. When the initialization is completed successfully return 0. If initialization fails return the error code.*/
@@ -66,13 +76,36 @@ public:
     static ErrorCode startAR();
     /** Configure Vuforia rendering. */
     static bool configureRendering(jint width, jint height, int *pOrientation);
-    /* Screen size and video size */
+    /** Call this method at the start of Vuforia rendering. */
+    /** Gets the latest video background texture from Vuforia. */
+    /** Whatever the result of this call finishRender must be called before rendering completes.*/
+    static bool prepareToRender(double pDouble[6], VuRenderVideoBackgroundData *pData);
+    /** Get the current RenderState */
+    /** The returned object is only valid after prepareToRender has been called */
+    static const VuRenderState &getRenderState() { return mCurrentRenderState; }
+
+    static void cameraPerformAutoFocus();
+    static void cameraRestoreAutoFocus();
+    /* video size */
     static float _vVideoWidth;
     static float _vVideoHeight;
-    static float _screenWidth;
-    static float _screenHeight;
+
+    /** Get rendering information for the Image Target. */
+    /** Returns false if Vuforia isn't currently tracking the Image Target. */
+    static std::pair<std::unique_ptr<VuObservationList, decltype(&vuObservationListDestroy)>, int> createImageTargetList();
+    static bool getImageTargetResult(const VuObservation *observation, const VuVector2F &markerSize, VuMatrix44F &projectionMatrix, VuMatrix44F &modelViewMatrix, VuMatrix44F &scaledModelViewMatrix);
+    /** Call this method when Vuforia rendering is complete, this should be near the end of the platform render callback.*/
+    static void finishRender();
+    /** Stop the AR session */
+    /** Call this method when the app is paused. */
+    static bool stopAR();
+    /** Clean up and deinitialize Vuforia. */
+    static void deinitAR();
 
 private:
+    /* Screen size */
+    static float _screenWidth;
+    static float _screenHeight;
     /** Vuforia Engine instance */
     static VuEngine* mEngine;
     /** Vuforia render controller object */
@@ -81,16 +114,32 @@ private:
     static VuController* mPlatformController;
     /** The observer for device poses */
     static VuObserver* mDevicePoseObserver;
+    /** Between calls to prepareToRender and finishRender this holds a copy of the Vuforia state. */
+    static VuState* mVuforiaState;
+    /** Local copy of current RenderState */
+    static VuRenderState mCurrentRenderState;
     /** The observer for either the Image or Model target depending on which target was specified */
     static std::vector<VuObserver*> mObjectObservers;
     /** The Vuforia camera video mode to use, either DEFAULT, SPEED or QUALITY. */
     static VuCameraVideoModePreset mCameraVideoMode;
     /** Remember the display aspect ratio for later configuration of Guide View rendering */
     static float mDisplayAspectRatio;
+    /** Information about the last known device pose */
+    static DevicePoseData mLatestDevicePoseData;
+    /** Flag set when the tracker is relocalizing */
+    static bool mTimingRelocalizingState;
+    /** The time when the tracker entered the relocalizing state */
+    static std::chrono::steady_clock::time_point mEnteredRelocalizingState;
+    /** The maximum length of time in the RELOCALIZING state before tracking is reset */
+    static constexpr int MAX_RELOCALIZING_SECONDS{ 15 };
     /** Used by initAR to prepare and invoke Vuforia initialization. */
     static ErrorCode initVuforiaInternal(JavaVM *pvm, jobject pjobject, const std::string &licensekey);
     /** Create the set of Vuforia Observers needed in the application */
     static ErrorCode createObservers();
+    /** Called in prepareToRender to update the cached device pose information */
+    static void updateDevicePose();
+    /** Clean up Observers created by createObservers */
+    static void destroyObservers();
 };
 
 #endif //VIDEOPHOTOBOOKV2_VUFORIACONTROLLER_H

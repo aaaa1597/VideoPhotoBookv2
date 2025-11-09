@@ -3,9 +3,15 @@
 
 /* 1.対応ヘッダ(同名ヘッダ) */
 /* 2.C++ 標準ライブラリのヘッダ */
+#include <chrono>
+#include <map>
 /* 3.他の外部ライブラリのヘッダ */
 #include <GLES3/gl31.h>
 #include <GLES2/gl2ext.h>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "VuforiaEngine/VuforiaEngine.h"
 /* 4.プロジェクト内(ローカル)ヘッダ */
 
 class GLESRenderer {
@@ -14,6 +20,18 @@ public:
         static GLESRenderer instance;
         return instance;
     }
+    int32_t setVideoTexture();
+    void renderBackgroundFromCameraImage(const VuMatrix44F &projectionMatrix, const float *vertices, const float *textureCoordinates,
+                                         const int numTriangles, const unsigned int* indices, int textureUnit);
+    /* Render an Video PlayBack on a bounding box augmentation */
+    void renderVideoPlayback(const VuMatrix44F &projectionMatrix, const VuMatrix44F &scaledModelViewMatrix, const VuVector2F &markerSize, const std::string &targetName);
+
+    /** pause.png描画 */
+    void renderPause(const VuMatrix44F &projectionMatrix, const VuMatrix44F &scaledModelViewMatrix,
+                     const VuVector2F &markerSize, const std::string &targetName);
+    /** Clean up objects created during rendering */
+    void deinit();
+
 public:
     ~GLESRenderer() = default;
     /** Initialize the renderer ready for use */
@@ -31,6 +49,10 @@ public:
 
     /* Fullscreen mode flag */
     bool  _fullscreenFlg = false;
+
+    /* NDC(正規化デバイス)座標系の矩形座標 */
+    using lastupdate = std::chrono::time_point<std::chrono::system_clock>;
+    std::map<std::string, std::pair<lastupdate, std::array<glm::vec2, 4>>> _ndcQuadPoints;
 
 private: // data members
     /* For camera background rendering */

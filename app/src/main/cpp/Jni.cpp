@@ -40,7 +40,7 @@ extern "C" {
 JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM* vm, void* reserved) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "JNI_OnLoad");
-    __android_log_print(ANDROID_LOG_VERBOSE, "aaaaa", "    0. JNI_OnLoad");
+    __android_log_print(ANDROID_LOG_VERBOSE, "aaaaa", "    0-0-1. JNI_OnLoad");
 
     if (vm == nullptr) {
         __android_log_print(ANDROID_LOG_FATAL, "JNI", "JavaVM pointer is null in JNI_OnLoad");

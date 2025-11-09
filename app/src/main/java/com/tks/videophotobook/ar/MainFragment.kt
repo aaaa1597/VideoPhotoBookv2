@@ -2,6 +2,7 @@ package com.tks.videophotobook.ar
 
 import android.graphics.PixelFormat
 import android.graphics.SurfaceTexture
+import android.net.Uri
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
@@ -110,8 +111,10 @@ class MainFragment : Fragment() {
 
     /* 指定Target動画に差替え */
     private fun switchMedia(target: String) {
+        Log.d("aaaaa", "target=${target}")
         _exoPlayer.stop()
         _exoPlayer.clearMediaItems()
+        Log.d("aaaaa", "target=${_settingViewModel.getVideoUri(target)} ==Uri.EMPTY(${_settingViewModel.getVideoUri(target)== Uri.EMPTY})")
         val mediaItem = MediaItem.fromUri(_settingViewModel.getVideoUri(target)!!)
         _exoPlayer.setMediaItem(mediaItem)
         _exoPlayer.prepare()
@@ -126,6 +129,8 @@ class MainFragment : Fragment() {
         requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         /* MainActivityの背景にnull設定 */
         requireActivity().window.decorView.background = null
+
+        _settingViewModel.logoutMarkerVideoSet()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -214,7 +219,7 @@ class MainFragment : Fragment() {
                 val delectedTarget = renderFrame(_nowPlayingTarget)
                 if(delectedTarget == "waiting...") return
 
-                if(_nowPlayingTarget!="" && delectedTarget!="")
+                if(_nowPlayingTarget!=delectedTarget && delectedTarget!="")
                     Log.d("aaaaa", "!!! Detected Target Changed !!! targetName=$_nowPlayingTarget -> $delectedTarget")
 
                 if(_nowPlayingTarget!="" && delectedTarget=="") {

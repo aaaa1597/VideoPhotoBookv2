@@ -3,6 +3,7 @@ package com.tks.videophotobook.settings
 import android.app.Application
 import android.net.Uri
 import android.util.Log
+import androidx.annotation.DrawableRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
 import com.tks.videophotobook.R
@@ -65,4 +66,11 @@ class SettingViewModel(application: Application) : AndroidViewModel(application)
             initialValue = mutableMarkerVideoSetList.value.all { it.videoUri == Uri.EMPTY } /* 初期値 */
         )
 
+    fun logoutMarkerVideoSet() {
+        Log.d("aaaaa", "MarkerVideoSet::size=${mutableMarkerVideoSetList.value.size}")
+        mutableMarkerVideoSetList.value.forEachIndexed {
+            idx, set ->
+                Log.d("aaaaa", "MarkerVideoSet[$idx] ${set.targetName} ${set.targetImageTemplateResId} ${set.targetImageUri} ${set.videoUri} ${set.comment}")
+        }
+    }
 }

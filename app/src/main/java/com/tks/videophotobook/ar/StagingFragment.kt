@@ -37,7 +37,7 @@ class StagingFragment : Fragment() {
     private lateinit var _adapter: StagingLogAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        Log.d("aaaaa", "0-1. StagingFragment::onCreateView()")
+        Log.v("aaaaa", "0-1. StagingFragment::onCreateView()")
         _viewModel.addLogStr("onCreateView start.")
         _binding = FragmentStagingBinding.inflate(inflater, container, false)
         _viewModel.addLogStr("onCreateView end.")
@@ -45,7 +45,7 @@ class StagingFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        Log.d("aaaaa", "0-2. StagingFragment::onViewCreated()")
+        Log.v("aaaaa", "0-2. StagingFragment::onViewCreated()")
         super.onViewCreated(view, savedInstanceState)
         _viewModel.addLogStr("onViewCreated start.")
 
@@ -184,7 +184,7 @@ class StagingFragment : Fragment() {
 
     companion object {
         init {
-            Log.d("aaaaa", "0-0. StagingFragment::init()")
+            Log.v("aaaaa", "0-0. StagingFragment::init()")
             System.loadLibrary("videophotobook")
         }
     }

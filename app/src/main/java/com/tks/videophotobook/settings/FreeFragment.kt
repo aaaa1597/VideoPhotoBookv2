@@ -24,13 +24,13 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tks.videophotobook.databinding.FragmentFreeBinding
 import com.tks.videophotobook.R
+import com.tks.videophotobook.SettingViewModel
 import com.tks.videophotobook.Utils
 import kotlinx.coroutines.launch
 
 class FreeFragment : Fragment() {
     private var _binding: FragmentFreeBinding? = null
     private val binding get() = _binding!!
-    private val _settingViewModel: SettingViewModel by activityViewModels()
     private lateinit var _markerVideoSetAdapter: MarkerVideoSetAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
@@ -68,14 +68,14 @@ class FreeFragment : Fragment() {
         /* 戻るボタン押下 */
         binding.btnBack.setOnClickListener {
             /* markerVideoSetListをキャッシュ領域にjson出力 */
-            _settingViewModel.saveMarkerVideoSetListToCacheJsonFile()
+            SettingViewModel.saveMarkerVideoSetListToCacheJsonFile(requireContext())
             /* 画面を閉じる */
             requireActivity().supportFragmentManager.popBackStack()
         }
         /* 共有ボタン押下 */
         binding.btnShare.setOnClickListener {
             /* 共有用画像Uriリストを取得 */
-            val uriList = _settingViewModel.getMakerUriArrayList()
+            val uriList = SettingViewModel.getMakerUriArrayList()
             if(uriList.isEmpty()) {
                 AlertDialog.Builder(requireContext())
                     .setTitle(R.string.no_data)
@@ -96,7 +96,7 @@ class FreeFragment : Fragment() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 // ViewModelのStateFlowを収集
-                _settingViewModel.markerVideoSetList.collect { list ->
+                SettingViewModel.markerVideoSetList.collect { list ->
                     /* Flowから新しいリストが放出されたら、Adapterにセットして画面を更新 */
                     _markerVideoSetAdapter.submitList(list)
                 }
@@ -108,7 +108,7 @@ class FreeFragment : Fragment() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 // ViewModelのStateFlowを収集
-                _settingViewModel.isVisibleDoubleTapGuideView.collect { isVisibility ->
+                SettingViewModel.isVisibleDoubleTapGuideView.collect { isVisibility ->
                     /* Flowから新しいVisibility状態が放出されたら、画面を更新 */
                     binding.viwDoubletapGuide2.visibility = if (isVisibility) View.VISIBLE else View.GONE
                 }

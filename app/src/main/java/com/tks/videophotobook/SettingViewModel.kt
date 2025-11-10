@@ -1,31 +1,36 @@
-package com.tks.videophotobook.settings
+package com.tks.videophotobook
 
 import android.app.Application
+import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.annotation.DrawableRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
-import com.tks.videophotobook.R
 import com.tks.videophotobook.settings.MarkerVideoSet.Companion.loadImageTargetNamesFromAssets
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import androidx.lifecycle.viewModelScope
+import com.tks.videophotobook.settings.MarkerVideoSet
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 const val MARKER_VIDEO_MAP_JSON = "marker_video_map.json"
-class SettingViewModel(application: Application) : AndroidViewModel(application) {
-    val mutableMarkerVideoSetList = MutableStateFlow<List<MarkerVideoSet>>(emptyList())
+object SettingViewModel {
+    var mutableMarkerVideoSetList = MutableStateFlow<List<MarkerVideoSet>>(emptyList())
     val markerVideoSetList: StateFlow<List<MarkerVideoSet>> = mutableMarkerVideoSetList
-    fun initMarkerVideoSetList() {
-        val file = File(getApplication<Application>().externalCacheDir, MARKER_VIDEO_MAP_JSON)
-        var list = MarkerVideoSet.loadFromJsonFile(file)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    fun initMarkerVideoSetList(context: Context) {
+        val file = File(context.externalCacheDir, MARKER_VIDEO_MAP_JSON)
+        var list = MarkerVideoSet.Companion.loadFromJsonFile(file)
         if(list.isEmpty()) {
             /* assets配下のVideoPhotoBook.xmlのImageTargetタグのname属性一覧を取得 */
-            val targetNames = loadImageTargetNamesFromAssets(application)
+            val targetNames = loadImageTargetNamesFromAssets(context)
             val plesechoose = ""
             list = listOf(
                 MarkerVideoSet(targetNames[0], R.drawable.m000_star4, Uri.EMPTY, Uri.EMPTY, plesechoose),
@@ -47,8 +52,8 @@ class SettingViewModel(application: Application) : AndroidViewModel(application)
         return mutableMarkerVideoSetList.value.filter { it.targetImageUri != Uri.EMPTY }.map{ it.targetImageUri }.toCollection(ArrayList())
     }
 
-    fun saveMarkerVideoSetListToCacheJsonFile() {
-        val file = File(getApplication<Application>().externalCacheDir, MARKER_VIDEO_MAP_JSON)
+    fun saveMarkerVideoSetListToCacheJsonFile(context: Context) {
+        val file = File(context.externalCacheDir, MARKER_VIDEO_MAP_JSON)
         val jsonList = mutableMarkerVideoSetList.value.joinToString(prefix="[", postfix="]") { it.toJson() }
         file.writeText(jsonList)
         Log.d("aaaaa", "Saved jsonList= $jsonList")
@@ -61,7 +66,7 @@ class SettingViewModel(application: Application) : AndroidViewModel(application)
     val isVisibleDoubleTapGuideView: StateFlow<Boolean> = mutableMarkerVideoSetList
         .map { list -> list.all { it.videoUri == Uri.EMPTY } }
         .stateIn(
-            scope = viewModelScope,             /* ScopはviewModelScopeで */
+            scope = scope,                      /* ScopはviewModelScopeで */
             started = SharingStarted.Eagerly,   /* すぐに開始 */
             initialValue = mutableMarkerVideoSetList.value.all { it.videoUri == Uri.EMPTY } /* 初期値 */
         )
@@ -70,7 +75,7 @@ class SettingViewModel(application: Application) : AndroidViewModel(application)
         Log.d("aaaaa", "MarkerVideoSet::size=${mutableMarkerVideoSetList.value.size}")
         mutableMarkerVideoSetList.value.forEachIndexed {
             idx, set ->
-                Log.d("aaaaa", "MarkerVideoSet[$idx] ${set.targetName} ${set.targetImageTemplateResId} ${set.targetImageUri} ${set.videoUri} ${set.comment}")
+                Log.d("aaaaa", "[$idx] ${set.targetName} ${set.targetImageTemplateResId} ${set.targetImageUri} ${set.videoUri} ${set.comment}")
         }
     }
 }

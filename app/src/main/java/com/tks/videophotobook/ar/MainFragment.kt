@@ -20,6 +20,8 @@ import androidx.annotation.OptIn
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -42,14 +44,13 @@ import com.tks.videophotobook.nativeSetVideoSize
 import com.tks.videophotobook.renderFrame
 import com.tks.videophotobook.setFullScreenMode
 import com.tks.videophotobook.setTextures
-import com.tks.videophotobook.settings.SettingViewModel
+import com.tks.videophotobook.SettingViewModel
 import com.tks.videophotobook.startAR
 import com.tks.videophotobook.stopAR
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Timer
-import java.util.concurrent.CountDownLatch
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import kotlin.concurrent.schedule
@@ -58,7 +59,6 @@ class MainFragment : Fragment() {
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
     private val _stagingViewModel: StagingViewModel by activityViewModels()
-    private val _settingViewModel: SettingViewModel by activityViewModels()
     private var _nowPlayingTarget: String = ""
     private var isFullScreenMode = false
     private lateinit var _exoPlayer: ExoPlayer
@@ -114,8 +114,8 @@ class MainFragment : Fragment() {
         Log.d("aaaaa", "target=${target}")
         _exoPlayer.stop()
         _exoPlayer.clearMediaItems()
-        Log.d("aaaaa", "target=${_settingViewModel.getVideoUri(target)} ==Uri.EMPTY(${_settingViewModel.getVideoUri(target)== Uri.EMPTY})")
-        val mediaItem = MediaItem.fromUri(_settingViewModel.getVideoUri(target)!!)
+        Log.d("aaaaa", "target=${target} VideoUri=${SettingViewModel.getVideoUri(target)} ==Uri.EMPTY(${SettingViewModel.getVideoUri(target)== Uri.EMPTY})")
+        val mediaItem = MediaItem.fromUri(SettingViewModel.getVideoUri(target)!!)
         _exoPlayer.setMediaItem(mediaItem)
         _exoPlayer.prepare()
         _exoPlayer.playWhenReady = true
@@ -130,7 +130,7 @@ class MainFragment : Fragment() {
         /* MainActivityの背景にnull設定 */
         requireActivity().window.decorView.background = null
 
-        _settingViewModel.logoutMarkerVideoSet()
+        SettingViewModel.logoutMarkerVideoSet()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

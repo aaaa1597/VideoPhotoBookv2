@@ -10,12 +10,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayoutMediator
 import com.tks.videophotobook.R
+import com.tks.videophotobook.SettingViewModel
 import com.tks.videophotobook.databinding.FragmentSettingsBinding
 
 class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: SettingViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View {
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
@@ -35,7 +35,7 @@ class SettingsFragment : Fragment() {
             }
         }.attach()
 
-        viewModel.initMarkerVideoSetList()
+        SettingViewModel.initMarkerVideoSetList(requireContext())
     }
 
     override fun onDestroyView() {

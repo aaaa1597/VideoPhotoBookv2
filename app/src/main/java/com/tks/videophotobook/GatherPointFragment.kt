@@ -3,16 +3,18 @@ package com.tks.videophotobook
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.tks.videophotobook.ar.ArActivity
 import com.tks.videophotobook.databinding.FragmentGatherpointBinding
-import com.tks.videophotobook.settings.MARKER_VIDEO_MAP_JSON
 import com.tks.videophotobook.settings.MarkerVideoSet
 import java.io.File
+import kotlin.getValue
 
 class GatherPointFragment : Fragment() {
     private var _binding: FragmentGatherpointBinding? = null
@@ -41,13 +43,14 @@ class GatherPointFragment : Fragment() {
         super.onResume()
         /* marker_video_map.json(=マーカー/動画紐付け情報)の存在チェック */
         val file = File(requireContext().externalCacheDir, MARKER_VIDEO_MAP_JSON)
-        if ( !file.exists()) {
+        if (!file.exists()) {
             /* ファイルが存在しない → SettingFragmentを表示(マーカー/動画紐付け情報を生成する)*/
             GuidedDialog().show(parentFragmentManager, "GuidedDialog")
             return
         }
 
         val jsonList = file.readText()
+        Log.d("aaaaa", "jsonList=$jsonList")
         if (jsonList.isEmpty() || jsonList == "[]") {
             /* データ空 → SettingFragmentを表示(マーカー/動画紐付け情報を生成する)*/
             GuidedDialog().show(parentFragmentManager, "GuidedDialog")
@@ -62,6 +65,7 @@ class GatherPointFragment : Fragment() {
             return
         }
 
+        SettingViewModel.mutableMarkerVideoSetList.value = markerVideoSetList
         /* 設定されてる → プログレス消去 */
         binding.pgbLoading.visibility = View.GONE
     }

@@ -31,6 +31,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.tks.videophotobook.R
+import com.tks.videophotobook.SettingViewModel
 import com.tks.videophotobook.Utils
 import com.tks.videophotobook.databinding.FragmentLinkingSettingsDialogBinding
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,6 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
     private var _binding: FragmentLinkingSettingsDialogBinding? = null
     private val binding get() = _binding!!
     private val _viewModel: SetDialogViewModel by activityViewModels()
-    private val _settingViewModel: SettingViewModel by activityViewModels()
     /* ファイル選択ランチャー */
     private val _pickFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         /* ファイルリストの戻り */
@@ -204,13 +204,13 @@ class LinkingSettingsDialog private constructor(): DialogFragment() {
             _viewModel.mutableIsVisibilitySave.value = false
             /* リスト内の該当データを更新 */
             val newSet = _viewModel.mutableMarkerVideoSet.value
-            val newList = _settingViewModel.markerVideoSetList.value.toMutableList().apply {
+            val newList = SettingViewModel.markerVideoSetList.value.toMutableList().apply {
                 val index = indexOfFirst { it.targetName == newSet.targetName }
                 if (index != -1) {
                     this[index] = newSet
                 }
             }
-            _settingViewModel.mutableMarkerVideoSetList.value = newList
+            SettingViewModel.mutableMarkerVideoSetList.value = newList
             dismissAllowingStateLoss()
         }
     }

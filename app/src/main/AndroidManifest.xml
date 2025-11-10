@@ -38,6 +38,7 @@
             android:name=".ar.ArActivity"
             android:fitsSystemWindows="false"
             android:screenOrientation="landscape"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity"
             android:theme="@style/TransparentActivity"
             android:exported="false" />
     </application>

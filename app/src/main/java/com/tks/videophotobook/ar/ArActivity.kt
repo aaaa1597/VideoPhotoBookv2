@@ -8,7 +8,9 @@ import android.view.WindowInsetsController
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.tks.videophotobook.R
 import com.tks.videophotobook.databinding.ActivityArBinding
 import com.tks.videophotobook.databinding.FragmentGatherpointBinding
@@ -24,18 +26,16 @@ class ArActivity : AppCompatActivity() {
         setContentView(_binding.root)
 
         /* コンテンツをSystemBars（Status/Navigation）下まで広げる */
-        window.setDecorFitsSystemWindows(false)
-        /* ステータスバー透明 */
-        window.statusBarColor = Color.TRANSPARENT
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         /* フルスクリーン制御 */
-        val controller = window.insetsController ?: return
-        controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
         /* ナビゲーションバー非表示 */
-        controller.hide(WindowInsets.Type.navigationBars())
+        controller.hide(WindowInsetsCompat.Type.navigationBars())
         /* ステータスバー常時表示＋透明 */
-        controller.show(WindowInsets.Type.statusBars())
+        controller.show(WindowInsetsCompat.Type.statusBars())
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()

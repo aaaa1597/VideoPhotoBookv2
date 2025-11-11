@@ -35,7 +35,7 @@ class PermissionsFragment : Fragment() {
 
         /* 権限承認済ならメイン処理のFragmentへ(移行このFragmentには戻らない) */
         if (checkPermissionsGranted()) {
-            findNavController().navigate(R.id.action_permissionsFragment_to_mainFragment_fade1, null,
+            findNavController().navigate(R.id.action_permissionsFragment_to_gatherPointFragment_fade1, null,
                 NavOptions.Builder().setPopUpTo(R.id.permissionsFragment, true).build()/* 戻る必要がない */)
         }
         else if( !hasRequestedPermissions) {
@@ -57,7 +57,7 @@ class PermissionsFragment : Fragment() {
         /* 権限チェック */
         if (isGranted.isNotEmpty() && isGranted.all {it.value == true}) {
             /* 権限承認済ならメイン処理のFragmentへ(移行このFragmentには戻らない) */
-            findNavController().navigate(R.id.action_permissionsFragment_to_mainFragment_fade1, null,
+            findNavController().navigate(R.id.action_permissionsFragment_to_gatherPointFragment_fade1, null,
                 NavOptions.Builder().setPopUpTo(R.id.permissionsFragment, true).build()/* 戻る必要がない */)
         }
         else {

@@ -11,7 +11,7 @@
         android:label="fragment_permissions"
         tools:layout="@layout/fragment_permissions">
         <action
-            android:id="@+id/action_permissionsFragment_to_mainFragment_fade1"
+            android:id="@+id/action_permissionsFragment_to_gatherPointFragment_fade1"
             app:destination="@id/gatherPointFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim"

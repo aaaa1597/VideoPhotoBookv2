@@ -20,8 +20,6 @@ import androidx.annotation.OptIn
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -35,7 +33,6 @@ import com.tks.videophotobook.cameraPerformAutoFocus
 import com.tks.videophotobook.cameraRestoreAutoFocus
 import com.tks.videophotobook.checkHit
 import com.tks.videophotobook.configureRendering
-import com.tks.videophotobook.databinding.FragmentMainBinding
 import com.tks.videophotobook.deinitAR
 import com.tks.videophotobook.deinitRendering
 import com.tks.videophotobook.initRendering
@@ -45,6 +42,7 @@ import com.tks.videophotobook.renderFrame
 import com.tks.videophotobook.setFullScreenMode
 import com.tks.videophotobook.setTextures
 import com.tks.videophotobook.SettingViewModel
+import com.tks.videophotobook.databinding.FragmentArBinding
 import com.tks.videophotobook.startAR
 import com.tks.videophotobook.stopAR
 import kotlinx.coroutines.CoroutineScope
@@ -56,13 +54,13 @@ import javax.microedition.khronos.opengles.GL10
 import kotlin.concurrent.schedule
 
 class MainFragment : Fragment() {
-    private var _binding: FragmentMainBinding? = null
+    private var _binding: FragmentArBinding? = null
     private val binding get() = _binding!!
     private val _stagingViewModel: StagingViewModel by activityViewModels()
     private var _nowPlayingTarget: String = ""
     private var isFullScreenMode = false
     private lateinit var _exoPlayer: ExoPlayer
-    private var _exoPlayer_isPlaying = false
+    private var exoPlayerIsPlaying = false
     private lateinit var _surfaceTexture: SurfaceTexture
     private lateinit var _surface: Surface
     private val gestureDetector by lazy {
@@ -135,7 +133,7 @@ class MainFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.v("aaaaa", "1-2. MainFragment::onCreateView()")
-        _binding = FragmentMainBinding.inflate(inflater, container, false)
+        _binding = FragmentArBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -168,7 +166,7 @@ class MainFragment : Fragment() {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     super.onIsPlayingChanged(isPlaying)
                     Log.d("aaaaa", "onIsPlayingChanged isPlaying=$isPlaying")
-                    _exoPlayer_isPlaying = isPlaying
+                    exoPlayerIsPlaying = isPlaying
                 }
 
                 override fun onPlayerError(error: PlaybackException) {
@@ -212,7 +210,7 @@ class MainFragment : Fragment() {
 
             override fun onDrawFrame(gl: GL10) {
 //                Log.v("aaaaa", "1-8. MainFragment::GLSurfaceView::onDrawFrame()")
-                if(_exoPlayer_isPlaying)
+                if(exoPlayerIsPlaying)
                     _surfaceTexture.updateTexImage()
 
                 /* OpenGL rendering of Video Background and augmentations is implemented in native code */
@@ -271,7 +269,7 @@ class MainFragment : Fragment() {
                 .setMessage(errstr)
                 .setPositiveButton(R.string.ok) {
                         dialog, which ->
-                    dialog.dismiss();
+                    dialog.dismiss()
                     requireActivity().finish()
                 }
                 .show()

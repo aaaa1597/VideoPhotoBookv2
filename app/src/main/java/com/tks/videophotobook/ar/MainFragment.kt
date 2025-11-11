@@ -143,13 +143,15 @@ class MainFragment : Fragment() {
 
         /* タップ/ダブルタップ定義 */
         view.setOnTouchListener { v, event ->
-            if (event.action == MotionEvent.ACTION_UP) {
-                gestureDetector.onTouchEvent(event)
-                v.performClick()
-                true
+            gestureDetector.onTouchEvent(event)
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> true
+                MotionEvent.ACTION_UP -> {
+                    v.performClick()
+                    true
+                }
+                else -> false
             }
-            else
-                false
         }
 
         /* Create the ExoPlayer */

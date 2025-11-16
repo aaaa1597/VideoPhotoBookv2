@@ -1,16 +1,19 @@
 package com.tks.videophotobook.ar
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.tks.videophotobook.EntranceActivity
 import com.tks.videophotobook.R
 import com.tks.videophotobook.databinding.ActivityArBinding
 import com.tks.videophotobook.databinding.FragmentGatherpointBinding
@@ -41,6 +44,13 @@ class ArActivity : AppCompatActivity() {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, StagingFragment())
                 .commit()
+        }
+
+        onBackPressedDispatcher.addCallback(this) {
+            finish()
+            /* EntranceActivityを起動 */
+            val intent = Intent(this@ArActivity, EntranceActivity::class.java)
+            startActivity(intent)
         }
     }
 }

@@ -39,7 +39,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 const val ARG_SET = "arg_set"
-class LinkingSettingsDialog private constructor(): DialogFragment() {
+class LinkingSettingsDialog: DialogFragment() {
     private var _binding: FragmentLinkingSettingsDialogBinding? = null
     private val binding get() = _binding!!
     private val _viewModel: SetDialogViewModel by activityViewModels()

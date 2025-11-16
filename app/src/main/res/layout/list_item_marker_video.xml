@@ -63,12 +63,6 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="@string/_000_marker"/>
-            <com.tks.videophotobook.settings.VideoThumbnailPlayerView
-                android:id="@+id/pyv_video_thumbnail"
-                android:layout_width="112dp"
-                android:layout_height="63dp"
-                android:layout_marginTop="25dp"
-                android:layout_marginStart="20dp" />
             <ImageView
                 android:id="@+id/imv_video_thumbnail"
                 android:layout_width="112dp"

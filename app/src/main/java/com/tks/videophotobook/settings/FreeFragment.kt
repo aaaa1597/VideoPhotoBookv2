@@ -26,7 +26,9 @@ import com.tks.videophotobook.databinding.FragmentFreeBinding
 import com.tks.videophotobook.R
 import com.tks.videophotobook.SettingViewModel
 import com.tks.videophotobook.Utils
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class FreeFragment : Fragment() {
     private var _binding: FragmentFreeBinding? = null
@@ -142,7 +144,6 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemDoub
         private val targetNameTxt: TextView = itemView.findViewById(R.id.txt_targetname)
         private val targetImageImv: ImageView = itemView.findViewById(R.id.imv_targetImage)
         private val videoName: TextView = itemView.findViewById(R.id.txt_videoname)
-        private val videothumbnailPyv: VideoThumbnailPlayerView = itemView.findViewById(R.id.pyv_video_thumbnail)
         private val videothumbnailImv: ImageView = itemView.findViewById(R.id.imv_video_thumbnail)
         private val commentTxt: TextView = itemView.findViewById(R.id.txt_comment)
         private val inputBlocker: TextView = itemView.findViewById(R.id.txt_inputblocker)
@@ -151,30 +152,37 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemDoub
             /* ARマーカーID */
             targetNameTxt.text = item.targetName
             /* ARマーカー画像 */
-            if(Utils.isUriValid(context, item.targetImageUri))
+            if (Utils.isUriValid(context, item.targetImageUri))
                 targetImageImv.setImageURI(item.targetImageUri)
             else {
                 item.targetImageUri = Uri.EMPTY
                 targetImageImv.setImageResource(item.targetImageTemplateResId)
             }
-            /* 動画名/動画ファイル */
-            if(Utils.isUriValid(context, item.videoUri)) {
+            /* 動画名/動画サムネイル */
+            if (Utils.isUriValid(context, item.videoUri)) {
                 videoName.text = Utils.getFileNameFromUri(context, item.videoUri)
-                videothumbnailImv.visibility = View.GONE
-                videothumbnailPyv.visibility = View.VISIBLE
-                videothumbnailPyv.setVideoUri(item.videoUri, useControllerz = true, isPlay = true, isVolume = false)
+                /* 一旦デフォルトを設定 */
+                videothumbnailImv.setImageResource(R.drawable.videofilenotfound)
+                /* 非同期でサムネイル生成 */
+                (itemView.context as? androidx.fragment.app.FragmentActivity)?.lifecycleScope?.launch {
+                    val thumbBitmap = withContext(Dispatchers.IO) {
+                        Utils.getThumbnail(context, item.videoUri, 2_000_000)
+                    }
+                    /* Bitmap が null でないならセット */
+                    thumbBitmap?.let {
+                        videothumbnailImv.setImageBitmap(it)
+                    }
+                }
             }
             else {
                 item.videoUri = Uri.EMPTY
                 videoName.text = context.getString(R.string.video_none)
-                videothumbnailPyv.visibility = View.GONE
-                videothumbnailImv.visibility = View.VISIBLE
                 videothumbnailImv.setImageResource(R.drawable.videofilenotfound)
             }
 
             commentTxt.text = item.comment
 
-            inputBlocker.visibility = if(item.targetImageUri==Uri.EMPTY||item.videoUri==Uri.EMPTY) View.VISIBLE else View.GONE
+            inputBlocker.visibility = if(item.targetImageUri == Uri.EMPTY || item.videoUri == Uri.EMPTY) View.VISIBLE else View.GONE
 
             val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
                 override fun onDoubleTap(e: MotionEvent): Boolean {
@@ -187,7 +195,7 @@ class MarkerVideoSetAdapter(private val context: Context, private val onItemDoub
             @Suppress("ClickableViewAccessibility")
             topCdv.setOnTouchListener {
                 v, event ->
-                    gestureDetector.onTouchEvent(event)
+                gestureDetector.onTouchEvent(event)
                     if (event.action == MotionEvent.ACTION_UP)
                         v.performClick()
                 true

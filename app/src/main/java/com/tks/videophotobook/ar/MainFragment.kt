@@ -26,6 +26,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import com.tks.videophotobook.R
 import com.tks.videophotobook.Utils
@@ -47,6 +48,7 @@ import com.tks.videophotobook.startAR
 import com.tks.videophotobook.stopAR
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Timer
 import javax.microedition.khronos.egl.EGLConfig
@@ -57,7 +59,8 @@ class MainFragment : Fragment() {
     private var _binding: FragmentArBinding? = null
     private val binding get() = _binding!!
     private val _stagingViewModel: StagingViewModel by activityViewModels()
-    private var _nowPlayingTarget: String = ""
+    private val _arViewModel: ArViewModel by activityViewModels()
+    private var _currentPlayingTarget: String = ""
     private var isFullScreenMode = false
     private lateinit var _exoPlayer: ExoPlayer
     private var exoPlayerIsPlaying = false
@@ -68,10 +71,9 @@ class MainFragment : Fragment() {
             @UnstableApi
             override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
                 val targetName = checkHit(e.x, e.y, binding.viwGlsurface.width.toFloat(), binding.viwGlsurface.height.toFloat())
-                if (targetName != _nowPlayingTarget && targetName != "") {
+                if (targetName != _arViewModel.detectedTarget.value && targetName != "") {
                     /* 動画差し替え */
-                    _nowPlayingTarget = targetName
-                    switchMedia(targetName)
+                    _arViewModel.detectedTarget.value = targetName
                 }
                 else {
                     /* 再生/停止/早送り/巻戻しコントローラ表示/非表示 */
@@ -92,10 +94,9 @@ class MainFragment : Fragment() {
             override fun onDoubleTap(e: MotionEvent): Boolean {
                 super.onDoubleTap(e)
                 val targetName = checkHit(e.x, e.y, binding.viwGlsurface.width.toFloat(), binding.viwGlsurface.height.toFloat())
-                if (targetName != _nowPlayingTarget && targetName != "") {
+                if (targetName != _arViewModel.detectedTarget.value && targetName != "") {
                     /* 動画差し替え */
-                    _nowPlayingTarget = targetName
-                    switchMedia(targetName)
+                    _arViewModel.detectedTarget.value = targetName
                 }
                 else {
                     /* フルスクリーンモード切替 */
@@ -108,15 +109,18 @@ class MainFragment : Fragment() {
     }
 
     /* 指定Target動画に差替え */
+    private var isSwitching = false
+    private var lastSwitchAt = 0L
+    private val SWITCH_DEBOUNCE_MS = 300L
     private fun switchMedia(target: String) {
-        Log.d("aaaaa", "target=${target}")
-        _exoPlayer.stop()
-        _exoPlayer.clearMediaItems()
         Log.d("aaaaa", "target=${target} VideoUri=${SettingViewModel.getVideoUri(target)} ==Uri.EMPTY(${SettingViewModel.getVideoUri(target)== Uri.EMPTY})")
-        val mediaItem = MediaItem.fromUri(SettingViewModel.getVideoUri(target)!!)
-        _exoPlayer.setMediaItem(mediaItem)
+        val uri = SettingViewModel.getVideoUri(target) ?: return
+        val mediaItem = MediaItem.fromUri(uri)
+        _exoPlayer.setMediaItem(mediaItem, true)
         _exoPlayer.prepare()
         _exoPlayer.playWhenReady = true
+        /* 再生開始をリクエストしたら「今はこのターゲットを再生中」と見なす */
+        _currentPlayingTarget = target
     }
 
 
@@ -137,6 +141,7 @@ class MainFragment : Fragment() {
         return binding.root
     }
 
+    @OptIn(UnstableApi::class)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.v("aaaaa", "1-3. MainFragment::onViewCreated()")
         super.onViewCreated(view, savedInstanceState)
@@ -154,11 +159,19 @@ class MainFragment : Fragment() {
             }
         }
 
+        /* ExoPlayerの作成時（onViewCreatedのBuilder部分を置換） */
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                /* minBufferMs= */ 1_000,
+                /* maxBufferMs= */ 10_000,
+                /* bufferForPlaybackMs= */ 500,
+                /* bufferForPlaybackAfterRebufferMs= */ 1_000
+            ).build()
         /* Create the ExoPlayer */
-        _exoPlayer = ExoPlayer.Builder(requireContext()).build().apply {
+        _exoPlayer = ExoPlayer.Builder(requireContext())
+            .setLoadControl(loadControl).build().apply {
             repeatMode = Player.REPEAT_MODE_ONE /* Loop Playback. */
             playWhenReady = false /* Start playback immediately. */
-
             addListener(object : Player.Listener {
                 override fun onVideoSizeChanged(videoSize: VideoSize) {
                     /* Pass the video size to the C++ side. */
@@ -172,7 +185,8 @@ class MainFragment : Fragment() {
                 }
 
                 override fun onPlayerError(error: PlaybackException) {
-                    Log.e("aaaaa", "error!! ExoPlayer error: ${error.errorCodeName}, ${error.errorCode}, ${error.message}")
+                    Log.e("aaaaa", "error!! ExoPlayer error: ${error.errorCode}, type=${error.errorCodeName}")
+                    _exoPlayer.playWhenReady = false
                 }
             })
         }
@@ -216,24 +230,20 @@ class MainFragment : Fragment() {
                     _surfaceTexture.updateTexImage()
 
                 /* OpenGL rendering of Video Background and augmentations is implemented in native code */
-                val delectedTarget = renderFrame(_nowPlayingTarget)
+                val delectedTarget = renderFrame(_currentPlayingTarget)
                 if(delectedTarget == "waiting...") return
 
-                if(_nowPlayingTarget!=delectedTarget && delectedTarget!="")
-                    Log.d("aaaaa", "!!! Detected Target Changed !!! targetName=$_nowPlayingTarget -> $delectedTarget")
+                if(_arViewModel.detectedTarget.value!=delectedTarget && delectedTarget!="")
+                    Log.d("aaaaa", "!!! Detected Target Changed !!! targetName=${_arViewModel.detectedTarget.value} -> $delectedTarget")
 
-                if(_nowPlayingTarget!="" && delectedTarget=="") {
-                    _nowPlayingTarget = delectedTarget
+                if(_arViewModel.detectedTarget.value!="" && delectedTarget=="") {
+                    _arViewModel.detectedTarget.value = delectedTarget
                     CoroutineScope(Dispatchers.Main).launch {
                         _exoPlayer.pause()
                     }
                 }
-                else if(_nowPlayingTarget != delectedTarget) {
-                    _nowPlayingTarget = delectedTarget
-                    /* loadingIndicatorは非表示に */
-                    CoroutineScope(Dispatchers.Main).launch {
-                        switchMedia(delectedTarget)
-                    }
+                else if(_arViewModel.detectedTarget.value != delectedTarget) {
+                    _arViewModel.detectedTarget.value = delectedTarget
                 }
             }
         })
@@ -245,6 +255,15 @@ class MainFragment : Fragment() {
                 deinitRendering()
             }
         })
+
+        /* switchMediaの実行監視(onDrawFrameだと連発実行の可能性があるため) */
+        lifecycleScope.launch {
+            _arViewModel.detectedTarget.collect { newTarget ->
+                if (newTarget.isNotEmpty() && newTarget != _currentPlayingTarget) {
+                    switchMedia(newTarget)
+                }
+            }
+        }
         _stagingViewModel.addLogStr(resources.getString(R.string.init_glsurfaceview_s))
     }
 
@@ -293,9 +312,11 @@ class MainFragment : Fragment() {
         controller.show(WindowInsets.Type.statusBars())
     }
 
+    @OptIn(UnstableApi::class)
     override fun onDestroyView() {
         Log.v("aaaaa", "1-11. MainFragment::onDestroyView()")
         super.onDestroyView()
+        binding.viwPlayerControls.player = null
         _binding = null
     }
 
@@ -305,8 +326,33 @@ class MainFragment : Fragment() {
         /* フラグの解除 */
         requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         deinitAR()
-        _exoPlayer.release()
-        _surfaceTexture.release()
-        _surface.release()
+
+        try { /* プレイヤーの surface を外してから release */
+            if (this:: _exoPlayer.isInitialized) {
+                _exoPlayer.setVideoSurface(null)
+                _exoPlayer.release()
+            }
+        }
+        catch (e: Exception) {
+            Log.w("aaaaa", "exoPlayer release exception: ${e.localizedMessage}")
+        }
+
+        try {
+            if (this:: _surfaceTexture.isInitialized) {
+                _surfaceTexture.release()
+            }
+        }
+        catch (e: Exception) {
+            Log.w("aaaaa", "surfaceTexture release exception: ${e.localizedMessage}")
+        }
+
+        try {
+            if (this:: _surface.isInitialized) {
+                _surface.release()
+            }
+        }
+        catch (e: Exception) {
+            Log.w("aaaaa", "surface release exception: ${e.localizedMessage}")
+        }
     }
 }

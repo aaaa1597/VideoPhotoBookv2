@@ -36,6 +36,7 @@
         </activity>
         <activity
             android:name=".ar.ArActivity"
+            android:noHistory="true"
             android:fitsSystemWindows="false"
             android:screenOrientation="landscape"
             tools:ignore="DiscouragedApi,LockedOrientationActivity"
